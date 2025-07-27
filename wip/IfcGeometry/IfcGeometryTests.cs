@@ -200,7 +200,7 @@ IfcZeeProfileDef";
             {
                 var def = kv.Value;
                 Debug.Assert(kv.Key == def.Id);
-                //Console.WriteLine($"#{def.Id}= {def}");
+                Console.WriteLine($"#{def.Id}= {def}");
             }
         }
     }

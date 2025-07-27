@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ara3D.Memory
@@ -83,5 +84,11 @@ namespace Ara3D.Memory
 
         public static INamedMemoryOwner ToNamedMemoryOwner(this byte[] bytes, string name)
             => new NamedAlignedMemory(bytes.Fix(), name);
+
+        public static T* Begin<T>(this IBuffer<T> buffer) where T : unmanaged
+            => (T*)Unsafe.AsPointer(ref buffer[0]);
+
+        public static T* End<T>(this IBuffer<T> buffer) where T : unmanaged
+            => (T*)Unsafe.AsPointer(ref buffer[0]) + buffer.Count;
     }
 }
