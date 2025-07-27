@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ara3D.IO.StepParser
 {
-    public class StepDefinition
+    public readonly struct StepDefinition
     {
         public readonly ulong Id;
         public readonly int Index;

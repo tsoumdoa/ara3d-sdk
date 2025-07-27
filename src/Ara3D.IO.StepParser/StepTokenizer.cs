@@ -217,7 +217,8 @@ namespace Ara3D.IO.StepParser
 
             return type;
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InternalParseTokenEatWhiteSpace(ref byte* cur, byte* end)
         {
             while (cur < end)
@@ -229,11 +230,13 @@ namespace Ara3D.IO.StepParser
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsWhiteSpace(StepTokenType type)
         {
             return type == StepTokenType.Whitespace || type == StepTokenType.Comment;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AdvancePast(ref byte* cur, byte* end, StepTokenType type)
         {
             if (cur >= end) return false;
@@ -246,6 +249,7 @@ namespace Ara3D.IO.StepParser
             return r == type;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AdvanceTo(ref byte* cur, byte* end, out StepToken token, StepTokenType type)
         {
             while (cur < end)
@@ -262,6 +266,7 @@ namespace Ara3D.IO.StepParser
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AdvanceToDefinition(ref byte* cur, byte* end, out StepToken id)
         {
             id = default;
@@ -274,7 +279,8 @@ namespace Ara3D.IO.StepParser
             }
             return false;
         }
-    
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AdvanceToAndTokenizeDefinition(ref byte* cur, byte* end, out StepToken id, UnmanagedList<StepToken> tokens)
         {
             Debug.Assert(tokens.Count == 0);
@@ -295,6 +301,7 @@ namespace Ara3D.IO.StepParser
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Tokenize(byte* begin, byte* end, UnmanagedList<StepToken> tokens)
         {
             while (begin < end)

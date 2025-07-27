@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Linq;
+using System.Runtime.CompilerServices;
 using Ara3D.Memory;
 
 namespace Ara3D.IO.StepParser
@@ -31,8 +32,19 @@ namespace Ara3D.IO.StepParser
         public override string ToString()
             => Slice.ToAsciiString();
 
+        public static StepTokenType[] TokenLookUp = ComputeTokenLookUp();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static StepTokenType[] ComputeTokenLookUp()
+            => Enumerable.Range(0, 256).Select(i => ComputeTokenType((byte)i)).ToArray();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StepTokenType GetTokenType(byte b)
+            => ComputeTokenType(b);    
+        //=> TokenLookUp[b];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static StepTokenType ComputeTokenType(byte b)
         {
             switch (b)
             {

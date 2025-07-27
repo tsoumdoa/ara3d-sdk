@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ara3D.Logging;
 using Ara3D.Memory;
 using Ara3D.Utils;
@@ -13,7 +14,7 @@ namespace Ara3D.IO.StepParser
         public readonly byte* DataEnd;
         public readonly AlignedMemory Data;
         public readonly Dictionary<ulong, StepDefinition> Definitions = new();
-        public readonly StepValues Values = new();
+        public readonly StepValues Values;
 
         public StepDocument(FilePath filePath, ILogger logger = null)
         {
@@ -27,8 +28,11 @@ namespace Ara3D.IO.StepParser
 
             logger.Log($"Starting tokenization");
 
+            var capacityEstimate = Data.NumBytes / 32;
+            Values = new StepValues((int)capacityEstimate);
+
             // Initialize the token list with a capacity of 16,000 tokens (the longest line we hope to encounter, but could be more)
-            using var tokens = new UnmanagedList<StepToken>(16000);
+            using var tokens = new UnmanagedList<StepToken>(32000);
 
             var cur = DataStart;
 
@@ -39,21 +43,20 @@ namespace Ara3D.IO.StepParser
                     break;
 
                 var id = StepValues.ParseId(idToken);
-                if (!Assert(!Definitions.ContainsKey(id), $"Duplicate definition found for ID {id} in {filePath.GetFileName()}"))
-                    continue;
 
-                if (!Assert(tokens.Count > 2, "Expected at least 3 tokens for a definition identifier begin_group end_group"))
-                    continue;
+                //Debug.Assert(!Definitions.ContainsKey(id), $"Duplicate definition found for ID {id} in {filePath.GetFileName()}");
+                //Debug.Assert(tokens.Count > 2, "Expected at least 3 tokens for a definition identifier begin_group end_group"));
 
-                if (!Assert(tokens[0].Type == StepTokenType.Identifier, "Expected Identifier token at start")) continue;
-                if (!Assert(tokens[1].Type == StepTokenType.BeginGroup, "Expected BeginGroup token at start + 1")) continue;
-                if (!Assert(tokens[^1].Type == StepTokenType.EndGroup, "Expected EndOfLine token at end")) continue;
+                //Debug.Assert(tokens[0].Type == StepTokenType.Identifier, "Expected Identifier token at start");
+                //Debug.Assert(tokens[1].Type == StepTokenType.BeginGroup, "Expected BeginGroup token at start + 1");
+                //Debug.Assert(tokens[^1].Type == StepTokenType.EndGroup, "Expected EndOfLine token at end");
 
                 var curToken = tokens.Begin();
                 var endToken = tokens.End();
                 var valueIndex = Values.Values.Count;
                 Values.AddTokens(ref curToken, endToken);
-                if (!Assert(curToken == endToken, "Did not consume all tokens in definition")) continue;
+                //Debug.Assert(curToken == endToken, "Did not consume all tokens in definition");
+                
                 var definition = new StepDefinition(id, valueIndex, Values);
                 Definitions.Add(id, definition);
                 
