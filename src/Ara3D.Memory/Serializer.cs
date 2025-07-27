@@ -18,12 +18,8 @@ namespace Ara3D.Memory
 
             var length = stream.Length;
 
-            // Calculate padding to make the length a multiple of 32 bytes
-            var remainder = length % 32;
-            var paddedLength = remainder == 0 ? length : length + (32 - remainder);
-
             // Allocate aligned memory with padded length
-            var r = new AlignedMemory(paddedLength);
+            var r = new AlignedMemory(length);
 
             var dest = r.Bytes.Begin;
             var remaining = length;
@@ -39,14 +35,6 @@ namespace Ara3D.Memory
 
             if (remaining != 0)
                 throw new Exception($"Failed to read all bytes from stream. {remaining} bytes remaining");
-
-            // Fill the padding area with zeros if padding was needed
-            if (remainder != 0)
-            {
-                var paddingStart = r.Bytes.Begin + length;
-                var paddingSize = (int)(32 - remainder);
-                Unsafe.InitBlockUnaligned(paddingStart, 0, (uint)paddingSize);
-            }
 
             stream.Flush();
             stream.Dispose();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -72,7 +73,17 @@ namespace Ara3D.Memory
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ToAsciiString()
-            => Ptr == null ? null : Encoding.ASCII.GetString(Ptr, CheckedLength);
+        {
+            if (Ptr == null) throw new ArgumentNullException(nameof(Ptr));
+            if (CheckedLength > 1_000_000)              
+                throw new ArgumentOutOfRangeException(nameof(CheckedLength));
+
+            // Use the span overload – same perf, safer diagnostics
+            ReadOnlySpan<byte> span = new(Ptr, CheckedLength);
+            return Encoding.ASCII.GetString(span);
+            
+            //return Encoding.ASCII.GetString(Ptr, CheckedLength);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ToUtf8String()

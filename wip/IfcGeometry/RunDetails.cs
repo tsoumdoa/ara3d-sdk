@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Ara3D.IfcLoader;
 using Ara3D.Logging;
 using Ara3D.Utils;
 
@@ -65,16 +64,5 @@ namespace Ara3D.IfcGeometry
                "# Relations, " +
                "Memory consumption, " +
                "Run index";
-
-        public static (RunDetails, IfcFile) LoadGraph(FilePath fp, bool includeGeometry, ILogger logger = null)
-        {
-            var r = new RunDetails(fp);
-            var file = IfcFile.Load(fp, includeGeometry, logger);
-            r.Stop();
-            r.ExpressIds = file.Document.Definitions.Count;
-            r.IfcGraphNodes = file.Graph?.Nodes.Count ?? 0;
-            r.IfcGraphRelations = file.Graph?.Relations.Count ?? 0;
-            return (r, file);
-        }
     }
 }

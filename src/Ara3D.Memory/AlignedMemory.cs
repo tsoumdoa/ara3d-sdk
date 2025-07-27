@@ -45,11 +45,6 @@ namespace Ara3D.Memory
             Bytes = ByteSlice.Empty;
         }
 
-        ~AlignedMemory()
-        {
-            Dispose(false);
-        }
-
         /// <summary>
         /// Reallocates the block of managed memory
         /// </summary>

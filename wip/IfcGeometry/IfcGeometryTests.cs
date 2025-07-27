@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using Ara3D.IfcLoader;
 using Ara3D.IO.StepParser;
 using Ara3D.Logging;
 using Ara3D.Utils;
@@ -16,20 +15,6 @@ namespace Ara3D.IfcGeometry
         {
             return Assembly.GetExecutingAssembly().GetTypes().Select(t => t.Name.ToUpperInvariant())
                 .Where(n => n.StartsWith("IFC")).ToHashSet();
-        }
-
-        public static void OutputDetails(IfcFile file, ILogger logger)
-        {
-            logger.Log($"Loaded {file.FilePath.GetFileName()}");
-            logger.Log($"Graph nodes: {file.Graph.Nodes.Count}");
-            logger.Log($"Graph relations: {file.Graph.Relations.Count}");
-            logger.Log($"Graph roots: {file.Graph.RootIds.Count}");
-            logger.Log($"Property sets: {file.Graph.GetPropSets().Count()}");
-            logger.Log($"Property values: {file.Graph.GetProps().Count()}");
-            logger.Log($"Express ids: {file.Document.Definitions.Count}");
-            logger.Log($"Geometry loaded: {file.GeometryDataLoaded}");
-            logger.Log($"Num geometries loaded: {file.Model?.GetNumGeometries()}");
-            logger.Log($"Num meshes loaded: {file.Model?.GetGeometries().Select(g => g.GetNumMeshes()).Sum()}");
         }
 
         public static string GeometryTypesMerged = @"IfcAdvancedBrep
@@ -175,13 +160,14 @@ IfcZeeProfileDef";
         [Test]
         public static void TestLoadTimes()
         {
-            var logger = Logger.Console;
             var dir = new DirectoryPath(@"C:\Users\cdigg\data\Ara3D\impraria\0000100120-093 - OXAGON ADVANCED HEALTH CENTER\STAGE 3A - CONCEPT DESIGN");
             var files = dir.GetFiles("*.ifc", true).ToList();
             foreach (var filePath in files.Take(1))
             {
-                var doc = StepDocument.Create(filePath);
-                logger.Log($"Loaded {filePath.GetFileName()}");
+                var logger = Logger.Console;
+                logger.Log($"Loading {filePath.GetFileName()}");
+                using var doc = StepDocument.Create(filePath);
+                logger.Log($"Loaded");
             }
         }
 
@@ -193,7 +179,7 @@ IfcZeeProfileDef";
             //OutputDetails(file, logger);
             //Console.WriteLine(rd.Header());
             //Console.WriteLine(rd.RowData());
-            var doc = new StepDocument(InputFile, logger);
+            using var doc = new StepDocument(InputFile, logger);
             logger.Log($"Loaded {doc.FilePath.GetFileName()}");
             var cnt = 0;
             foreach (var kv in doc.Definitions)

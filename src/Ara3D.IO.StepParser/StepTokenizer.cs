@@ -3,318 +3,261 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Ara3D.Memory;
 
-namespace Ara3D.IO.StepParser
+namespace Ara3D.IO.StepParser;
+
+public static unsafe class StepTokenizer
 {
-    public static unsafe class StepTokenizer
+    public static readonly StepTokenType[] TokenLookup =
+        StepTokenizerLookupHelpers.CreateTokenLookup();
+
+    public static readonly bool[] IsNumberLookup =
+        StepTokenizerLookupHelpers.CreateNumberLookup();
+
+    public static readonly bool[] IsIdentLookup =
+        StepTokenizerLookupHelpers.CreateIdentLookup();
+
+    public static readonly bool[] IsDigitLookup =
+        StepTokenizerLookupHelpers.CreateDigitLookup();
+
+    public static readonly bool[] IsWhiteSpaceLookup =
+        StepTokenizerLookupHelpers.CreateWhiteSpaceLookup();
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool ShouldStoreType(StepTokenType type)
     {
-        public static readonly StepTokenType[] TokenLookup =
-            CreateTokenLookup();
-
-        public static readonly bool[] IsNumberLookup =
-            CreateNumberLookup();
-
-        public static readonly bool[] IsIdentLookup =
-            CreateIdentLookup();
-
-        public static StepTokenType[] CreateTokenLookup()
+        switch (type)
         {
-            var r = new StepTokenType[256];
-            for (var i = 0; i < 256; i++)
-                r[i] = StepToken.GetTokenType((byte)i);
-            return r;
-        }
+            case StepTokenType.Identifier:
+            case StepTokenType.SingleQuotedString:
+            case StepTokenType.DoubleQuotedString:
+            case StepTokenType.Number:
+            case StepTokenType.Symbol:
+            case StepTokenType.Id:
+            case StepTokenType.Unassigned:
+            case StepTokenType.Redeclared:
+                return true;
 
-        public static bool[] CreateNumberLookup()
-        {
-            var r = new bool[256];
-            for (var i = 0; i < 256; i++)
-                r[i] = IsNumberChar((byte)i);
-            return r;
-        }
+            case StepTokenType.BeginGroup:
+            case StepTokenType.EndGroup:
+            case StepTokenType.EndOfLine:
+            case StepTokenType.Definition:
+                return true;
 
-        public static bool[] CreateIdentLookup()
-        {
-            var r = new bool[256];
-            for (var i = 0; i < 256; i++)
-                r[i] = IsIdentOrDigitChar((byte)i);
-            return r;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StepTokenType LookupToken(byte b)
-            => TokenLookup[b];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNumberChar(byte b)
-        {
-            switch (b)
-            {
-                case (byte)'0':
-                case (byte)'1':
-                case (byte)'2':
-                case (byte)'3':
-                case (byte)'4':
-                case (byte)'5':
-                case (byte)'6':
-                case (byte)'7':
-                case (byte)'8':
-                case (byte)'9':
-                case (byte)'E':
-                case (byte)'e':
-                case (byte)'+':
-                case (byte)'-':
-                case (byte)'.':
-                    return true;
-            }
-
-            return false;
-        }
-
-        public static bool ShouldStoreType(StepTokenType type)
-        {
-            switch (type)
-            {
-                case StepTokenType.Identifier:
-                case StepTokenType.SingleQuotedString:
-                case StepTokenType.DoubleQuotedString:
-                case StepTokenType.Number:
-                case StepTokenType.Symbol:
-                case StepTokenType.Id:
-                case StepTokenType.Unassigned:
-                case StepTokenType.Redeclared:
-                    return true;
-
-                case StepTokenType.BeginGroup:
-                case StepTokenType.EndGroup:
-                case StepTokenType.EndOfLine:
-                case StepTokenType.Definition:
-                    return true;
-
-                case StepTokenType.None:
-                case StepTokenType.Whitespace:
-                case StepTokenType.Separator:
-                case StepTokenType.Comment:
-                case StepTokenType.Unknown:
-                    return false;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWhiteSpace(byte b)
-            => b == ' ' || b == '\t' || b == '\n' || b == '\r';
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsIdent(byte b)
-            => b >= 'A' && b <= 'Z' || b >= 'a' && b <= 'z' || b == '_';
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDigit(byte b)
-            => b >= '0' && b <= '9';
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsIdentOrDigitChar(byte b)
-            => IsIdent(b) || IsDigit(b);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte* AdvancePast(byte* begin, byte* end, string s)
-        {
-            if (end - begin < s.Length)
-                return null;
-            foreach (var c in s)
-                if (*begin++ != (byte)c)
-                    return null;
-            return begin;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StepToken ParseToken(byte* begin, byte* end)
-        {
-            var cur = begin;
-            _ = InternalParseToken(ref cur, end);
-            Debug.Assert(cur <= end);
-            return new StepToken(begin, cur);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StepTokenType ParseToken(byte* begin, byte* end, out StepToken token)
-        {
-            var cur = begin;
-            var r = InternalParseToken(ref cur, end);
-            Debug.Assert(cur <= end);
-            token = new StepToken(begin, cur);
-            return r;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EatWSpace(ref StepToken cur, byte* end)
-        {
-            while (cur.Type == StepTokenType.Comment  || cur.Type == StepTokenType.Whitespace)
-            {
-                if (!ParseNextToken(ref cur, end))
-                    return false;
-            }
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ParseNextToken(ref StepToken prev, byte* end)
-        {
-            var cur = prev.Slice.End;
-            if (cur >= end) return false;
-            prev = ParseToken(cur, end);
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static StepTokenType InternalParseToken(ref byte* cur, byte* end)
-        {
-            Debug.Assert(cur < end);
-            var type = TokenLookup[*cur++];
-
-            switch (type)
-            {
-                case StepTokenType.Whitespace:
-                    while (cur < end && IsWhiteSpace(*cur)) cur++;
-                    break;
-
-                case StepTokenType.Identifier:
-                    while (cur < end && IsIdentLookup[*cur]) cur++;
-                    break;
-
-                case StepTokenType.DoubleQuotedString:
-                    while (cur < end && *cur != (byte)'"') cur++;
-                    cur++; // Skip the closing quote
-                    break;
-
-                case StepTokenType.SingleQuotedString:
-                    while (cur < end && *cur != (byte)'\'') cur++;
-                    cur++; // Skip the closing quote
-                    break;
-
-                case StepTokenType.Number:
-                    while (cur < end && IsNumberLookup[*cur]) cur++;
-                    break;
-
-                case StepTokenType.Symbol:
-                    while (cur < end && IsIdentLookup[*cur]) cur++;
-                    cur++; // Skip the closing '.'
-                    break;
-
-                case StepTokenType.Id:
-                    while (cur < end && IsDigit(*cur)) cur++;
-                    break;
-
-                case StepTokenType.Comment:
-                    var prev = *cur++;
-                    while (cur < end && (prev != '*' || *cur != '/'))
-                        prev = *cur++;
-                    cur++;
-                    break;
-            }
-
-            return type;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool InternalParseTokenEatWhiteSpace(ref byte* cur, byte* end)
-        {
-            while (cur < end)
-            {
-                var type = InternalParseToken(ref cur, end);
-                if (type != StepTokenType.Whitespace && type != StepTokenType.Comment)
-                    return true;
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWhiteSpace(StepTokenType type)
-        {
-            return type == StepTokenType.Whitespace || type == StepTokenType.Comment;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AdvancePast(ref byte* cur, byte* end, StepTokenType type)
-        {
-            if (cur >= end) return false;
-            var r = InternalParseToken(ref cur, end);
-            while (IsWhiteSpace(r))
-            {
-                if (cur >= end) return false;
-                r = InternalParseToken(ref cur, end);
-            }
-            return r == type;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AdvanceTo(ref byte* cur, byte* end, out StepToken token, StepTokenType type)
-        {
-            while (cur < end)
-            {
-                var begin = cur;
-                var r = InternalParseToken(ref cur, end);
-                if (r == type)
-                {
-                    token = new StepToken(begin, cur);
-                    return true;
-                }
-            }
-            token = default;
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AdvanceToDefinition(ref byte* cur, byte* end, out StepToken id)
-        {
-            id = default;
-            while (cur < end)
-            {
-                if (!AdvanceTo(ref cur, end, out id, StepTokenType.Id))
-                    return false;
-                if (AdvancePast(ref cur, end, StepTokenType.Definition))
-                    return true;
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AdvanceToAndTokenizeDefinition(ref byte* cur, byte* end, out StepToken id, UnmanagedList<StepToken> tokens)
-        {
-            Debug.Assert(tokens.Count == 0);
-
-            if (!AdvanceToDefinition(ref cur, end, out id))
+            case StepTokenType.None:
+            case StepTokenType.Whitespace:
+            case StepTokenType.Separator:
+            case StepTokenType.Comment:
+            case StepTokenType.Unknown:
                 return false;
-            
-            while (cur < end)
-            {
-                var begin = cur;
-                var type = InternalParseToken(ref cur, end);
-                if (type == StepTokenType.EndOfLine)
-                    return true;
-                if (ShouldStoreType(type))
-                    tokens.Add(new StepToken(begin, cur));
-            }
 
-            return false;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Tokenize(byte* begin, byte* end, UnmanagedList<StepToken> tokens)
+    }
+        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static StepTokenType ParseToken(ref byte* cur, byte* end)
+    {
+        Debug.Assert(cur < end);
+        switch (*cur++)
         {
-            while (begin < end)
+            case (byte)'(':
+                return StepTokenType.BeginGroup;
+
+            case (byte)')':
+                return StepTokenType.EndGroup;
+
+            case (byte)'=':
+                return StepTokenType.Definition;
+                
+            case (byte)';':
+                return StepTokenType.EndOfLine;
+
+            case (byte)'$':
+                return StepTokenType.EndGroup;
+
+            case (byte)',':
+                return StepTokenType.Separator;
+
+            case (byte)'*':
+                return StepTokenType.Redeclared;
+
+            case (byte)' ':
+            case (byte)'\t':
+            case (byte)'\n':
+            case (byte)'\r':
+                while (cur < end && IsWhiteSpaceLookup[*cur]) cur++;
+                return StepTokenType.Whitespace;
+
+            case (byte)'a':
+            case (byte)'b':
+            case (byte)'c':
+            case (byte)'d':
+            case (byte)'e':
+            case (byte)'f':
+            case (byte)'g':
+            case (byte)'h':
+            case (byte)'i':
+            case (byte)'j':
+            case (byte)'k':
+            case (byte)'l':
+            case (byte)'m':
+            case (byte)'n':
+            case (byte)'o':
+            case (byte)'p':
+            case (byte)'q':
+            case (byte)'r':
+            case (byte)'s':
+            case (byte)'t':
+            case (byte)'u':
+            case (byte)'v':
+            case (byte)'w':
+            case (byte)'x':
+            case (byte)'y':
+            case (byte)'z':
+            case (byte)'A':
+            case (byte)'B':
+            case (byte)'C':
+            case (byte)'D':
+            case (byte)'E':
+            case (byte)'F':
+            case (byte)'G':
+            case (byte)'H':
+            case (byte)'I':
+            case (byte)'J':
+            case (byte)'K':
+            case (byte)'L':
+            case (byte)'M':
+            case (byte)'N':
+            case (byte)'O':
+            case (byte)'P':
+            case (byte)'Q':
+            case (byte)'R':
+            case (byte)'S':
+            case (byte)'T':
+            case (byte)'U':
+            case (byte)'V':
+            case (byte)'W':
+            case (byte)'X':
+            case (byte)'Y':
+            case (byte)'Z':
+            case (byte)'_':
+                while (cur < end && IsIdentLookup[*cur]) cur++;
+                return StepTokenType.Identifier;
+
+            case (byte)'\"':
+                while (cur < end && *cur != (byte)'"') cur++;
+                cur++; // Skip the closing quote
+                return StepTokenType.DoubleQuotedString;
+
+            case (byte)'\'': 
+                while (cur < end && *cur != (byte)'\'') cur++;
+                cur++; // Skip the closing quote
+                return StepTokenType.SingleQuotedString;
+
+            case (byte)'0':
+            case (byte)'1':
+            case (byte)'2':
+            case (byte)'3':
+            case (byte)'4':
+            case (byte)'5':
+            case (byte)'6':
+            case (byte)'7':
+            case (byte)'8':
+            case (byte)'9':
+                while (cur < end && IsNumberLookup[*cur]) cur++;
+                return StepTokenType.Number;
+
+            case (byte)'.':
+                while (cur < end && IsIdentLookup[*cur]) cur++;
+                cur++; // Skip the closing '.'
+                return StepTokenType.Symbol;
+
+            case (byte)'#':
+                while (cur < end && IsDigitLookup[*cur]) cur++;
+                return StepTokenType.Id;
+
+            case (byte)'/':
+                var prev = *cur++;
+                while (cur < end && (prev != '*' || *cur != '/'))
+                    prev = *cur++;
+                cur++;
+                return StepTokenType.Comment;
+
+            default:
+                return StepTokenType.Unknown;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsWhiteSpace(StepTokenType type)
+    {
+        return type == StepTokenType.Whitespace || type == StepTokenType.Comment;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool AdvancePast(ref byte* cur, byte* end, StepTokenType type)
+    {
+        if (cur >= end) return false;
+        var r = ParseToken(ref cur, end);
+        while (IsWhiteSpace(r))
+        {
+            if (cur >= end) return false;
+            r = ParseToken(ref cur, end);
+        }
+        return r == type;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool AdvanceTo(ref byte* cur, byte* end, out StepToken token, StepTokenType type)
+    {
+        while (cur < end)
+        {
+            var begin = cur;
+            var r = ParseToken(ref cur, end);
+            if (r == type)
             {
-                var token = ParseToken(begin, end);
-                if (ShouldStoreType(token.Type))
-                {
-                    tokens.Add(token);
-                }
-                Debug.Assert(token.End > begin);
-                Debug.Assert(token.Begin == begin);
-                begin = token.End;
+                token = new StepToken(begin, cur);
+                return true;
             }
         }
+        token = default;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool AdvanceToDefinition(ref byte* cur, byte* end, out StepToken id)
+    {
+        id = default;
+        while (cur < end)
+        {
+            if (!AdvanceTo(ref cur, end, out id, StepTokenType.Id))
+                return false;
+            if (AdvancePast(ref cur, end, StepTokenType.Definition))
+                return true;
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool AdvanceToAndTokenizeDefinition(ref byte* cur, byte* end, out StepToken id, UnmanagedList<StepToken> tokens)
+    {
+        Debug.Assert(tokens.Count == 0);
+
+        if (!AdvanceToDefinition(ref cur, end, out id))
+            return false;
+            
+        while (cur < end)
+        {
+            var begin = cur;
+            var type = ParseToken(ref cur, end);
+            if (type == StepTokenType.EndOfLine)
+                return true;
+            if (ShouldStoreType(type))
+                tokens.Add(new StepToken(begin, cur));
+        }
+
+        return false;
     }
 }

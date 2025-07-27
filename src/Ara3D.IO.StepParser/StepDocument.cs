@@ -76,7 +76,7 @@ namespace Ara3D.IO.StepParser
         
         public void Dispose()
         {
-            Data.Dispose();
+            Trace.WriteLine($"Disposing data");
             Data.Dispose();
         }
 
