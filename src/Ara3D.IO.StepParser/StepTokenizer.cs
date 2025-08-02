@@ -22,7 +22,6 @@ public static unsafe class StepTokenizer
     public static readonly bool[] IsWhiteSpaceLookup =
         StepTokenizerLookupHelpers.CreateWhiteSpaceLookup();
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ShouldStoreType(StepTokenType type)
     {

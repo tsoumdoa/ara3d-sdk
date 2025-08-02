@@ -1,71 +1,82 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Ara3D.IO.StepParser;
 
+/// <summary>
+/// This is 64 bits long. The "kind" data is stored in the lower 4 bits of _count.
+/// The _index is into either the value list or the token list of StepValueData
+/// </summary>
 public readonly struct StepValue
 {
-    public StepValue(StepKind kind, ulong value)
-    {
-        Data = ((ulong)kind & 0xF) | (value << 4);
-    }
+    private readonly uint _index;
+    private readonly uint _count;
 
-    public readonly ulong Data;
-    public StepKind Kind => (StepKind)(Data & 0xF);
-    public ulong Value => Data >> 4;
-
-    public StringBuilder BuildString(StepValues values, StringBuilder sb)
+    /// <summary>
+    /// Constructs a StepValue with the given kind, index, and count.
+    /// The count must be less than (2^28) to fit into the upper 28 bits of _count.
+    /// </summary>
+    public StepValue(StepKind kind, int index, int count = 0)
     {
-        return Kind switch
-        {
-            StepKind.Id => sb.Append(Value.ToString()),
-            StepKind.Entity => sb.Append(values.Tokens[(int)Value]),
-            StepKind.Number => sb.Append(values.Tokens[(int)Value]),
-            StepKind.List => BuildStringFromList(values, sb),
-            StepKind.Redeclared => sb.Append("*"),
-            StepKind.Unassigned => sb.Append("$"),
-            StepKind.Symbol => sb.Append(values.Tokens[(int)Value]),
-            StepKind.String => sb.Append(values.Tokens[(int)Value]),
-            _ => sb.Append("_UNKNOWN_"),
-        };
-    }
-
-    public StringBuilder BuildStringFromList(StepValues values, StringBuilder sb)
-    {
-        var vals = GetListValues(values);
-        foreach (var list in vals)
-        {
-            if (sb.Length > 0)
-                sb.Append(", ");
-            list.BuildString(values, sb);
-        }
-        return sb;
-    }
-
-    public StepValue[] GetListValues(StepValues values)
-    {
-        Debug.Assert(Kind == StepKind.List);
-        DecodeIndexAndCount(Value, out var index, out var count);
-        var r = new StepValue[count];
-        for (var i=0; i < count; ++i)
-            r[i] = values.Values[i + (int)index];
-        return r;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong EncodeIndexAndCount(uint index, uint count)
-    {
-        // Count must be under 2^28, since we store it in the lower 28 bits of a long.
+        _index = (uint)index;
         Debug.Assert(count < (uint.MaxValue >> 4));
-        return ((ulong)index << 32) | (count << 4);
+        _count = (uint)count << 4 | (uint)kind;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void DecodeIndexAndCount(ulong encoded, out uint index, out uint count)
+    /// <summary>
+    /// Returns the kind of the value. 
+    /// </summary>
+    public StepKind Kind
     {
-        index = (uint)(encoded >> 32);
-        count = (uint)((encoded & 0xFFFFFFFF) >> 4);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get  => (StepKind)(_count & 0xF);
     }
+    
+    /// <summary>
+    /// Returns an index into either the value list or the token list. 
+    /// </summary>
+    public int Index
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (int)_index;
+    }
+
+    /// <summary>
+    /// Returns the number of index into the value list: only use for StepKind.List
+    /// </summary>
+    public int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (int)(_count >> 4);
+    }
+
+    /// <summary>
+    /// Returns the number of index into the value list: only use for StepKind.List
+    /// </summary>
+    public override string ToString()
+        => $"{Kind}[{Count}] + {Index}";
+
+    //==
+    // Various helpers 
+
+    public bool IsEntity 
+        => Kind == StepKind.Entity;
+    
+    public bool IsId 
+        => Kind == StepKind.Id;
+    
+    public bool IsList 
+        => Kind == StepKind.List;
+    
+    public bool IsUnassigned 
+        => Kind == StepKind.Unassigned;
+    
+    public bool IsRedeclared 
+        => Kind == StepKind.Redeclared;
+    
+    public bool IsString 
+        => Kind == StepKind.String;
+    
+    public bool IsNumber 
+        => Kind == StepKind.Number;
 }
