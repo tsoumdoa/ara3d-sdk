@@ -464,15 +464,7 @@ namespace Ara3D.Collections
         /// </summary>
         public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(this IReadOnlyList<TSource> self,
             Func<TSource, TKey> keySelector)
-            => self.GroupBy(keySelector);
-
-        /// <summary>
-        /// Return the array separated into a series of groups (similar to DictionaryOfLists)
-        /// based on keys created by the given keySelector and elements chosen by the element selector
-        /// </summary>
-        public static IEnumerable<IGrouping<TKey, TElem>> GroupBy<TSource, TKey, TElem>(
-            this IReadOnlyList<TSource> self, Func<TSource, TKey> keySelector, Func<TSource, TElem> elementSelector)
-            => self.GroupBy(keySelector, elementSelector);
+            => self.AsEnumerable().GroupBy(keySelector);
 
         /// <summary>
         /// Uses the provided indices to select groups of contiguous elements from the array.
