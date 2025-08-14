@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Collections.Generic;
 using Ara3D.Logging;
 using Ara3D.Memory;
 using Ara3D.Utils;
@@ -85,5 +87,9 @@ public sealed unsafe class StepDocument : IDisposable
     public static StepDocument Create(FilePath fp) 
         => new(fp);
 
+    public Dictionary<UInt128, StepDefinition> GetDefinitionLookup() 
+        => Definitions.ToDictionary(def => def.Id, def => def);
 
+    public Dictionary<UInt128, string> GetEntityNameLookup()
+        => Definitions.ToDictionary(def => def.Id, ValueData.GetEntityName);
 }

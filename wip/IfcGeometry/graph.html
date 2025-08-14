@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Relations Graph</title>
+    <title>Relations Graph (Node Colors + Counts)</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         html, body {
@@ -14,7 +14,7 @@
             width: 100vw;
             height: 100vh;
             display: block;
-            background: #ffffff;
+            background: #fff;
         }
 
         .link {
@@ -30,19 +30,30 @@
             user-select: none;
         }
 
-        .node-label {
-            font: 12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-            fill: #fff; /* white text */
-            stroke: #222; /* dark halo for visibility off-circle */
-            stroke-width: 3px;
-            paint-order: stroke fill; /* paint halo first */
-            pointer-events: none;
-            user-select: none;
-        }
-
         .node circle {
             stroke: #fff;
             stroke-width: 1.5px;
+        }
+
+        /* Text halo so labels remain readable off-circle */
+        .node-label,
+        .node-count {
+            fill: #fff;
+            stroke: #222;
+            stroke-width: 3px;
+            paint-order: stroke fill;
+            pointer-events: none;
+            user-select: none;
+            text-anchor: middle;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
+
+        .node-label {
+            font-size: 12px;
+        }
+
+        .node-count {
+            font-size: 11px;
         }
     </style>
 </head>
@@ -50,52 +61,62 @@
     <svg></svg>
 
     <script>
-        // ----- Hard-coded data -----
-        // You can use either { relations: {...} } or just {...}
-        // Optional "color" applies to the SOURCE node of that entry.
-        const raw = {
+        // ===== Example hard-coded data =====
+        // 'nodes' defines per-node properties (color, count).
+        // 'relations' maps SOURCE -> one or more { name: TARGET, count: edgeCount }.
+        const data = {
+            nodes: {
+                "IfcBuilding": { color: "#1f77b4", count: 2 },
+                "IfcStory": { color: "#e15759", count: 5 },
+                "IfcSpace": { color: "#2ca02c", count: 120 },
+                "IfcFurniture": { color: "#9467bd", count: 34 },
+                "IfcSite": { color: "#17becf", count: 1 },
+                "IfcDoor": { color: "#bcbd22", count: 42 }
+            },
             relations: {
                 "IfcBuilding": [
-                    { name: "IfcStory", count: "5", color: "#1f77b4" },
-                    { name: "IfcSite", count: "1", color: "#1f77b4" }
+                    { name: "IfcStory", count: 5 },
+                    { name: "IfcSite", count: 1 }
                 ],
                 "IfcStory": [
-                    { name: "IfcSpace", count: "10", color: "#e15759" },
-                    { name: "IfcDoor", count: "42" } // no color here
+                    { name: "IfcSpace", count: 10 },
+                    { name: "IfcDoor", count: 42 }
                 ],
-                "IfcSpace": { name: "IfcFurniture", count: "15", color: "#2ca02c" },
-                "IfcFurniture": { name: "IfcSpace", count: "15" } // bi-directional example
+                "IfcSpace": { name: "IfcFurniture", count: 15 },
+                "IfcFurniture": { name: "IfcSpace", count: 15 } // bi-directional example
             }
         };
 
-        const relations = raw.relations ?? raw;
-
-        // ----- Convert to nodes/links (supports single object or array per source) -----
+        // ===== Convert to nodes & links =====
         const nodesMap = new Map();
         const links = [];
 
+        // Load nodes from data.nodes
+        if (data.nodes) {
+            for (const [id, props] of Object.entries(data.nodes)) {
+                nodesMap.set(id, { id, ...(props || {}) });
+            }
+        }
+
+        // Ensure a node exists (creates with no color/count if missing)
         function ensureNode(id) {
             if (!nodesMap.has(id)) nodesMap.set(id, { id });
             return nodesMap.get(id);
         }
 
+        // Add edge(s) from relations
         function addRelation(source, rel) {
             const target = rel.name;
-            const count = (rel.count ?? "").toString();
-            const color = rel.color;
-
-            const sNode = ensureNode(source);
+            const label = String(rel.count ?? "");
+            ensureNode(source);
             ensureNode(target);
-
-            // First color seen for a source node wins (as requested, any policy is fine)
-            if (color && !sNode.color) sNode.color = color;
-
-            links.push({ source, target, label: count });
+            links.push({ source, target, label });
         }
 
+        const relations = data.relations ?? {};
         for (const [source, val] of Object.entries(relations)) {
             if (Array.isArray(val)) {
-                val.forEach(rel => addRelation(source, rel));
+                val.forEach(r => addRelation(source, r));
             } else if (val && typeof val === "object") {
                 addRelation(source, val);
             }
@@ -103,7 +124,7 @@
 
         const nodes = Array.from(nodesMap.values());
 
-        // ----- D3 rendering -----
+        // ===== D3 rendering =====
         const svg = d3.select("svg");
         const container = svg.append("g");
 
@@ -158,14 +179,20 @@
             );
 
         node.append("circle")
-            .attr("r", 20)
+            .attr("r", 22)
             .attr("fill", d => d.color || "steelblue");
 
+        // Node name (centered)
         node.append("text")
             .attr("class", "node-label")
-            .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
+            .attr("dy", "0.1em")
             .text(d => d.id);
+
+        // Node count, shown just under the name (hide if undefined/null)
+        node.append("text")
+            .attr("class", "node-count")
+            .attr("dy", "1.5em")
+            .text(d => (d.count === undefined || d.count === null) ? "" : `count: ${d.count}`);
 
         simulation.on("tick", () => {
             link
@@ -181,7 +208,7 @@
             node.attr("transform", d => `translate(${d.x},${d.y})`);
         });
 
-        // (Optional) handle window resize
+        // Handle window resize
         window.addEventListener("resize", () => {
             const w = svg.node().clientWidth;
             const h = svg.node().clientHeight;

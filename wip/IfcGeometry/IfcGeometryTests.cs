@@ -9,8 +9,6 @@ using Ara3D.Utils;
 
 namespace Ara3D.IfcGeometry
 {
-    
-
     public static class IfcGeometryTests
     {
         public static string GeometryEntities = @"IFCARBITRARYCLOSEDPROFILEDEF
@@ -46,31 +44,34 @@ IFCPOLYLOOP
         {
             public readonly string SrcName;
             public readonly UInt128 SrcId;
-            public readonly UInt128 RefId;
-            public StepRelations(string srcName, UInt128 srcId, UInt128 refId)
+            public readonly string DestName;
+            public readonly UInt128 DestId;
+            public StepRelations(string srcName, UInt128 srcId, string destName, UInt128 destId)
             {
                 SrcName = srcName;
                 SrcId = srcId;
-                RefId = refId;
+                DestName = destName;
+                DestId = destId;
             }
         }
 
-        public static void AddRelations(StepDocument doc, string srcName, UInt128 srcId, List<StepRelations> relations, StepValue val)
+        public static void AddRelations(StepDocument doc, Dictionary<UInt128, string> d, string srcName, UInt128 srcId, List<StepRelations> relations, StepValue val)
         {
             if (val.IsId)
             {
-                var id = doc.ValueData.AsId(val);
-                relations.Add(new(srcName, srcId, id));
+                var destId = doc.ValueData.AsId(val);
+                var destName = d[destId];
+                relations.Add(new(srcName, srcId, destName, destId));
             }
             else if (val.IsList)
             {
                 var attrs = doc.ValueData.AsArray(val);
                 foreach (var attr in attrs)
-                    AddRelations(doc, srcName, srcId, relations, attr);
+                    AddRelations(doc, d, srcName, srcId, relations, attr);
             }
         }
         
-        public static List<StepRelations> GetRelations(StepDocument doc)
+        public static List<StepRelations> GetRelations(StepDocument doc, Dictionary<UInt128, string> d)
         {
             var r = new List<StepRelations>();
             foreach (var def in doc.Definitions)
@@ -78,10 +79,11 @@ IFCPOLYLOOP
                 var srcName = doc.ValueData.GetEntityName(def);
                 var srcId = def.Id;
                 var val = doc.ValueData.GetAttributesValue(def);
-                AddRelations(doc, srcName, srcId, r, val);
+                AddRelations(doc, d, srcName, srcId, r, val);
             }
             return r;
         }
+
 
         [Test]
         public static void FindRelations()
@@ -93,13 +95,60 @@ IFCPOLYLOOP
             using var doc = new StepDocument(f, logger);
 
             logger.Log($"Loaded {doc.FilePath.GetFileName()}");
-            var relations = GetRelations(doc);
+
+            var d = doc.GetEntityNameLookup();
+            logger.Log($"Computed entity name lookup with {d.Count:N0} entries");
+
+            var relations = GetRelations(doc, d);
+
             logger.Log($"Found {relations.Count} relations");
-            var groups = relations.GroupBy(r => r.SrcName);
-            foreach (var group in groups.OrderBy(g => g.Key))
+
+            var data = new IfcAnalyzerData();
+            var nodeGroups = doc.Definitions.GroupBy(doc.ValueData.GetEntityName).ToList();
+            foreach (var group in nodeGroups)
             {
-                logger.Log($"{group.Key} has {group.Count()} relations");
+                var node = new IfcAnalyzerNode() { color = RandomHighContrastHex(), count = group.Count() };
+                data.nodes.Add(group.Key, node);
             }
+
+            logger.Log($"Computed {nodeGroups.Count} node groups");
+
+            var relationGroups = relations.GroupBy(r => r.SrcName).ToList();
+
+            logger.Log($"Computed {relationGroups.Count} relation groups");
+
+            foreach (var group in relationGroups)
+            {
+                var srcName = group.Key;
+                foreach (var group2 in group.GroupBy(r => r.DestName))
+                {
+                    if (!data.relations.ContainsKey(srcName))
+                    {
+                        var list = new List<IfcAnalyzerRelation>();
+                        data.relations.Add(srcName, list);
+                    }
+                    var relation = new IfcAnalyzerRelation()
+                    {
+                        id = group2.Key,
+                        count = group2.Count()
+                    };
+                    data.relations[srcName].Add(relation);
+                }
+            }
+
+            logger.Log($"Added the relations");
+
+            var json = System.Text.Json.JsonSerializer.Serialize(data, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                IncludeFields = true
+            });
+            logger.Log($"Computed json with {json.Length:N0} characters");
+
+            var outputFile = PathUtil.GetCallerSourceFolder().RelativeFile("graph.json");
+            outputFile.WriteAllText(json);
+            logger.Log($"Wrote data to {outputFile} with {outputFile.GetFileSize():N0} bytes");
         }
 
         public static HashSet<string> GetLocalTypes()
@@ -273,6 +322,41 @@ IFCPOLYLOOP
             }
 
             logger.Log($"Validated {faces.Count} faces");
+        }
+
+        // Returns a random CSS hex like "#1f77b4" with high contrast vs white.
+        // Set minContrast to 7.0 for AAA-level contrast, if you want it even darker.
+        public static string RandomHighContrastHex(double minContrast = 4.5)
+        {
+            if (minContrast <= 1.0 || minContrast > 21.0)
+                throw new ArgumentOutOfRangeException(nameof(minContrast), "Contrast must be in (1, 21].");
+
+            // Precompute the luminance threshold needed to meet the contrast ratio vs white.
+            // contrast = (Lwhite + 0.05) / (Lcolor + 0.05)  => Lcolor <= (1.05 / contrast) - 0.05
+            double maxL = 1.05 / minContrast - 0.05;
+
+            while (true)
+            {
+                byte r = (byte)Random.Shared.Next(256);
+                byte g = (byte)Random.Shared.Next(256);
+                byte b = (byte)Random.Shared.Next(256);
+
+                if (RelativeLuminance(r, g, b) <= maxL)
+                    return $"#{r:X2}{g:X2}{b:X2}".ToLowerInvariant();
+            }
+        }
+
+        // WCAG relative luminance for sRGB
+        private static double RelativeLuminance(byte R, byte G, byte B)
+        {
+            static double ToLinear(double c)
+                => (c <= 0.04045) ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+
+            double r = ToLinear(R / 255.0);
+            double g = ToLinear(G / 255.0);
+            double b = ToLinear(B / 255.0);
+
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         }
     }
 }

@@ -159,7 +159,7 @@ public unsafe class StepValueData
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetEntityName(StepDefinition def)
-        => ToString(GetEntityValue(def));
+        => Tokens[Values[def.ValueIndex].Index].ToString();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StepValue GetEntityValue(StepDefinition def)
