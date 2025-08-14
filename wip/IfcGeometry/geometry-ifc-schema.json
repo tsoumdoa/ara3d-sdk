@@ -1,0 +1,583 @@
+﻿{
+  "IfcProject": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "UnitsInContext": {
+        "type": "IfcUnitAssignment",
+        "optional": true
+      }
+    }
+  },
+  "IfcSite": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcBuilding": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcBuildingStorey": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "Elevation": {
+        "type": "IfcLengthMeasure",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcSpace": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "LongName": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      },
+      "BoundedBy": {
+        "type": "IfcRelSpaceBoundary",
+        "collection": "SET",
+        "cardinality": "\\[0:?]",
+        "inverse": true
+      }
+    }
+  },
+  "IfcExternalSpatialElement": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcZone": {
+    "_kind": "Entity (Grouping)",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "IsGroupedBy": {
+        "type": "IfcRelAssignsToGroup",
+        "collection": "SET",
+        "cardinality": "\\[0:?]",
+        "inverse": true
+      }
+    }
+  },
+  "IfcSpatialZone": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcWall": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcWallTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcWallStandardCase": {
+    "_kind": "Entity (deprecated in some IFC4 uses, still common)",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcWallTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcDoor": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "OverallHeight": {
+        "type": "IfcPositiveLengthMeasure",
+        "optional": true
+      },
+      "OverallWidth": {
+        "type": "IfcPositiveLengthMeasure",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcDoorTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcDoorType": {
+    "_kind": "Type Object",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "OperationType": {
+        "type": "IfcDoorTypeOperationEnum",
+        "optional": true
+      }
+    }
+  },
+  "IfcWindow": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "OverallHeight": {
+        "type": "IfcPositiveLengthMeasure",
+        "optional": true
+      },
+      "OverallWidth": {
+        "type": "IfcPositiveLengthMeasure",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcOpeningElement": {
+    "_kind": "Entity (FeatureElementSubtraction)",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcStair": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcStairTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcRamp": {
+    "_kind": "Entity",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcRampTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcSlab": {
+    "_kind": "Entity (floors/roofs)",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcSlabTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+  "IfcRailing": {
+    "_kind": "Entity (barrier)",
+    "attributes": {
+      "GlobalId": { "type": "IfcGloballyUniqueId" },
+      "Name": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "PredefinedType": {
+        "type": "IfcRailingTypeEnum",
+        "optional": true
+      },
+      "ObjectPlacement": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "Representation": {
+        "type": "IfcProductDefinitionShape",
+        "optional": true
+      }
+    }
+  },
+
+  "IfcRelAggregates": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatingObject": { "type": "IfcObjectDefinition" },
+      "RelatedObjects": {
+        "type": "IfcObjectDefinition",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      }
+    }
+  },
+  "IfcRelContainedInSpatialStructure": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatedElements": {
+        "type": "IfcProduct",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      },
+      "RelatingStructure": { "type": "IfcSpatialElement" }
+    }
+  },
+  "IfcRelAssignsToGroup": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatedObjects": {
+        "type": "IfcObjectDefinition",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      },
+      "RelatingGroup": { "type": "IfcGroup" }
+    }
+  },
+  "IfcRelDefinesByProperties": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatedObjects": {
+        "type": "IfcObjectDefinition",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      },
+      "RelatingPropertyDefinition": { "type": "IfcPropertySetDefinitionSelect" }
+    }
+  },
+  "IfcElementQuantity": {
+    "_kind": "PropertySet (quantity)",
+    "attributes": {
+      "Name": { "type": "IfcLabel" },
+      "Quantities": {
+        "type": "IfcPhysicalQuantity",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      }
+    }
+  },
+  "IfcRelSpaceBoundary": {
+    "_kind": "Relationship (base)",
+    "attributes": {
+      "RelatingSpace": { "type": "IfcSpaceBoundarySelect" },
+      "RelatedBuildingElement": {
+        "type": "IfcElement",
+        "optional": true
+      },
+      "ConnectionGeometry": {
+        "type": "IfcConnectionGeometry",
+        "optional": true
+      },
+      "PhysicalOrVirtualBoundary": { "type": "IfcPhysicalOrVirtualEnum" },
+      "InternalOrExternalBoundary": { "type": "IfcInternalOrExternalEnum" }
+    }
+  },
+  "IfcRelSpaceBoundary1stLevel": {
+    "_kind": "Relationship (adds segmentation)",
+    "attributes": {
+      "RelatingSpace": { "type": "IfcSpaceBoundarySelect" },
+      "RelatedBuildingElement": {
+        "type": "IfcElement",
+        "optional": true
+      },
+      "ConnectionGeometry": {
+        "type": "IfcConnectionGeometry",
+        "optional": true
+      },
+      "PhysicalOrVirtualBoundary": { "type": "IfcPhysicalOrVirtualEnum" },
+      "InternalOrExternalBoundary": { "type": "IfcInternalOrExternalEnum" },
+      "ParentBoundary": {
+        "type": "IfcRelSpaceBoundary1stLevel",
+        "optional": true
+      },
+      "InnerBoundaries": {
+        "type": "IfcRelSpaceBoundary1stLevel",
+        "collection": "SET",
+        "cardinality": "\\[0:?]"
+      }
+    }
+  },
+  "IfcRelSpaceBoundary2ndLevel": {
+    "_kind": "Relationship (adds pairing across elements)",
+    "attributes": {
+      "RelatingSpace": { "type": "IfcSpaceBoundarySelect" },
+      "RelatedBuildingElement": {
+        "type": "IfcElement",
+        "optional": true
+      },
+      "ConnectionGeometry": {
+        "type": "IfcConnectionGeometry",
+        "optional": true
+      },
+      "PhysicalOrVirtualBoundary": { "type": "IfcPhysicalOrVirtualEnum" },
+      "InternalOrExternalBoundary": { "type": "IfcInternalOrExternalEnum" },
+      "CorrespondingBoundary": {
+        "type": "IfcRelSpaceBoundary2ndLevel",
+        "optional": true
+      }
+    }
+  },
+  "IfcRelVoidsElement": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatingBuildingElement": { "type": "IfcElement" },
+      "RelatedOpeningElement": { "type": "IfcFeatureElementSubtraction" }
+    }
+  },
+  "IfcRelFillsElement": {
+    "_kind": "Relationship",
+    "attributes": {
+      "RelatingOpeningElement": { "type": "IfcOpeningElement" },
+      "RelatedBuildingElement": { "type": "IfcElement" }
+    }
+  },
+
+  "IfcProductDefinitionShape": {
+    "_kind": "Representation container",
+    "attributes": {
+      "Representations": {
+        "type": "IfcShapeRepresentation",
+        "collection": "LIST",
+        "cardinality": "\\[1:?]"
+      }
+    }
+  },
+  "IfcShapeRepresentation": {
+    "_kind": "Representation",
+    "attributes": {
+      "ContextOfItems": { "type": "IfcRepresentationContext" },
+      "RepresentationIdentifier": {
+        "type": "IfcLabel",
+        "examples": "\\",
+        [ "Body", "FootPrint", "Box", "Axis", "Reference", "Annotation" ]
+      },
+      "RepresentationType": {
+        "type": "IfcLabel",
+        "examples": "\\",
+        [ "SweptSolid", "Clipping", "Brep", "MappedRepresentation", "Curve2D", "SurfaceModel", "GeometricSet" ]
+      },
+      "Items": {
+        "type": "IfcRepresentationItem",
+        "collection": "SET",
+        "cardinality": "\\[1:?]"
+      }
+    }
+  },
+  "IfcGeometricRepresentationSubContext": {
+    "_kind": "Representation context (sub)",
+    "attributes": {
+      "ParentContext": { "type": "IfcGeometricRepresentationContext" },
+      "ContextIdentifier": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "ContextType": {
+        "type": "IfcLabel",
+        "optional": true
+      },
+      "TargetView": {
+        "type": "IfcGeometricProjectionEnum",
+        "optional": true,
+        "examples": "\\",
+        [ "PLAN\\_VIEW", "MODEL\\_VIEW" ]
+      }
+    }
+  },
+  "IfcLocalPlacement": {
+    "_kind": "Placement",
+    "attributes": {
+      "PlacementRelTo": {
+        "type": "IfcObjectPlacement",
+        "optional": true
+      },
+      "RelativePlacement": { "type": "IfcAxis2Placement2D/3D" }
+    }
+  },
+  "IfcBoundingBox": {
+    "_kind": "Simple shape (AABB in local coords)",
+    "attributes": {
+      "Corner": { "type": "IfcCartesianPoint" },
+      "XDim": { "type": "IfcPositiveLengthMeasure" },
+      "YDim": { "type": "IfcPositiveLengthMeasure" },
+      "ZDim": { "type": "IfcPositiveLengthMeasure" }
+    }
+  },
+  "IfcMappedItem": {
+    "_kind": "Reuse/instancing",
+    "attributes": {
+      "MappingSource": { "type": "IfcRepresentationMap" },
+      "MappingTarget": { "type": "IfcCartesianTransformationOperator2D/3D" }
+    }
+  }
+}

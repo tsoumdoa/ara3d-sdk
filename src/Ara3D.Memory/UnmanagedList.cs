@@ -15,7 +15,7 @@ namespace Ara3D.Memory
         public int Count { get; private set; }
         public AlignedMemory Memory { get; private set; }
         private T* _pointer;
-        private int _capacity;
+        private long _capacity;
 
         // Constructor to allocate initial capacity in unmanaged memory
         public UnmanagedList(int capacity = 0, int count = 0)

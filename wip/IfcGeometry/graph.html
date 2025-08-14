@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Relations Graph</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+        }
+
+        svg {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            background: #ffffff;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+
+        .edge-label {
+            font: 11px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            fill: #111;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .node-label {
+            font: 12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            fill: #fff; /* white text */
+            stroke: #222; /* dark halo for visibility off-circle */
+            stroke-width: 3px;
+            paint-order: stroke fill; /* paint halo first */
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .node circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+    </style>
+</head>
+<body>
+    <svg></svg>
+
+    <script>
+        // ----- Hard-coded data -----
+        // You can use either { relations: {...} } or just {...}
+        // Optional "color" applies to the SOURCE node of that entry.
+        const raw = {
+            relations: {
+                "IfcBuilding": [
+                    { name: "IfcStory", count: "5", color: "#1f77b4" },
+                    { name: "IfcSite", count: "1", color: "#1f77b4" }
+                ],
+                "IfcStory": [
+                    { name: "IfcSpace", count: "10", color: "#e15759" },
+                    { name: "IfcDoor", count: "42" } // no color here
+                ],
+                "IfcSpace": { name: "IfcFurniture", count: "15", color: "#2ca02c" },
+                "IfcFurniture": { name: "IfcSpace", count: "15" } // bi-directional example
+            }
+        };
+
+        const relations = raw.relations ?? raw;
+
+        // ----- Convert to nodes/links (supports single object or array per source) -----
+        const nodesMap = new Map();
+        const links = [];
+
+        function ensureNode(id) {
+            if (!nodesMap.has(id)) nodesMap.set(id, { id });
+            return nodesMap.get(id);
+        }
+
+        function addRelation(source, rel) {
+            const target = rel.name;
+            const count = (rel.count ?? "").toString();
+            const color = rel.color;
+
+            const sNode = ensureNode(source);
+            ensureNode(target);
+
+            // First color seen for a source node wins (as requested, any policy is fine)
+            if (color && !sNode.color) sNode.color = color;
+
+            links.push({ source, target, label: count });
+        }
+
+        for (const [source, val] of Object.entries(relations)) {
+            if (Array.isArray(val)) {
+                val.forEach(rel => addRelation(source, rel));
+            } else if (val && typeof val === "object") {
+                addRelation(source, val);
+            }
+        }
+
+        const nodes = Array.from(nodesMap.values());
+
+        // ----- D3 rendering -----
+        const svg = d3.select("svg");
+        const container = svg.append("g");
+
+        // Zoom & pan
+        svg.call(
+            d3.zoom()
+                .scaleExtent([0.2, 4])
+                .on("zoom", (event) => container.attr("transform", event.transform))
+        );
+
+        const width = svg.node().clientWidth;
+        const height = svg.node().clientHeight;
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-350))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(30));
+
+        const link = container.selectAll(".link")
+            .data(links)
+            .enter()
+            .append("line")
+            .attr("class", "link");
+
+        const edgeLabels = container.selectAll(".edge-label")
+            .data(links)
+            .enter()
+            .append("text")
+            .attr("class", "edge-label")
+            .attr("dy", -4)
+            .text(d => d.label);
+
+        const node = container.selectAll(".node")
+            .data(nodes)
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .call(
+                d3.drag()
+                    .on("start", (event, d) => {
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        d.fx = d.x; d.fy = d.y;
+                    })
+                    .on("drag", (event, d) => {
+                        d.fx = event.x; d.fy = event.y;
+                    })
+                    .on("end", (event, d) => {
+                        if (!event.active) simulation.alphaTarget(0);
+                        d.fx = null; d.fy = null;
+                    })
+            );
+
+        node.append("circle")
+            .attr("r", 20)
+            .attr("fill", d => d.color || "steelblue");
+
+        node.append("text")
+            .attr("class", "node-label")
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .text(d => d.id);
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            edgeLabels
+                .attr("x", d => (d.source.x + d.target.x) / 2)
+                .attr("y", d => (d.source.y + d.target.y) / 2);
+
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // (Optional) handle window resize
+        window.addEventListener("resize", () => {
+            const w = svg.node().clientWidth;
+            const h = svg.node().clientHeight;
+            simulation.force("center", d3.forceCenter(w / 2, h / 2));
+            simulation.alpha(0.1).restart();
+        });
+    </script>
+</body>
+</html>

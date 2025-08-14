@@ -11,23 +11,25 @@ public sealed unsafe class StepDocument : IDisposable
     public readonly FilePath FilePath;
     public readonly byte* DataStart;
     public readonly byte* DataEnd;
-    public readonly AlignedMemory Data;
+    public readonly IBuffer Data;
     public readonly UnmanagedList<StepDefinition> Definitions = new();
     public readonly StepValueData ValueData;
 
     public StepDocument(FilePath filePath, ILogger logger = null)
+        : this(Serializer.ReadAllBytesAligned(filePath), filePath, logger)
+    { }
+
+    public StepDocument(IBuffer data, string filePath = "", ILogger logger = null)
     {
         FilePath = filePath;
         logger ??= Logger.Null;
-
-        logger.Log($"Loading {filePath.GetFileSizeAsString()} of data from {filePath.GetFileName()}");
-        Data = Serializer.ReadAllBytesAligned(filePath);
+        Data = data;
         DataStart = Data.GetPointer();
         DataEnd = DataStart + Data.NumBytes();
 
         logger.Log($"Starting tokenization");
 
-        var capacityEstimate = Data.NumBytes / 32;
+        var capacityEstimate = Data.NumBytes() / 32;
         ValueData = new StepValueData((int)capacityEstimate);
         var estNumDefs = capacityEstimate / 8; // Estimate about 8 tokens per definition on average
         Definitions = new UnmanagedList<StepDefinition>((int)estNumDefs);
@@ -64,7 +66,6 @@ public sealed unsafe class StepDocument : IDisposable
         }
 
         logger.Log($"Number of instance definitions = {Definitions.Count}");
-        logger.Log($"Completed creation of STEP document from {filePath.GetFileName()}");
     }
 
     public static bool Assert(bool condition, string text)
@@ -77,7 +78,8 @@ public sealed unsafe class StepDocument : IDisposable
     public void Dispose()
     {
         Trace.WriteLine($"Disposing data");
-        Data.Dispose();
+        if (Data is IDisposable d)
+            d.Dispose();
     }
 
     public static StepDocument Create(FilePath fp) 

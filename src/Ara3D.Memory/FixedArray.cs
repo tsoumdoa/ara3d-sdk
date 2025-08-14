@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ara3D.Memory;
 
-public unsafe sealed class FixedArray<T> : IMemoryOwner<T>
+public sealed unsafe class FixedArray<T> : IMemoryOwner<T>
     where T: unmanaged
 {
     private bool _disposed;

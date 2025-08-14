@@ -1,24 +1,26 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace Ara3D.Memory
 {
     public static unsafe class Serializer
     {
-        public static AlignedMemory ReadAllBytesAligned(string path)
+        public static IBuffer ReadAllBytesAligned(string path)
             => File.OpenRead(path).ReadAllBytesAligned();
 
         public const int DefaultBufferSize = 1024 * 1024;
 
-        public static AlignedMemory ReadAllBytesAligned(this Stream stream)
+        public static IBuffer ReadAllBytesAligned(this Stream stream)
         {
             if (!stream.CanSeek)
-                throw new NotSupportedException("Stream must support seeking");
+            {
+                using var memoryStream = new MemoryStream();
+                stream.CopyTo(memoryStream);
+                var bytes = memoryStream.ToArray();
+                return bytes.Fix();
+            }
 
             var length = stream.Length;
-
-            // Allocate aligned memory with padded length
             var r = new AlignedMemory(length);
 
             var dest = r.Bytes.Begin;
@@ -37,7 +39,6 @@ namespace Ara3D.Memory
                 throw new Exception($"Failed to read all bytes from stream. {remaining} bytes remaining");
 
             stream.Flush();
-            stream.Dispose();
             return r;
         }
 

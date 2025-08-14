@@ -53,6 +53,10 @@ namespace Ara3D.Memory
         {
             if (Bytes.IsNull)
                 throw new InvalidOperationException();
+            if (size == 0)
+                throw new Exception("Zero memory requested");
+            if (size < 0)
+                throw new Exception("Negative memory requested");
             Bytes = new ByteSlice((byte*)NativeMemory.AlignedRealloc(Bytes.Begin, (nuint)size, Alignment), size);
             if (Bytes.IsNull)
                 throw new OutOfMemoryException();

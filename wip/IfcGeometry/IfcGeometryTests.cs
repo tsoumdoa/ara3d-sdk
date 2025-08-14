@@ -40,6 +40,67 @@ IFCPOLYLOOP
 
         public static FilePath InputFile =
             PathUtil.GetCallerSourceFolder().RelativeFile("..", "..", "data", "AC20-FZK-Haus.ifc");
+        //@"C:\Users\cdigg\data\Ara3D\snapshot-data\ifc\long_running\B11ALL.ifc";
+
+        public class StepRelations
+        {
+            public readonly string SrcName;
+            public readonly UInt128 SrcId;
+            public readonly UInt128 RefId;
+            public StepRelations(string srcName, UInt128 srcId, UInt128 refId)
+            {
+                SrcName = srcName;
+                SrcId = srcId;
+                RefId = refId;
+            }
+        }
+
+        public static void AddRelations(StepDocument doc, string srcName, UInt128 srcId, List<StepRelations> relations, StepValue val)
+        {
+            if (val.IsId)
+            {
+                var id = doc.ValueData.AsId(val);
+                relations.Add(new(srcName, srcId, id));
+            }
+            else if (val.IsList)
+            {
+                var attrs = doc.ValueData.AsArray(val);
+                foreach (var attr in attrs)
+                    AddRelations(doc, srcName, srcId, relations, attr);
+            }
+        }
+        
+        public static List<StepRelations> GetRelations(StepDocument doc)
+        {
+            var r = new List<StepRelations>();
+            foreach (var def in doc.Definitions)
+            {
+                var srcName = doc.ValueData.GetEntityName(def);
+                var srcId = def.Id;
+                var val = doc.ValueData.GetAttributesValue(def);
+                AddRelations(doc, srcName, srcId, r, val);
+            }
+            return r;
+        }
+
+        [Test]
+        public static void FindRelations()
+        {
+            var logger = Logger.Console;
+
+            // var f = InputFile;
+            var f = @"C:\Users\cdigg\data\Ara3D\impraria\0000100120-093 - OXAGON ADVANCED HEALTH CENTER\STAGE 3A - CONCEPT DESIGN\ARC\03-730000-0000100120-DAH-ARC-MDL-000009 _IFC_D.ifc";
+            using var doc = new StepDocument(f, logger);
+
+            logger.Log($"Loaded {doc.FilePath.GetFileName()}");
+            var relations = GetRelations(doc);
+            logger.Log($"Found {relations.Count} relations");
+            var groups = relations.GroupBy(r => r.SrcName);
+            foreach (var group in groups.OrderBy(g => g.Key))
+            {
+                logger.Log($"{group.Key} has {group.Count()} relations");
+            }
+        }
 
         public static HashSet<string> GetLocalTypes()
         {
@@ -75,7 +136,6 @@ IFCPOLYLOOP
             var logger = Logger.Console;
             using var doc = new StepDocument(InputFile, logger);
             logger.Log($"Loaded {doc.FilePath.GetFileName()}");
-            var cnt = 0;
             foreach (var def in doc.Definitions)
             {
                 Console.WriteLine($"{def.IdToken}= {doc.ValueData.ToString(def)}");
@@ -188,6 +248,8 @@ IFCPOLYLOOP
                 loopPoints.Add(kv.Key, tmp);
             }
 
+            logger.Log($"Completed loop points dictionary with  # {loopPoints.Count} entries");
+
             foreach (var kv in faces)
             {
                 var boundsIds = kv.Value;
@@ -209,6 +271,8 @@ IFCPOLYLOOP
                     }
                 }
             }
+
+            logger.Log($"Validated {faces.Count} faces");
         }
     }
 }
