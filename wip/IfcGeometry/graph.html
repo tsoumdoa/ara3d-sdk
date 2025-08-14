@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Relations Graph (Node Colors + Counts)</title>
+    <title>IFC Relations Graph — Pins, Filters, Hier Layout</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/elkjs@0.8.2/lib/elk.bundled.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -17,6 +18,61 @@
             background: #fff;
         }
 
+        /* Control panel */
+        .panel {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 10;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            font: 12px/1.3 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            max-width: 320px;
+            user-select: none;
+        }
+
+            .panel h3 {
+                margin: 0 0 8px;
+                font-size: 14px;
+            }
+
+            .panel .row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 6px 0;
+            }
+
+            .panel label {
+                font-size: 12px;
+            }
+
+            .panel input[type="range"] {
+                width: 140px;
+            }
+
+            .panel .buttons {
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+
+            .panel button, .panel select {
+                font: inherit;
+                padding: 4px 8px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                background: #f9f9f9;
+                cursor: pointer;
+            }
+
+                .panel button:hover {
+                    background: #f0f0f0;
+                }
+
+        /* Graph styles */
         .link {
             stroke: #999;
             stroke-opacity: 0.6;
@@ -35,9 +91,8 @@
             stroke-width: 1.5px;
         }
 
-        /* Text halo so labels remain readable off-circle */
-        .node-label,
-        .node-count {
+        /* Text halo for readability off-circle */
+        .node-label, .node-count {
             fill: #fff;
             stroke: #222;
             stroke-width: 3px;
@@ -55,9 +110,54 @@
         .node-count {
             font-size: 11px;
         }
+
+        .pin-icon {
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Control panel -->
+    <div class="panel">
+        <h3>IFC Graph Controls</h3>
+
+        <div class="row">
+            <label for="layoutMode"><strong>Layout:</strong></label>
+            <select id="layoutMode">
+                <option value="force">Force</option>
+                <option value="hier">Hierarchical</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <label><input type="checkbox" id="sizeByCount" checked> Size nodes by count</label>
+        </div>
+        <div class="row">
+            <label><input type="checkbox" id="weightByCount" checked> Weight edges by count</label>
+        </div>
+
+        <div class="row">
+            <label for="minNodeCount">Min node count: <span id="minNodeCountVal">0</span></label>
+            <input type="range" id="minNodeCount" min="0" step="1" value="0" />
+        </div>
+
+        <div class="row">
+            <label for="minEdgeCount">Min edge count: <span id="minEdgeCountVal">0</span></label>
+            <input type="range" id="minEdgeCount" min="0" step="1" value="0" />
+        </div>
+
+        <div class="row buttons">
+            <button id="fitBtn" title="Fit all visible nodes into view">Fit</button>
+            <button id="freezeBtn" title="Stop/resume simulation">Freeze</button>
+            <button id="unpinBtn" title="Unpin all user-pinned nodes">Unpin all</button>
+        </div>
+    </div>
+
     <svg></svg>
 
     <script>
@@ -1829,70 +1929,74 @@
             }
         };
 
-        // ===== Convert to nodes & links =====
+
+        // =======================
+        // Build nodes & links
+        // =======================
         const nodesMap = new Map();
-        const links = [];
-
-        // Load nodes from data.nodes
         if (data.nodes) {
-            for (const [id, props] of Object.entries(data.nodes)) {
-                nodesMap.set(id, { id, ...(props || {}) });
-            }
+            for (const [id, props] of Object.entries(data.nodes)) nodesMap.set(id, { id, ...(props || {}) });
         }
+        function ensureNode(id) { if (!nodesMap.has(id)) nodesMap.set(id, { id }); return nodesMap.get(id); }
 
-        // Ensure a node exists (creates with no color/count if missing)
-        function ensureNode(id) {
-            if (!nodesMap.has(id)) nodesMap.set(id, { id });
-            return nodesMap.get(id);
-        }
-
-        // Add edge(s) from relations
+        const rawRelations = data.relations ?? {};
+        const links = [];
         function addRelation(source, rel) {
             const target = rel.name;
-            const label = String(rel.count ?? "");
-            ensureNode(source);
-            ensureNode(target);
-            links.push({ source, target, label });
+            const cnt = +rel.count || 0;
+            ensureNode(source); ensureNode(target);
+            links.push({ source, target, label: String(cnt), countNum: cnt });
         }
-
-        const relations = data.relations ?? {};
-        for (const [source, val] of Object.entries(relations)) {
-            if (Array.isArray(val)) {
-                val.forEach(r => addRelation(source, r));
-            } else if (val && typeof val === "object") {
-                addRelation(source, val);
-            }
+        for (const [source, val] of Object.entries(rawRelations)) {
+            if (Array.isArray(val)) val.forEach(r => addRelation(source, r));
+            else if (val && typeof val === "object") addRelation(source, val);
         }
-
         const nodes = Array.from(nodesMap.values());
 
-        // ===== D3 rendering =====
+        // =======================
+        // Scales & configuration
+        // =======================
+        const STORAGE_KEY = "ifc-graph-state-v1";
+        const width = window.innerWidth, height = window.innerHeight;
+
+        const maxNodeCount = d3.max(nodes, d => d.count || 0) || 1;
+        const maxEdgeCount = d3.max(links, d => d.countNum || 0) || 1;
+
+        let sizeByCount = true;
+        let weightByCount = true;
+        let minNodeCount = 0;
+        let minEdgeCount = 0;
+        let layoutMode = "force"; // "force" | "hier"
+        let frozen = false;
+
+        const rScale = d3.scaleSqrt().domain([0, maxNodeCount]).range([12, 32]);
+        const edgeWScale = d3.scaleLinear().domain([0, maxEdgeCount]).range([1.5, 6]);
+
+        // =======================
+        // SVG & simulation
+        // =======================
         const svg = d3.select("svg");
         const container = svg.append("g");
 
-        // Zoom & pan
-        svg.call(
-            d3.zoom()
-                .scaleExtent([0.2, 4])
-                .on("zoom", (event) => container.attr("transform", event.transform))
-        );
+        const zoom = d3.zoom()
+            .scaleExtent([0.2, 4])
+            .on("zoom", e => container.attr("transform", e.transform));
 
-        const width = svg.node().clientWidth;
-        const height = svg.node().clientHeight;
+        svg.call(zoom);
 
         const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id).distance(150))
             .force("charge", d3.forceManyBody().strength(-350))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(30));
+            .force("collision", d3.forceCollide().radius(d => nodeRadius(d) + 4));
 
-        const link = container.selectAll(".link")
+        const linkSel = container.selectAll(".link")
             .data(links)
             .enter()
             .append("line")
             .attr("class", "link");
 
-        const edgeLabels = container.selectAll(".edge-label")
+        const edgeLabelSel = container.selectAll(".edge-label")
             .data(links)
             .enter()
             .append("text")
@@ -1900,63 +2004,333 @@
             .attr("dy", -4)
             .text(d => d.label);
 
-        const node = container.selectAll(".node")
-            .data(nodes)
+        const nodeSel = container.selectAll(".node")
+            .data(nodes, d => d.id)
             .enter()
             .append("g")
             .attr("class", "node")
+            .on("dblclick", (e, d) => { toggleUserPin(d); saveState(); })
             .call(
                 d3.drag()
                     .on("start", (event, d) => {
-                        if (!event.active) simulation.alphaTarget(0.3).restart();
-                        d.fx = d.x; d.fy = d.y;
+                        if (!event.active && !frozen) simulation.alphaTarget(0.3).restart();
+                        if (!isPinned(d)) { d.fx = d.x; d.fy = d.y; } // temp fix while dragging
                     })
                     .on("drag", (event, d) => {
                         d.fx = event.x; d.fy = event.y;
+                        if (frozen) ticked(); // manually update while frozen
                     })
                     .on("end", (event, d) => {
-                        if (!event.active) simulation.alphaTarget(0);
-                        d.fx = null; d.fy = null;
+                        if (!event.active && !frozen) simulation.alphaTarget(0);
+                        if (!isPinned(d)) { d.fx = null; d.fy = null; } // release if not pinned
+                        saveState();
                     })
             );
 
-        node.append("circle")
-            .attr("r", 22)
+        const nodeCircle = nodeSel.append("circle")
+            .attr("r", d => nodeRadius(d))
             .attr("fill", d => d.color || "steelblue");
 
-        // Node name (centered)
-        node.append("text")
+        const nodeLabel = nodeSel.append("text")
             .attr("class", "node-label")
             .attr("dy", "0.1em")
             .text(d => d.id);
 
-        // Node count, shown just under the name (hide if undefined/null)
-        node.append("text")
+        const nodeCountText = nodeSel.append("text")
             .attr("class", "node-count")
             .attr("dy", "1.5em")
-            .text(d => (d.count === undefined || d.count === null) ? "" : `count: ${d.count}`);
+            .text(d => (d.count == null ? "" : `count: ${d.count}`));
 
-        simulation.on("tick", () => {
-            link
-                .attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
+        const pinIcon = nodeSel.append("text")
+            .attr("class", "pin-icon")
+            .text("📌");
 
-            edgeLabels
+        // Position pin icon relative to node radius
+        function positionPinIcons() {
+            nodeSel.each(function (d) {
+                const r = nodeRadius(d);
+                d3.select(this).select(".pin-icon")
+                    .attr("x", r - 2)
+                    .attr("y", -r + 10)
+                    .classed("hidden", !isPinned(d));
+            });
+        }
+
+        function ticked() {
+            linkSel
+                .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+
+            edgeLabelSel
                 .attr("x", d => (d.source.x + d.target.x) / 2)
                 .attr("y", d => (d.source.y + d.target.y) / 2);
 
-            node.attr("transform", d => `translate(${d.x},${d.y})`);
+            nodeSel.attr("transform", d => `translate(${d.x},${d.y})`);
+            positionPinIcons();
+        }
+        simulation.on("tick", ticked);
+
+        // =======================
+        // Helpers
+        // =======================
+        function nodeRadius(d) {
+            return sizeByCount ? (10 + rScale(d.count || 0)) : 22;
+        }
+        function isPinned(d) { return d.fx != null && d.fy != null; }
+
+        function toggleUserPin(d) {
+            if (d.pinMode === "user" && isPinned(d)) {
+                d.fx = null; d.fy = null; d.pinMode = null;
+            } else {
+                d.fx = d.x; d.fy = d.y; d.pinMode = "user";
+            }
+            positionPinIcons();
+        }
+
+        function unpinAll() {
+            nodes.forEach(d => { if (d.pinMode === "user") { d.fx = null; d.fy = null; d.pinMode = null; } });
+            positionPinIcons();
+        }
+
+        function applySizes() {
+            nodeCircle.attr("r", d => nodeRadius(d));
+            container.selectAll(".node").each(function (d) {
+                // Update collision radius function implicitly uses nodeRadius
+            });
+            // Update edge widths
+            linkSel.attr("stroke-width", d => weightByCount ? edgeWScale(d.countNum || 0) : 2);
+            positionPinIcons();
+            simulation.alpha(0.12).restart();
+        }
+
+        function applyFilters() {
+            // Edge visibility
+            linkSel.classed("hidden", d => (d.countNum || 0) < minEdgeCount);
+            edgeLabelSel.classed("hidden", d => (d.countNum || 0) < minEdgeCount);
+
+            // Visible nodes via edges that passed filter
+            const visibleNodes = new Set();
+            links.forEach(l => {
+                if ((l.countNum || 0) >= minEdgeCount) { visibleNodes.add(idOf(l.source)); visibleNodes.add(idOf(l.target)); }
+            });
+
+            nodeSel.classed("hidden", d => {
+                const countOK = (d.count || 0) >= minNodeCount;
+                const linkedOK = visibleNodes.has(d.id);
+                return !(countOK || linkedOK);
+            });
+        }
+
+        function idOf(x) { return typeof x === "string" ? x : x.id; }
+
+        function fitToView(pad = 40) {
+            // Compute bbox of visible nodes
+            const visible = nodes.filter(n => !d3.select(nodeSel.filter(d => d === n).node()).classed("hidden"));
+            const arr = visible.length ? visible : nodes;
+            const minX = d3.min(arr, d => d.x), maxX = d3.max(arr, d => d.x);
+            const minY = d3.min(arr, d => d.y), maxY = d3.max(arr, d => d.y);
+            const w = maxX - minX + 2 * pad, h = maxY - minY + 2 * pad;
+            const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+            const svgW = svg.node().clientWidth, svgH = svg.node().clientHeight;
+
+            const k = Math.max(0.2, Math.min(4, 0.9 * Math.min(svgW / w, svgH / h)));
+            const tx = svgW / 2 - k * midX;
+            const ty = svgH / 2 - k * midY;
+
+            svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+        }
+
+        // =======================
+        // Hierarchical layout (ELK)
+        // =======================
+        const elk = new ELK();
+        async function runHierLayout() {
+            // Create a simple layered graph for ELK
+            const elkGraph = {
+                id: "root",
+                layoutOptions: {
+                    "elk.algorithm": "layered",
+                    "elk.direction": "RIGHT",
+                    "elk.spacing.nodeNode": "30",
+                    "elk.layered.spacing.nodeNodeBetweenLayers": "60",
+                    "elk.spacing.edgeEdge": "20"
+                },
+                children: nodes.map(n => ({ id: n.id, width: 140, height: 40 })),
+                edges: links.map((l, i) => ({
+                    id: `e${i}`, sources: [idOf(l.source)], targets: [idOf(l.target)]
+                }))
+            };
+
+            const result = await elk.layout(elkGraph);
+
+            // Pin nodes at ELK positions (as "layout" pins, distinct from user pins)
+            const posById = new Map(result.children.map(c => [c.id, c]));
+            nodes.forEach(n => {
+                const c = posById.get(n.id);
+                if (c) {
+                    const x = c.x + c.width / 2, y = c.y + c.height / 2;
+                    n.x = x; n.y = y; n.fx = x; n.fy = y;
+                    if (n.pinMode !== "user") n.pinMode = "layout";
+                }
+            });
+
+            positionPinIcons();
+            ticked(); // reflect immediately
+            if (!frozen) { simulation.alpha(0.001).restart(); } // tiny nudge to settle links
+        }
+
+        function clearLayoutPins() {
+            nodes.forEach(n => {
+                if (n.pinMode === "layout") { n.fx = null; n.fy = null; n.pinMode = null; }
+            });
+            positionPinIcons();
+            if (!frozen) simulation.alpha(0.15).restart();
+        }
+
+        // =======================
+        // State persistence
+        // =======================
+        function saveState() {
+            const t = d3.zoomTransform(svg.node());
+            const nodeState = {};
+            nodes.forEach(n => {
+                nodeState[n.id] = {
+                    x: n.x, y: n.y, fx: n.fx, fy: n.fy, pinMode: n.pinMode || null
+                };
+            });
+            const state = {
+                layoutMode, sizeByCount, weightByCount, minNodeCount, minEdgeCount, frozen,
+                transform: { k: t.k, x: t.x, y: t.y },
+                nodes: nodeState
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const s = localStorage.getItem(STORAGE_KEY);
+            if (!s) return;
+            try {
+                const st = JSON.parse(s);
+                layoutMode = st.layoutMode || layoutMode;
+                sizeByCount = !!st.sizeByCount;
+                weightByCount = !!st.weightByCount;
+                minNodeCount = +st.minNodeCount || 0;
+                minEdgeCount = +st.minEdgeCount || 0;
+                frozen = !!st.frozen;
+
+                // Restore node positions/pins
+                if (st.nodes) {
+                    nodes.forEach(n => {
+                        const ns = st.nodes[n.id];
+                        if (!ns) return;
+                        if (typeof ns.x === "number") n.x = ns.x;
+                        if (typeof ns.y === "number") n.y = ns.y;
+                        n.fx = (ns.fx == null ? null : ns.fx);
+                        n.fy = (ns.fy == null ? null : ns.fy);
+                        n.pinMode = ns.pinMode || null;
+                    });
+                    ticked();
+                }
+
+                // Restore transform
+                if (st.transform) {
+                    const { k, x, y } = st.transform;
+                    svg.call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
+                }
+            } catch (e) { console.warn("Failed to load state:", e); }
+        }
+
+        // =======================
+        // Controls wiring
+        // =======================
+        const $ = sel => document.querySelector(sel);
+        const layoutModeSel = $("#layoutMode");
+        const sizeByCountSel = $("#sizeByCount");
+        const weightByCountSel = $("#weightByCount");
+        const minNodeCountSel = $("#minNodeCount");
+        const minEdgeCountSel = $("#minEdgeCount");
+        const minNodeCountVal = $("#minNodeCountVal");
+        const minEdgeCountVal = $("#minEdgeCountVal");
+        const fitBtn = $("#fitBtn");
+        const freezeBtn = $("#freezeBtn");
+        const unpinBtn = $("#unpinBtn");
+
+        // Set slider ranges based on data
+        minNodeCountSel.max = String(maxNodeCount);
+        minEdgeCountSel.max = String(maxEdgeCount);
+
+        // Initialize from saved state (before applying controls)
+        loadState();
+
+        // Reflect control states in UI
+        layoutModeSel.value = layoutMode;
+        sizeByCountSel.checked = sizeByCount;
+        weightByCountSel.checked = weightByCount;
+        minNodeCountSel.value = String(minNodeCount);
+        minEdgeCountSel.value = String(minEdgeCount);
+        minNodeCountVal.textContent = String(minNodeCount);
+        minEdgeCountVal.textContent = String(minEdgeCount);
+        freezeBtn.textContent = frozen ? "Unfreeze" : "Freeze";
+
+        // Apply initial sizes/filters & layout
+        applySizes();
+        applyFilters();
+        if (layoutMode === "hier") runHierLayout();
+
+        // Control handlers
+        layoutModeSel.addEventListener("change", async () => {
+            layoutMode = layoutModeSel.value;
+            if (layoutMode === "hier") {
+                await runHierLayout();
+            } else {
+                clearLayoutPins();
+            }
+            saveState();
         });
 
-        // Handle window resize
-        window.addEventListener("resize", () => {
-            const w = svg.node().clientWidth;
-            const h = svg.node().clientHeight;
-            simulation.force("center", d3.forceCenter(w / 2, h / 2));
-            simulation.alpha(0.1).restart();
+        sizeByCountSel.addEventListener("change", () => {
+            sizeByCount = sizeByCountSel.checked;
+            applySizes(); saveState();
         });
+
+        weightByCountSel.addEventListener("change", () => {
+            weightByCount = weightByCountSel.checked;
+            applySizes(); saveState();
+        });
+
+        minNodeCountSel.addEventListener("input", () => {
+            minNodeCount = +minNodeCountSel.value || 0;
+            minNodeCountVal.textContent = String(minNodeCount);
+            applyFilters(); saveState();
+        });
+
+        minEdgeCountSel.addEventListener("input", () => {
+            minEdgeCount = +minEdgeCountSel.value || 0;
+            minEdgeCountVal.textContent = String(minEdgeCount);
+            applyFilters(); saveState();
+        });
+
+        fitBtn.addEventListener("click", () => { fitToView(); });
+
+        freezeBtn.addEventListener("click", () => {
+            frozen = !frozen;
+            if (frozen) simulation.stop();
+            else simulation.restart();
+            freezeBtn.textContent = frozen ? "Unfreeze" : "Freeze";
+            saveState();
+        });
+
+        unpinBtn.addEventListener("click", () => { unpinAll(); saveState(); });
+
+        // Resize handling keeps centering force current
+        window.addEventListener("resize", () => {
+            const w = svg.node().clientWidth, h = svg.node().clientHeight;
+            simulation.force("center", d3.forceCenter(w / 2, h / 2));
+            if (!frozen) simulation.alpha(0.1).restart();
+        });
+
+        // Save state on unload
+        window.addEventListener("beforeunload", saveState);
     </script>
 </body>
 </html>
