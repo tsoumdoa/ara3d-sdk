@@ -8,7 +8,7 @@ public class IfcAnalyzerNode
 
 public class IfcAnalyzerRelation
 {
-    public string id;
+    public string name;
     public int count;
 }
 
