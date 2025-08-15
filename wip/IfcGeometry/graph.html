@@ -9,7 +9,6 @@
     <script src="graph-data.js"></script>
 </head>
 <body>
-    <!-- Control panel -->
     <div class="panel">
         <h3>IFC Graph Controls</h3>
 
@@ -23,19 +22,6 @@
 
         <div class="row">
             <label><input type="checkbox" id="sizeByCount" checked> Size nodes by count</label>
-        </div>
-        <div class="row">
-            <label><input type="checkbox" id="weightByCount" checked> Weight edges by count</label>
-        </div>
-
-        <div class="row">
-            <label for="minNodeCount">Min node count: <span id="minNodeCountVal">0</span></label>
-            <input type="range" id="minNodeCount" min="0" step="1" value="0" />
-        </div>
-
-        <div class="row">
-            <label for="minEdgeCount">Min edge count: <span id="minEdgeCountVal">0</span></label>
-            <input type="range" id="minEdgeCount" min="0" step="1" value="0" />
         </div>
 
         <div class="row buttons">
@@ -86,9 +72,6 @@
         const maxEdgeCount = d3.max(links, d => d.countNum || 0) || 1;
 
         let sizeByCount = true;
-        let weightByCount = true;
-        let minNodeCount = 0;
-        let minEdgeCount = 0;
         let layoutMode = "force"; // "force" | "hier"
         let frozen = false;
 
@@ -126,13 +109,16 @@
             .attr("class", "edge-label")
             .attr("dy", -4)
             .text(d => d.label);
-
+                    
         const nodeSel = container.selectAll(".node")
             .data(nodes, d => d.id)
             .enter()
             .append("g")
             .attr("class", "node")
-            .on("dblclick", (e, d) => { toggleUserPin(d); saveState(); })
+            .on("dblclick", (e, d) => {
+                toggleUserPin(d);
+                saveState();
+            })
             .call(
                 d3.drag()
                     .on("start", (event, d) => {
@@ -166,7 +152,7 @@
 
         const pinIcon = nodeSel.append("text")
             .attr("class", "pin-icon")
-            .text("📌");
+            .text("📍");
 
         // Position pin icon relative to node radius
         function positionPinIcons() {
@@ -218,30 +204,10 @@
         function applySizes() {
             nodeCircle.attr("r", d => nodeRadius(d));
             container.selectAll(".node").each(function (d) {
-                // Update collision radius function implicitly uses nodeRadius
+                // TODO: Update collision radius function implicitly uses nodeRadius
             });
-            // Update edge widths
-            linkSel.attr("stroke-width", d => weightByCount ? edgeWScale(d.countNum || 0) : 2);
             positionPinIcons();
             simulation.alpha(0.12).restart();
-        }
-
-        function applyFilters() {
-            // Edge visibility
-            linkSel.classed("hidden", d => (d.countNum || 0) < minEdgeCount);
-            edgeLabelSel.classed("hidden", d => (d.countNum || 0) < minEdgeCount);
-
-            // Visible nodes via edges that passed filter
-            const visibleNodes = new Set();
-            links.forEach(l => {
-                if ((l.countNum || 0) >= minEdgeCount) { visibleNodes.add(idOf(l.source)); visibleNodes.add(idOf(l.target)); }
-            });
-
-            nodeSel.classed("hidden", d => {
-                const countOK = (d.count || 0) >= minNodeCount;
-                const linkedOK = visibleNodes.has(d.id);
-                return !(countOK || linkedOK);
-            });
         }
 
         function idOf(x) { return typeof x === "string" ? x : x.id; }
@@ -322,7 +288,7 @@
                 };
             });
             const state = {
-                layoutMode, sizeByCount, weightByCount, minNodeCount, minEdgeCount, frozen,
+                layoutMode, sizeByCount, frozen,
                 transform: { k: t.k, x: t.x, y: t.y },
                 nodes: nodeState
             };
@@ -336,9 +302,6 @@
                 const st = JSON.parse(s);
                 layoutMode = st.layoutMode || layoutMode;
                 sizeByCount = !!st.sizeByCount;
-                weightByCount = !!st.weightByCount;
-                minNodeCount = +st.minNodeCount || 0;
-                minEdgeCount = +st.minEdgeCount || 0;
                 frozen = !!st.frozen;
 
                 // Restore node positions/pins
@@ -369,18 +332,10 @@
         const $ = sel => document.querySelector(sel);
         const layoutModeSel = $("#layoutMode");
         const sizeByCountSel = $("#sizeByCount");
-        const weightByCountSel = $("#weightByCount");
-        const minNodeCountSel = $("#minNodeCount");
-        const minEdgeCountSel = $("#minEdgeCount");
-        const minNodeCountVal = $("#minNodeCountVal");
-        const minEdgeCountVal = $("#minEdgeCountVal");
         const fitBtn = $("#fitBtn");
         const freezeBtn = $("#freezeBtn");
         const unpinBtn = $("#unpinBtn");
 
-        // Set slider ranges based on data
-        minNodeCountSel.max = String(maxNodeCount);
-        minEdgeCountSel.max = String(maxEdgeCount);
 
         // Initialize from saved state (before applying controls)
         loadState();
@@ -388,16 +343,10 @@
         // Reflect control states in UI
         layoutModeSel.value = layoutMode;
         sizeByCountSel.checked = sizeByCount;
-        weightByCountSel.checked = weightByCount;
-        minNodeCountSel.value = String(minNodeCount);
-        minEdgeCountSel.value = String(minEdgeCount);
-        minNodeCountVal.textContent = String(minNodeCount);
-        minEdgeCountVal.textContent = String(minEdgeCount);
         freezeBtn.textContent = frozen ? "Unfreeze" : "Freeze";
 
         // Apply initial sizes/filters & layout
         applySizes();
-        applyFilters();
         if (layoutMode === "hier") runHierLayout();
 
         // Control handlers
@@ -414,23 +363,6 @@
         sizeByCountSel.addEventListener("change", () => {
             sizeByCount = sizeByCountSel.checked;
             applySizes(); saveState();
-        });
-
-        weightByCountSel.addEventListener("change", () => {
-            weightByCount = weightByCountSel.checked;
-            applySizes(); saveState();
-        });
-
-        minNodeCountSel.addEventListener("input", () => {
-            minNodeCount = +minNodeCountSel.value || 0;
-            minNodeCountVal.textContent = String(minNodeCount);
-            applyFilters(); saveState();
-        });
-
-        minEdgeCountSel.addEventListener("input", () => {
-            minEdgeCount = +minEdgeCountSel.value || 0;
-            minEdgeCountVal.textContent = String(minEdgeCount);
-            applyFilters(); saveState();
         });
 
         fitBtn.addEventListener("click", () => { fitToView(); });
