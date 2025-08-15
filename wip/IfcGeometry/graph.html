@@ -28,7 +28,14 @@
         </div>
 
         <div class="row">
-            <label><input type="checkbox" id="sizeByCount" checked> Size nodes by count</label>
+            <label for="sizeMode"><strong>Node size:</strong></label>
+            <select id="sizeMode">
+                <option value="fixed">Fixed</option>
+                <option value="count" selected>By count</option>
+                <option value="degree">By edges (degree)</option>
+                <option value="indegree">By in-degree</option>
+                <option value="outdegree">By out-degree</option>
+            </select>
         </div>
 
         <div class="row buttons">
@@ -41,11 +48,7 @@
     <svg></svg>
 
     <script>
-
-
-        // ===== Example hard-coded data =====
-        // 'nodes' defines per-node properties (color, count).
-        // 'relations' maps SOURCE -> one or more { name: TARGET, count: edgeCount }.
+        // ===== Data =====
         const data = window.data;
 
         // =======================
@@ -53,7 +56,9 @@
         // =======================
         const nodesMap = new Map();
         if (data.nodes) {
-            for (const [id, props] of Object.entries(data.nodes)) nodesMap.set(id, { id, ...(props || {}) });
+            for (const [id, props] of Object.entries(data.nodes)) {
+                nodesMap.set(id, { id, ...(props || {}) });
+            }
         }
         function ensureNode(id) { if (!nodesMap.has(id)) nodesMap.set(id, { id }); return nodesMap.get(id); }
 
@@ -72,51 +77,85 @@
         const nodes = Array.from(nodesMap.values());
 
         // =======================
-        // Scales & configuration
+        // Config
         // =======================
         const STORAGE_KEY = "ifc-graph-state-v1";
         const width = window.innerWidth, height = window.innerHeight;
 
-        const maxNodeCount = d3.max(nodes, d => d.count || 0) || 1;
-        const maxEdgeCount = d3.max(links, d => d.countNum || 0) || 1;
-
-        let sizeByCount = true;
-        let layoutMode = "force"; // "force" | "hier"
+        let layoutMode = "force";
         let frozen = false;
+
+        // =======================
+        // Degree stats (directed)
+        // =======================
+        function idOf(x) { return typeof x === "string" ? x : x.id; }
+
+        function computeDegreeStats() {
+            const inDeg = new Map(nodes.map(n => [n.id, 0]));
+            const outDeg = new Map(nodes.map(n => [n.id, 0]));
+            for (const l of links) {
+                const s = idOf(l.source), t = idOf(l.target);
+                outDeg.set(s, (outDeg.get(s) || 0) + 1);
+                inDeg.set(t, (inDeg.get(t) || 0) + 1);
+            }
+            const totDeg = new Map(nodes.map(n => [
+                n.id, (inDeg.get(n.id) || 0) + (outDeg.get(n.id) || 0)
+            ]));
+            return { inDeg, outDeg, totDeg };
+        }
+        const DEG = computeDegreeStats();
+
+        // =======================
+        // Sizing (mode + robust scale)
+        // =======================
+        let sizeMode = "count";         // "fixed" | "count" | "degree" | "indegree" | "outdegree"
+        let nodeRadius = () => 22;      // assigned in rebuildSizeScale()
+
+        function sizeMetric(d) {
+            if (sizeMode === "fixed") return 1;
+            if (sizeMode === "count") return d.count || 0;
+            if (sizeMode === "degree") return DEG.totDeg.get(d.id) || 0;
+            if (sizeMode === "indegree") return DEG.inDeg.get(d.id) || 0;
+            if (sizeMode === "outdegree") return DEG.outDeg.get(d.id) || 0;
+            return 1;
+        }
+
+        function rebuildSizeScale() {
+            const values = nodes.map(sizeMetric);
+            const sorted = values.slice().sort(d3.ascending);
+            const p95 = d3.quantile(sorted, 0.95) || 1;                 // winsorize heavy tail
+
+            // crowd-aware cap for max radius
+            const rMax = Math.max(36, Math.min(64, 220 / Math.sqrt(nodes.length)));
+
+            const scale = d3.scaleSymlog()                               // linear near 0, log in tail
+                .domain([0, p95])
+                .constant(5)
+                .range([12, rMax])
+                .clamp(true);
+
+            nodeRadius = d => sizeMode === "fixed" ? 22 : scale(Math.min(sizeMetric(d), p95));
+        }
+
+        // Build size scale before anything uses nodeRadius
+        rebuildSizeScale();
 
         // =======================
         // SVG & simulation
         // =======================
-
-        // Precompute once
-        const counts = nodes.map(n => n.count || 0).sort(d3.ascending);
-        const p95 = d3.quantile(counts, 0.95) || 1;
-
-        // Use capped domain and clamp
-        const rScale = d3.scaleSqrt()
-            .domain([0, p95])
-            .range([12, 48])
-            .clamp(true);
-
-        function nodeRadius(d) {
-            const c = Math.min(d.count || 0, p95);
-            return sizeByCount ? rScale(c) : 22;
-        }
-
         const svg = d3.select("svg");
         const container = svg.append("g");
 
         const zoom = d3.zoom()
             .scaleExtent([0.2, 4])
             .on("zoom", e => container.attr("transform", e.transform));
-
         svg.call(zoom);
 
         const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id).distance(150))
             .force("charge", d3.forceManyBody().strength(-350))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(d => nodeRadius(d) + 4));
+            .force("collision", d3.forceCollide().radius(d => Math.max(nodeRadius(d), 16) + 4));
 
         const linkSel = container.selectAll(".link")
             .data(links)
@@ -131,25 +170,22 @@
             .attr("class", "edge-label")
             .attr("dy", -4)
             .text(d => d.label);
-                    
+
         const nodeSel = container.selectAll(".node")
             .data(nodes, d => d.id)
             .enter()
             .append("g")
             .attr("class", "node")
-            .on("dblclick", (e, d) => {
-                toggleUserPin(d);
-                saveState();
-            })
+            .on("dblclick", (e, d) => { toggleUserPin(d); saveState(); })
             .call(
                 d3.drag()
                     .on("start", (event, d) => {
                         if (!event.active && !frozen) simulation.alphaTarget(0.3).restart();
-                        if (!isPinned(d)) { d.pinMode = "user"; d.fx = d.x; d.fy = d.y; } // temp fix while dragging
+                        if (!isPinned(d)) { d.pinMode = "user"; d.fx = d.x; d.fy = d.y; }
                     })
                     .on("drag", (event, d) => {
                         d.fx = event.x; d.fy = event.y;
-                        if (frozen) ticked(); // manually update while frozen
+                        if (frozen) ticked();
                     })
                     .on("end", (event, d) => {
                         if (!event.active && !frozen) simulation.alphaTarget(0);
@@ -203,9 +239,6 @@
         // =======================
         // Helpers
         // =======================
-
-
-
         function isPinned(d) { return d.fx != null && d.fy != null; }
 
         function toggleUserPin(d) {
@@ -228,39 +261,21 @@
             positionPinIcons();
             if (changed) {
                 if (!frozen) simulation.alpha(0.15).restart();
-                else ticked(); // at least redraw icons while frozen
+                else ticked();
             }
-        }        
+        }
 
         function applySizes() {
+            // rebuild scale in case mode changed
+            rebuildSizeScale();
             nodeCircle.attr("r", d => nodeRadius(d));
-            container.selectAll(".node").each(function (d) {
-                // TODO: Update collision radius function implicitly uses nodeRadius
-            });
+            simulation.force("collision",
+                d3.forceCollide().radius(d => Math.max(nodeRadius(d), 16) + 4)
+            );
             positionPinIcons();
-            simulation.alpha(0.12).restart();
+            if (!frozen) simulation.alpha(0.12).restart();
         }
 
-        function idOf(x) { return typeof x === "string" ? x : x.id; }
-
-        function fitToView(pad = 40) {
-            // Compute bbox of visible nodes
-            const visible = nodes.filter(n => !d3.select(nodeSel.filter(d => d === n).node()).classed("hidden"));
-            const arr = visible.length ? visible : nodes;
-            const minX = d3.min(arr, d => d.x), maxX = d3.max(arr, d => d.x);
-            const minY = d3.min(arr, d => d.y), maxY = d3.max(arr, d => d.y);
-            const w = maxX - minX + 2 * pad, h = maxY - minY + 2 * pad;
-            const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
-            const svgW = svg.node().clientWidth, svgH = svg.node().clientHeight;
-
-            const k = Math.max(0.2, Math.min(4, 0.9 * Math.min(svgW / w, svgH / h)));
-            const tx = svgW / 2 - k * midX;
-            const ty = svgH / 2 - k * midY;
-
-            svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
-        }
-
-        // ---- Graph helpers for layouts ----
         function buildAdjacency() {
             const map = new Map(nodes.map(n => [n.id, new Set()]));
             for (const l of links) {
@@ -304,7 +319,7 @@
                 id: "root",
                 layoutOptions: {
                     "elk.algorithm": "layered",
-                    "elk.direction": direction,                 // <— now dynamic
+                    "elk.direction": direction,
                     "elk.spacing.nodeNode": "30",
                     "elk.layered.spacing.nodeNodeBetweenLayers": "60",
                     "elk.spacing.edgeEdge": "20"
@@ -336,7 +351,6 @@
             positionPinIcons();
             if (!frozen) simulation.alpha(0.15).restart();
         }
-
 
         function runCircleLayout() {
             const cx = svg.node().clientWidth / 2;
@@ -436,8 +450,7 @@
             let R = baseR;
             let i = 0;
 
-            // Greedy packing by circumference: put nodes on a ring until their
-            // required arc lengths would exceed the ring's circumference.
+            // Greedy packing by circumference
             while (i < ordered.length) {
                 const ring = [];
                 let circ = twoPi * R;
@@ -446,16 +459,14 @@
 
                 while (i < ordered.length) {
                     const n = ordered[i];
-                    const ri = nodeRadius(n);          // pixel radius of this node
-                    const need = 2 * ri + gapPx;       // required arc length on circumference (px)
+                    const ri = nodeRadius(n);
+                    const need = 2 * ri + gapPx;
 
-                    // If first node can't fit, grow ring so it does
                     if (ring.length === 0 && need > circ) {
                         R = (need * 1.05) / twoPi;
                         circ = twoPi * R;
                     }
 
-                    // Take it if it fits (or if it's the first)
                     if (ring.length === 0 || used + need <= circ) {
                         ring.push({ n, ri, need });
                         used += need;
@@ -467,23 +478,22 @@
                 }
 
                 rings.push({ R, ring, maxR });
-                // Grow next ring by this ring’s max diameter + extra gap
                 R += (maxR * 2 + minRadialGap);
             }
 
-            // Place nodes on each ring: turn linear arc lengths into angles so the circle is filled.
+            // Turn linear arc lengths into angles
             rings.forEach(({ R, ring }) => {
                 const circ = twoPi * R;
                 const totalNeed = ring.reduce((s, x) => s + x.need, 0);
-                const scale = circ / totalNeed; // stretch factor so we use full 360°
+                const scale = circ / totalNeed;
 
                 let t = 0; // accumulated arc length
                 ring.forEach(({ n, need }) => {
-                    const L = need * scale;   // actual arc length assigned
-                    const a = (t + L / 2) / R; // angle (rad) = arc / radius, centered in its slot
+                    const L = need * scale;
+                    const a = (t + L / 2) / R;
                     const x = cx + R * Math.cos(a);
                     const y = cy + R * Math.sin(a);
-                    pinAt(n, x, y);           // sets x,y,fx,fy and pinMode="layout"
+                    pinAt(n, x, y);
                     t += L;
                 });
             });
@@ -500,12 +510,12 @@
             const t = d3.zoomTransform(svg.node());
             const nodeState = {};
             nodes.forEach(n => {
-                nodeState[n.id] = {
-                    x: n.x, y: n.y, fx: n.fx, fy: n.fy, pinMode: n.pinMode || null
-                };
+                nodeState[n.id] = { x: n.x, y: n.y, fx: n.fx, fy: n.fy, pinMode: n.pinMode || null };
             });
             const state = {
-                layoutMode, sizeByCount, frozen,
+                layoutMode,
+                sizeMode,                // persist sizing mode
+                frozen,
                 transform: { k: t.k, x: t.x, y: t.y },
                 nodes: nodeState
             };
@@ -518,7 +528,11 @@
             try {
                 const st = JSON.parse(s);
                 layoutMode = st.layoutMode || layoutMode;
-                sizeByCount = !!st.sizeByCount;
+
+                // Back-compat: old boolean sizeByCount -> sizeMode
+                if (st.sizeMode) sizeMode = st.sizeMode;
+                else if ("sizeByCount" in st) sizeMode = st.sizeByCount ? "count" : "fixed";
+
                 frozen = !!st.frozen;
 
                 // Restore node positions/pins
@@ -548,23 +562,25 @@
         // =======================
         const $ = sel => document.querySelector(sel);
         const layoutModeSel = $("#layoutMode");
-        const sizeByCountSel = $("#sizeByCount");
+        const sizeModeSel = $("#sizeMode");
         const fitBtn = $("#fitBtn");
         const freezeBtn = $("#freezeBtn");
         const unpinBtn = $("#unpinBtn");
-
 
         // Initialize from saved state (before applying controls)
         loadState();
 
         // Reflect control states in UI
         layoutModeSel.value = layoutMode;
-        sizeByCountSel.checked = sizeByCount;
+        sizeModeSel.value = sizeMode;
         freezeBtn.textContent = frozen ? "Unfreeze" : "Freeze";
 
-        // Apply initial sizes/filters & layout
+        // Apply initial sizes & layout
         applySizes();
-        if (layoutMode === "hier") runHierLayout();
+        if (layoutMode.startsWith("hier-")) {
+            const dir = layoutMode.split("-")[1].toUpperCase();
+            runHierLayout(dir);
+        }
 
         // Control handlers
         layoutModeSel.addEventListener("change", async () => {
@@ -580,7 +596,7 @@
             } else if (layoutMode === "grid") {
                 runGridLayout();
             } else if (layoutMode === "radial") {
-                runRadialLayout(); // or pass a specific rootId
+                runRadialLayout();
             } else if (layoutMode === "concentric") {
                 runConcentricLayout({ rings: 4 });
             }
@@ -588,9 +604,10 @@
             saveState();
         });
 
-        sizeByCountSel.addEventListener("change", () => {
-            sizeByCount = sizeByCountSel.checked;
-            applySizes(); saveState();
+        sizeModeSel.addEventListener("change", () => {
+            sizeMode = sizeModeSel.value;
+            applySizes();
+            saveState();
         });
 
         fitBtn.addEventListener("click", () => { fitToView(); });
@@ -614,6 +631,23 @@
 
         // Save state on unload
         window.addEventListener("beforeunload", saveState);
+
+        // ===== Utility: fitToView (unchanged) =====
+        function fitToView(pad = 40) {
+            const visible = nodes.filter(n => !d3.select(nodeSel.filter(d => d === n).node()).classed("hidden"));
+            const arr = visible.length ? visible : nodes;
+            const minX = d3.min(arr, d => d.x), maxX = d3.max(arr, d => d.x);
+            const minY = d3.min(arr, d => d.y), maxY = d3.max(arr, d => d.y);
+            const w = maxX - minX + 2 * pad, h = maxY - minY + 2 * pad;
+            const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+            const svgW = svg.node().clientWidth, svgH = svg.node().clientHeight;
+
+            const k = Math.max(0.2, Math.min(4, 0.9 * Math.min(svgW / w, svgH / h)));
+            const tx = svgW / 2 - k * midX;
+            const ty = svgH / 2 - k * midY;
+
+            svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+        }
     </script>
 </body>
 </html>

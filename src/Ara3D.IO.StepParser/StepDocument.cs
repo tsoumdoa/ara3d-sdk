@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Ara3D.Logging;
 using Ara3D.Memory;
 using Ara3D.Utils;
+using System.Runtime.CompilerServices;
 
 namespace Ara3D.IO.StepParser;
 
@@ -87,9 +88,43 @@ public sealed unsafe class StepDocument : IDisposable
     public static StepDocument Create(FilePath fp) 
         => new(fp);
 
-    public Dictionary<UInt128, StepDefinition> GetDefinitionLookup() 
-        => Definitions.ToDictionary(def => def.Id, def => def);
+    public sealed class U128Comparer : IEqualityComparer<UInt128>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(UInt128 x, UInt128 y) => x == y;
 
-    public Dictionary<UInt128, string> GetEntityNameLookup()
-        => Definitions.ToDictionary(def => def.Id, ValueData.GetEntityName);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetHashCode(UInt128 v)
+        {
+            // Extract halves; use your own accessors if custom struct
+            ulong lo = (ulong)v;
+            ulong hi = (ulong)(v >> 64);
+            // Mix: xor-shifts + multiply provides good avalanching
+            ulong x = lo ^ (hi * 0x9E3779B97F4A7C15UL);
+            x ^= x >> 33; x *= 0xff51afd7ed558ccdUL;
+            x ^= x >> 33; x *= 0xc4ceb9fe1a85ec53UL;
+            x ^= x >> 33;
+            return (int)x;
+        }
+
+    }
+    public Dictionary<StepToken, StepDefinition> GetDefinitionLookup()
+    {
+        var r = new Dictionary<StepToken, StepDefinition>(Definitions.Count);
+        foreach (var def in Definitions)
+        {
+            r.TryAdd(def.IdToken, def);
+        }
+        return r;
+    }
+
+    public Dictionary<StepToken, string> GetEntityNameLookup()
+    {
+        var r = new Dictionary<StepToken, string>(Definitions.Count);
+        foreach (var def in Definitions)
+        {
+            r.TryAdd(def.IdToken, ValueData.GetEntityName(def));
+        }
+        return r;
+    }
 }

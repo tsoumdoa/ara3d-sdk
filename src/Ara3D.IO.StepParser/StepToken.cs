@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Ara3D.Memory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Ara3D.IO.StepParser;
 
@@ -51,30 +52,11 @@ public readonly unsafe struct StepToken
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static UInt128 ReadU128(byte* p, int n)
     {
-        Debug.Assert((uint)n <= 16);
-
-        // 1. Unaligned 16‑byte load
         var value = Unsafe.ReadUnaligned<UInt128>(p);
-
-        // 2. Build a 128‑bit mask that has the low n bytes = 0xFF, rest = 0
-        //    mask = (1u128 << (n*8)) - 1u128
         var mask = n == 16
             ? UInt128.MaxValue                   // avoid shift by 128
             : ((UInt128)1 << (n * 8)) - 1;
-
-        // 3. Clear the tail bytes
-        var result = value & mask;
-
-        // mask = 0…0011…11
-        Debug.Assert((mask & (mask + 1)) == 0u, "mask should be contiguous ones");
-
-        // Cleared region really is zero
-        Debug.Assert((result & ~mask) == 0u, "high bytes after n must be zero");
-
-        // Kept region matches original value
-        Debug.Assert(((result ^ value) & mask) == 0u, "kept bytes must equal source");
-        
-        return result;
+        return value & mask;
     }
 
     /// <summary>
@@ -83,4 +65,26 @@ public readonly unsafe struct StepToken
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public UInt128 ToUInt128()
         => ReadU128(Begin, (int)(End - Begin));
+
+    public int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (int)(End - Begin);
+    }
+
+    public bool Equals(StepToken other)
+        => Span.SequenceEqual(other.Span);
+
+    public override bool Equals(object? obj)
+        => obj is StepToken other && Equals(other);
+
+    public override int GetHashCode()
+    {
+        var hc = new HashCode();
+        hc.AddBytes(Span); 
+        return hc.ToHashCode();
+    }
+
+    public static bool operator ==(StepToken left, StepToken right) => left.Equals(right);
+    public static bool operator !=(StepToken left, StepToken right) => !left.Equals(right);
 }

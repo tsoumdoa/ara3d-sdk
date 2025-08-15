@@ -43,10 +43,10 @@ IFCPOLYLOOP
         public class StepRelations
         {
             public readonly string SrcName;
-            public readonly UInt128 SrcId;
+            public readonly StepToken SrcId;
             public readonly string DestName;
-            public readonly UInt128 DestId;
-            public StepRelations(string srcName, UInt128 srcId, string destName, UInt128 destId)
+            public readonly StepToken DestId;
+            public StepRelations(string srcName, StepToken srcId, string destName, StepToken destId)
             {
                 SrcName = srcName;
                 SrcId = srcId;
@@ -55,11 +55,11 @@ IFCPOLYLOOP
             }
         }
 
-        public static void AddRelations(StepDocument doc, Dictionary<UInt128, string> d, string srcName, UInt128 srcId, List<StepRelations> relations, StepValue val)
+        public static void AddRelations(StepDocument doc, Dictionary<StepToken, string> d, string srcName, StepToken srcId, List<StepRelations> relations, StepValue val)
         {
             if (val.IsId)
             {
-                var destId = doc.ValueData.AsId(val);
+                var destId = doc.ValueData.AsToken(val);
                 var destName = d[destId];
                 relations.Add(new(srcName, srcId, destName, destId));
             }
@@ -71,13 +71,13 @@ IFCPOLYLOOP
             }
         }
         
-        public static List<StepRelations> GetRelations(StepDocument doc, Dictionary<UInt128, string> d)
+        public static List<StepRelations> GetRelations(StepDocument doc, Dictionary<StepToken, string> d)
         {
             var r = new List<StepRelations>();
             foreach (var def in doc.Definitions)
             {
                 var srcName = doc.ValueData.GetEntityName(def);
-                var srcId = def.Id;
+                var srcId = def.IdToken;
                 var val = doc.ValueData.GetAttributesValue(def);
                 AddRelations(doc, d, srcName, srcId, r, val);
             }
@@ -86,7 +86,7 @@ IFCPOLYLOOP
 
 
         [Test]
-        public static void FindRelations()
+        public static void OutputRelations()
         {
             var logger = Logger.Console;
 
@@ -129,7 +129,7 @@ IFCPOLYLOOP
                     }
                     var relation = new IfcAnalyzerRelation()
                     {
-                        id = group2.Key,
+                        name = group2.Key,
                         count = group2.Count()
                     };
                     data.relations[srcName].Add(relation);

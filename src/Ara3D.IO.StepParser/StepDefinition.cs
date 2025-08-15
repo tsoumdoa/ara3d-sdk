@@ -16,6 +16,9 @@ namespace Ara3D.IO.StepParser
         }
 
         public UInt128 Id
-            => IdToken.ToUInt128();
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IdToken.ToUInt128();
+        }
     }
 }

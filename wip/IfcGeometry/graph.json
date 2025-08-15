@@ -1,1762 +1,1762 @@
 {
   "nodes": {
     "IFCORGANIZATION": {
-      "color": "#0c08df",
+      "color": "#7d6094",
       "count": 2
     },
     "IFCAPPLICATION": {
-      "color": "#5b0126",
+      "color": "#8923a0",
       "count": 1
     },
     "IFCCARTESIANPOINT": {
-      "color": "#3e4434",
+      "color": "#796ea5",
       "count": 1050157
     },
     "IFCDIRECTION": {
-      "color": "#3c641a",
+      "color": "#7e40a4",
       "count": 423
     },
     "IFCAXIS2PLACEMENT3D": {
-      "color": "#9d1f2e",
+      "color": "#4b3d92",
       "count": 9232
     },
     "IFCPERSON": {
-      "color": "#345401",
+      "color": "#2b7cac",
       "count": 1
     },
     "IFCPERSONANDORGANIZATION": {
-      "color": "#b13b19",
+      "color": "#2b07d3",
       "count": 1
     },
     "IFCOWNERHISTORY": {
-      "color": "#3b4bca",
+      "color": "#991147",
       "count": 1
     },
     "IFCSIUNIT": {
-      "color": "#8e0112",
+      "color": "#3a6e33",
       "count": 19
     },
     "IFCDIMENSIONALEXPONENTS": {
-      "color": "#146008",
+      "color": "#784b20",
       "count": 1
     },
     "IFCMEASUREWITHUNIT": {
-      "color": "#af0522",
+      "color": "#6e07c8",
       "count": 1
     },
     "IFCCONVERSIONBASEDUNIT": {
-      "color": "#111c53",
+      "color": "#154d8a",
       "count": 1
     },
     "IFCDERIVEDUNITELEMENT": {
-      "color": "#8d3259",
+      "color": "#4a1be4",
       "count": 25
     },
     "IFCDERIVEDUNIT": {
-      "color": "#290f79",
+      "color": "#3f22d8",
       "count": 9
     },
     "IFCUNITASSIGNMENT": {
-      "color": "#085f5b",
+      "color": "#0f4098",
       "count": 1
     },
     "IFCGEOMETRICREPRESENTATIONCONTEXT": {
-      "color": "#cf14c5",
+      "color": "#836465",
       "count": 1
     },
     "IFCGEOMETRICREPRESENTATIONSUBCONTEXT": {
-      "color": "#3e6392",
+      "color": "#875352",
       "count": 4
     },
     "IFCPROJECT": {
-      "color": "#312114",
+      "color": "#2d4131",
       "count": 1
     },
     "IFCLOCALPLACEMENT": {
-      "color": "#027072",
+      "color": "#dd1141",
       "count": 3876
     },
     "IFCSITE": {
-      "color": "#126654",
+      "color": "#6d109d",
       "count": 1
     },
     "IFCPROPERTYSINGLEVALUE": {
-      "color": "#3a56da",
+      "color": "#595f25",
       "count": 28654
     },
     "IFCPROPERTYSET": {
-      "color": "#3e04f1",
+      "color": "#726234",
       "count": 20221
     },
     "IFCRELDEFINESBYPROPERTIES": {
-      "color": "#3146db",
+      "color": "#605bb0",
       "count": 18619
     },
     "IFCPOLYLINE": {
-      "color": "#0850ef",
+      "color": "#720e9d",
       "count": 2471
     },
     "IFCSHAPEREPRESENTATION": {
-      "color": "#bc4c70",
+      "color": "#e10d8b",
       "count": 9151
     },
     "IFCAXIS2PLACEMENT2D": {
-      "color": "#438509",
+      "color": "#0a34f3",
       "count": 3000
     },
     "IFCRECTANGLEPROFILEDEF": {
-      "color": "#83488c",
+      "color": "#a3681a",
       "count": 2698
     },
     "IFCEXTRUDEDAREASOLID": {
-      "color": "#ab1d84",
+      "color": "#785d1e",
       "count": 3189
     },
     "IFCCOLOURRGB": {
-      "color": "#736055",
+      "color": "#085f65",
       "count": 60
     },
     "IFCSURFACESTYLERENDERING": {
-      "color": "#8212f6",
+      "color": "#6328f5",
       "count": 60
     },
     "IFCSURFACESTYLE": {
-      "color": "#0116a5",
+      "color": "#2b6de1",
       "count": 60
     },
     "IFCPRESENTATIONSTYLEASSIGNMENT": {
-      "color": "#dc2780",
+      "color": "#3c371a",
       "count": 110
     },
     "IFCSTYLEDITEM": {
-      "color": "#026c37",
+      "color": "#7d17e0",
       "count": 4755
     },
     "IFCBOUNDINGBOX": {
-      "color": "#b83f0a",
+      "color": "#6225ed",
       "count": 3131
     },
     "IFCPRODUCTDEFINITIONSHAPE": {
-      "color": "#1a6b12",
+      "color": "#520bf1",
       "count": 3829
     },
     "IFCWALLSTANDARDCASE": {
-      "color": "#975161",
+      "color": "#483ed5",
       "count": 1607
     },
     "IFCMATERIAL": {
-      "color": "#9c36ae",
+      "color": "#1c6938",
       "count": 60
     },
     "IFCSTYLEDREPRESENTATION": {
-      "color": "#30591a",
+      "color": "#1110dc",
       "count": 59
     },
     "IFCMATERIALDEFINITIONREPRESENTATION": {
-      "color": "#a440e9",
+      "color": "#2944d7",
       "count": 59
     },
     "IFCMATERIALLAYER": {
-      "color": "#2438b0",
+      "color": "#3d71b1",
       "count": 37
     },
     "IFCMATERIALLAYERSET": {
-      "color": "#120034",
+      "color": "#2a621c",
       "count": 29
     },
     "IFCMATERIALLAYERSETUSAGE": {
-      "color": "#252fd8",
+      "color": "#0a3612",
       "count": 1741
     },
     "IFCWALLTYPE": {
-      "color": "#091def",
+      "color": "#0649e9",
       "count": 17
     },
     "IFCCLASSIFICATION": {
-      "color": "#29168f",
+      "color": "#262157",
       "count": 1
     },
     "IFCCLASSIFICATIONREFERENCE": {
-      "color": "#56124e",
+      "color": "#03381a",
       "count": 35
     },
     "IFCRELASSOCIATESCLASSIFICATION": {
-      "color": "#3279a5",
+      "color": "#1e3652",
       "count": 35
     },
     "IFCRELFILLSELEMENT": {
-      "color": "#ca3533",
+      "color": "#9960a8",
       "count": 637
     },
     "IFCOPENINGELEMENT": {
-      "color": "#7b1533",
+      "color": "#1a07ba",
       "count": 678
     },
     "IFCRELVOIDSELEMENT": {
-      "color": "#9f2ae9",
+      "color": "#7e6e2f",
       "count": 678
     },
     "IFCPLANE": {
-      "color": "#af5b0d",
+      "color": "#185e7b",
       "count": 43
     },
     "IFCPOLYGONALBOUNDEDHALFSPACE": {
-      "color": "#c4204b",
+      "color": "#a3444f",
       "count": 33
     },
     "IFCBOOLEANCLIPPINGRESULT": {
-      "color": "#6738f8",
+      "color": "#745050",
       "count": 43
     },
     "IFCPOLYLOOP": {
-      "color": "#7a4f26",
+      "color": "#8011b6",
       "count": 1583016
     },
     "IFCFACEOUTERBOUND": {
-      "color": "#2464b7",
+      "color": "#ca300f",
       "count": 1582891
     },
     "IFCFACE": {
-      "color": "#8e0a21",
+      "color": "#0d0206",
       "count": 1582891
     },
     "IFCFACEBOUND": {
-      "color": "#0260b8",
+      "color": "#aa1b74",
       "count": 125
     },
     "IFCCLOSEDSHELL": {
-      "color": "#12049d",
+      "color": "#d0422f",
       "count": 2321
     },
     "IFCFACETEDBREP": {
-      "color": "#a14bc2",
+      "color": "#65390d",
       "count": 2321
     },
     "IFCREPRESENTATIONMAP": {
-      "color": "#60317e",
+      "color": "#a20213",
       "count": 481
     },
     "IFCDOORLININGPROPERTIES": {
-      "color": "#d3057e",
+      "color": "#4d3c9e",
       "count": 123
     },
     "IFCDOORPANELPROPERTIES": {
-      "color": "#5f0ea1",
+      "color": "#0956bb",
       "count": 123
     },
     "IFCDOORSTYLE": {
-      "color": "#122d27",
+      "color": "#09747d",
       "count": 123
     },
     "IFCCARTESIANTRANSFORMATIONOPERATOR3D": {
-      "color": "#4633b3",
+      "color": "#4c24f2",
       "count": 1
     },
     "IFCMAPPEDITEM": {
-      "color": "#3471b3",
+      "color": "#d7058b",
       "count": 1387
     },
     "IFCDOOR": {
-      "color": "#692f99",
+      "color": "#2c0345",
       "count": 675
     },
     "IFCMATERIALLIST": {
-      "color": "#3d7b79",
+      "color": "#981b77",
       "count": 932
     },
     "IFCBUILDINGELEMENTPROXYTYPE": {
-      "color": "#47258f",
+      "color": "#300fdc",
       "count": 64
     },
     "IFCBUILDINGELEMENTPROXY": {
-      "color": "#306a14",
+      "color": "#a41ae9",
       "count": 130
     },
     "IFCARBITRARYCLOSEDPROFILEDEF": {
-      "color": "#2e61d2",
+      "color": "#6b6982",
       "count": 434
     },
     "IFCARBITRARYPROFILEDEFWITHVOIDS": {
-      "color": "#14807e",
+      "color": "#576b57",
       "count": 54
     },
     "IFCSLAB": {
-      "color": "#4d2a44",
+      "color": "#762185",
       "count": 35
     },
     "IFCSLABTYPE": {
-      "color": "#655304",
+      "color": "#690bfc",
       "count": 35
     },
     "IFCHALFSPACESOLID": {
-      "color": "#634007",
+      "color": "#6d1a8d",
       "count": 10
     },
     "IFCGROUP": {
-      "color": "#6a734e",
+      "color": "#211227",
       "count": 29
     },
     "IFCWINDOWLININGPROPERTIES": {
-      "color": "#324b29",
+      "color": "#d51974",
       "count": 10
     },
     "IFCWINDOWSTYLE": {
-      "color": "#df2e43",
+      "color": "#aa1257",
       "count": 10
     },
     "IFCWINDOW": {
-      "color": "#5e34d5",
+      "color": "#ba1ac4",
       "count": 31
     },
     "IFCFURNITURETYPE": {
-      "color": "#291658",
+      "color": "#842e19",
       "count": 4
     },
     "IFCFURNISHINGELEMENT": {
-      "color": "#5b5552",
+      "color": "#6a7450",
       "count": 16
     },
     "IFCCOMPOSITECURVESEGMENT": {
-      "color": "#286c29",
+      "color": "#795b15",
       "count": 525
     },
     "IFCCIRCLE": {
-      "color": "#5026f4",
+      "color": "#59349f",
       "count": 299
     },
     "IFCTRIMMEDCURVE": {
-      "color": "#5f450e",
+      "color": "#3643d0",
       "count": 299
     },
     "IFCCOMPOSITECURVE": {
-      "color": "#0d7583",
+      "color": "#0f6a66",
       "count": 110
     },
     "IFCSTAIR": {
-      "color": "#881e23",
+      "color": "#83606f",
       "count": 2
     },
     "IFCSTAIRFLIGHT": {
-      "color": "#6e4a78",
+      "color": "#5049ca",
       "count": 2
     },
     "IFCSTAIRFLIGHTTYPE": {
-      "color": "#5c11ac",
+      "color": "#3b486f",
       "count": 2
     },
     "IFCCURTAINWALL": {
-      "color": "#a34ac4",
+      "color": "#c61dcc",
       "count": 144
     },
     "IFCCURTAINWALLTYPE": {
-      "color": "#10506b",
+      "color": "#a70f81",
       "count": 9
     },
     "IFCMEMBERTYPE": {
-      "color": "#690708",
+      "color": "#37701d",
       "count": 256
     },
     "IFCMEMBER": {
-      "color": "#a900f9",
+      "color": "#b309f7",
       "count": 503
     },
     "IFCRELAGGREGATES": {
-      "color": "#003d1b",
+      "color": "#074525",
       "count": 44
     },
     "IFCPLATETYPE": {
-      "color": "#1e632d",
+      "color": "#7a7338",
       "count": 28
     },
     "IFCPLATE": {
-      "color": "#57094b",
+      "color": "#9b461b",
       "count": 38
     },
     "IFCCIRCLEPROFILEDEF": {
-      "color": "#bb0f59",
+      "color": "#563034",
       "count": 3
     },
     "IFCRAILING": {
-      "color": "#4e5ef0",
+      "color": "#4808f5",
       "count": 11
     },
     "IFCDISTRIBUTIONPORT": {
-      "color": "#0703d8",
+      "color": "#687306",
       "count": 3
     },
     "IFCRELCONNECTSPORTTOELEMENT": {
-      "color": "#4b3c21",
+      "color": "#3b5d76",
       "count": 3
     },
     "IFCRELASSIGNSTOGROUP": {
-      "color": "#b10f5a",
+      "color": "#0767ea",
       "count": 29
     },
     "IFCRELCONTAINEDINSPATIALSTRUCTURE": {
-      "color": "#8d10a4",
+      "color": "#5e2ea7",
       "count": 1
     },
     "IFCRELASSOCIATESMATERIAL": {
-      "color": "#78735c",
+      "color": "#10000d",
       "count": 2712
     },
     "IFCRELDEFINESBYTYPE": {
-      "color": "#a95292",
+      "color": "#921cee",
       "count": 546
     },
     "IFCRELCONNECTSPATHELEMENTS": {
-      "color": "#75411d",
+      "color": "#e01727",
       "count": 1971
     },
     "IFCPRESENTATIONLAYERASSIGNMENT": {
-      "color": "#166a12",
+      "color": "#4c7568",
       "count": 13
     }
   },
   "relations": {
     "IFCAPPLICATION": [
       {
-        "id": "IFCORGANIZATION",
+        "name": "IFCORGANIZATION",
         "count": 1
       }
     ],
     "IFCAXIS2PLACEMENT3D": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 9232
       },
       {
-        "id": "IFCDIRECTION",
+        "name": "IFCDIRECTION",
         "count": 9396
       }
     ],
     "IFCPERSONANDORGANIZATION": [
       {
-        "id": "IFCPERSON",
+        "name": "IFCPERSON",
         "count": 1
       },
       {
-        "id": "IFCORGANIZATION",
+        "name": "IFCORGANIZATION",
         "count": 1
       }
     ],
     "IFCOWNERHISTORY": [
       {
-        "id": "IFCPERSONANDORGANIZATION",
+        "name": "IFCPERSONANDORGANIZATION",
         "count": 1
       },
       {
-        "id": "IFCAPPLICATION",
+        "name": "IFCAPPLICATION",
         "count": 1
       }
     ],
     "IFCMEASUREWITHUNIT": [
       {
-        "id": "IFCSIUNIT",
+        "name": "IFCSIUNIT",
         "count": 1
       }
     ],
     "IFCCONVERSIONBASEDUNIT": [
       {
-        "id": "IFCDIMENSIONALEXPONENTS",
+        "name": "IFCDIMENSIONALEXPONENTS",
         "count": 1
       },
       {
-        "id": "IFCMEASUREWITHUNIT",
+        "name": "IFCMEASUREWITHUNIT",
         "count": 1
       }
     ],
     "IFCDERIVEDUNITELEMENT": [
       {
-        "id": "IFCSIUNIT",
+        "name": "IFCSIUNIT",
         "count": 25
       }
     ],
     "IFCDERIVEDUNIT": [
       {
-        "id": "IFCDERIVEDUNITELEMENT",
+        "name": "IFCDERIVEDUNITELEMENT",
         "count": 50
       }
     ],
     "IFCUNITASSIGNMENT": [
       {
-        "id": "IFCSIUNIT",
+        "name": "IFCSIUNIT",
         "count": 30
       },
       {
-        "id": "IFCCONVERSIONBASEDUNIT",
+        "name": "IFCCONVERSIONBASEDUNIT",
         "count": 2
       },
       {
-        "id": "IFCDERIVEDUNIT",
+        "name": "IFCDERIVEDUNIT",
         "count": 18
       }
     ],
     "IFCGEOMETRICREPRESENTATIONCONTEXT": [
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 1
       },
       {
-        "id": "IFCDIRECTION",
+        "name": "IFCDIRECTION",
         "count": 1
       }
     ],
     "IFCGEOMETRICREPRESENTATIONSUBCONTEXT": [
       {
-        "id": "IFCGEOMETRICREPRESENTATIONCONTEXT",
+        "name": "IFCGEOMETRICREPRESENTATIONCONTEXT",
         "count": 4
       }
     ],
     "IFCPROJECT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 1
       },
       {
-        "id": "IFCGEOMETRICREPRESENTATIONCONTEXT",
+        "name": "IFCGEOMETRICREPRESENTATIONCONTEXT",
         "count": 2
       },
       {
-        "id": "IFCUNITASSIGNMENT",
+        "name": "IFCUNITASSIGNMENT",
         "count": 1
       }
     ],
     "IFCLOCALPLACEMENT": [
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 3876
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 3274
       }
     ],
     "IFCSITE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 1
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 1
       }
     ],
     "IFCPROPERTYSET": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 20221
       },
       {
-        "id": "IFCPROPERTYSINGLEVALUE",
+        "name": "IFCPROPERTYSINGLEVALUE",
         "count": 83498
       }
     ],
     "IFCRELDEFINESBYPROPERTIES": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 18619
       },
       {
-        "id": "IFCSITE",
+        "name": "IFCSITE",
         "count": 2
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 18619
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 22306
       },
       {
-        "id": "IFCOPENINGELEMENT",
+        "name": "IFCOPENINGELEMENT",
         "count": 338
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 6506
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 1350
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 402
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 270
       },
       {
-        "id": "IFCFURNISHINGELEMENT",
+        "name": "IFCFURNISHINGELEMENT",
         "count": 120
       },
       {
-        "id": "IFCSTAIR",
+        "name": "IFCSTAIR",
         "count": 18
       },
       {
-        "id": "IFCSTAIRFLIGHT",
+        "name": "IFCSTAIRFLIGHT",
         "count": 12
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 1480
       },
       {
-        "id": "IFCMEMBER",
+        "name": "IFCMEMBER",
         "count": 4024
       },
       {
-        "id": "IFCPLATE",
+        "name": "IFCPLATE",
         "count": 304
       },
       {
-        "id": "IFCRAILING",
+        "name": "IFCRAILING",
         "count": 106
       }
     ],
     "IFCPOLYLINE": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 14424
       }
     ],
     "IFCSHAPEREPRESENTATION": [
       {
-        "id": "IFCGEOMETRICREPRESENTATIONSUBCONTEXT",
+        "name": "IFCGEOMETRICREPRESENTATIONSUBCONTEXT",
         "count": 9151
       },
       {
-        "id": "IFCPOLYLINE",
+        "name": "IFCPOLYLINE",
         "count": 3252
       },
       {
-        "id": "IFCEXTRUDEDAREASOLID",
+        "name": "IFCEXTRUDEDAREASOLID",
         "count": 6332
       },
       {
-        "id": "IFCBOUNDINGBOX",
+        "name": "IFCBOUNDINGBOX",
         "count": 6262
       },
       {
-        "id": "IFCBOOLEANCLIPPINGRESULT",
+        "name": "IFCBOOLEANCLIPPINGRESULT",
         "count": 46
       },
       {
-        "id": "IFCFACETEDBREP",
+        "name": "IFCFACETEDBREP",
         "count": 4642
       },
       {
-        "id": "IFCMAPPEDITEM",
+        "name": "IFCMAPPEDITEM",
         "count": 2774
       },
       {
-        "id": "IFCTRIMMEDCURVE",
+        "name": "IFCTRIMMEDCURVE",
         "count": 168
       }
     ],
     "IFCAXIS2PLACEMENT2D": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 3000
       },
       {
-        "id": "IFCDIRECTION",
+        "name": "IFCDIRECTION",
         "count": 3000
       }
     ],
     "IFCRECTANGLEPROFILEDEF": [
       {
-        "id": "IFCAXIS2PLACEMENT2D",
+        "name": "IFCAXIS2PLACEMENT2D",
         "count": 2698
       }
     ],
     "IFCEXTRUDEDAREASOLID": [
       {
-        "id": "IFCRECTANGLEPROFILEDEF",
+        "name": "IFCRECTANGLEPROFILEDEF",
         "count": 2698
       },
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 3189
       },
       {
-        "id": "IFCDIRECTION",
+        "name": "IFCDIRECTION",
         "count": 3189
       },
       {
-        "id": "IFCARBITRARYCLOSEDPROFILEDEF",
+        "name": "IFCARBITRARYCLOSEDPROFILEDEF",
         "count": 434
       },
       {
-        "id": "IFCARBITRARYPROFILEDEFWITHVOIDS",
+        "name": "IFCARBITRARYPROFILEDEFWITHVOIDS",
         "count": 54
       },
       {
-        "id": "IFCCIRCLEPROFILEDEF",
+        "name": "IFCCIRCLEPROFILEDEF",
         "count": 3
       }
     ],
     "IFCSURFACESTYLERENDERING": [
       {
-        "id": "IFCCOLOURRGB",
+        "name": "IFCCOLOURRGB",
         "count": 60
       }
     ],
     "IFCSURFACESTYLE": [
       {
-        "id": "IFCSURFACESTYLERENDERING",
+        "name": "IFCSURFACESTYLERENDERING",
         "count": 120
       }
     ],
     "IFCPRESENTATIONSTYLEASSIGNMENT": [
       {
-        "id": "IFCSURFACESTYLE",
+        "name": "IFCSURFACESTYLE",
         "count": 220
       }
     ],
     "IFCSTYLEDITEM": [
       {
-        "id": "IFCEXTRUDEDAREASOLID",
+        "name": "IFCEXTRUDEDAREASOLID",
         "count": 2513
       },
       {
-        "id": "IFCPRESENTATIONSTYLEASSIGNMENT",
+        "name": "IFCPRESENTATIONSTYLEASSIGNMENT",
         "count": 9510
       },
       {
-        "id": "IFCFACETEDBREP",
+        "name": "IFCFACETEDBREP",
         "count": 2183
       }
     ],
     "IFCBOUNDINGBOX": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 3131
       }
     ],
     "IFCPRODUCTDEFINITIONSHAPE": [
       {
-        "id": "IFCSHAPEREPRESENTATION",
+        "name": "IFCSHAPEREPRESENTATION",
         "count": 17340
       }
     ],
     "IFCWALLSTANDARDCASE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 1607
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 1607
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 1607
       }
     ],
     "IFCSTYLEDREPRESENTATION": [
       {
-        "id": "IFCGEOMETRICREPRESENTATIONCONTEXT",
+        "name": "IFCGEOMETRICREPRESENTATIONCONTEXT",
         "count": 59
       },
       {
-        "id": "IFCSTYLEDITEM",
+        "name": "IFCSTYLEDITEM",
         "count": 118
       }
     ],
     "IFCMATERIALDEFINITIONREPRESENTATION": [
       {
-        "id": "IFCSTYLEDREPRESENTATION",
+        "name": "IFCSTYLEDREPRESENTATION",
         "count": 118
       },
       {
-        "id": "IFCMATERIAL",
+        "name": "IFCMATERIAL",
         "count": 59
       }
     ],
     "IFCMATERIALLAYER": [
       {
-        "id": "IFCMATERIAL",
+        "name": "IFCMATERIAL",
         "count": 37
       }
     ],
     "IFCMATERIALLAYERSET": [
       {
-        "id": "IFCMATERIALLAYER",
+        "name": "IFCMATERIALLAYER",
         "count": 74
       }
     ],
     "IFCMATERIALLAYERSETUSAGE": [
       {
-        "id": "IFCMATERIALLAYERSET",
+        "name": "IFCMATERIALLAYERSET",
         "count": 1741
       }
     ],
     "IFCWALLTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 17
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 166
       }
     ],
     "IFCCLASSIFICATIONREFERENCE": [
       {
-        "id": "IFCCLASSIFICATION",
+        "name": "IFCCLASSIFICATION",
         "count": 35
       }
     ],
     "IFCRELASSOCIATESCLASSIFICATION": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 35
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 3214
       },
       {
-        "id": "IFCOPENINGELEMENT",
+        "name": "IFCOPENINGELEMENT",
         "count": 78
       },
       {
-        "id": "IFCCLASSIFICATIONREFERENCE",
+        "name": "IFCCLASSIFICATIONREFERENCE",
         "count": 35
       },
       {
-        "id": "IFCDOORSTYLE",
+        "name": "IFCDOORSTYLE",
         "count": 222
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 1332
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 260
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 70
       },
       {
-        "id": "IFCWINDOWSTYLE",
+        "name": "IFCWINDOWSTYLE",
         "count": 18
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 62
       },
       {
-        "id": "IFCFURNITURETYPE",
+        "name": "IFCFURNITURETYPE",
         "count": 8
       },
       {
-        "id": "IFCFURNISHINGELEMENT",
+        "name": "IFCFURNISHINGELEMENT",
         "count": 32
       },
       {
-        "id": "IFCSTAIR",
+        "name": "IFCSTAIR",
         "count": 4
       },
       {
-        "id": "IFCSTAIRFLIGHT",
+        "name": "IFCSTAIRFLIGHT",
         "count": 4
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 288
       },
       {
-        "id": "IFCMEMBER",
+        "name": "IFCMEMBER",
         "count": 1006
       },
       {
-        "id": "IFCPLATE",
+        "name": "IFCPLATE",
         "count": 76
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXYTYPE",
+        "name": "IFCBUILDINGELEMENTPROXYTYPE",
         "count": 106
       },
       {
-        "id": "IFCRAILING",
+        "name": "IFCRAILING",
         "count": 22
       }
     ],
     "IFCRELFILLSELEMENT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 637
       },
       {
-        "id": "IFCOPENINGELEMENT",
+        "name": "IFCOPENINGELEMENT",
         "count": 637
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 606
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 31
       }
     ],
     "IFCOPENINGELEMENT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 678
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 678
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 678
       }
     ],
     "IFCRELVOIDSELEMENT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 678
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 678
       },
       {
-        "id": "IFCOPENINGELEMENT",
+        "name": "IFCOPENINGELEMENT",
         "count": 678
       }
     ],
     "IFCPLANE": [
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 43
       }
     ],
     "IFCPOLYGONALBOUNDEDHALFSPACE": [
       {
-        "id": "IFCPLANE",
+        "name": "IFCPLANE",
         "count": 33
       },
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 33
       },
       {
-        "id": "IFCPOLYLINE",
+        "name": "IFCPOLYLINE",
         "count": 33
       }
     ],
     "IFCBOOLEANCLIPPINGRESULT": [
       {
-        "id": "IFCEXTRUDEDAREASOLID",
+        "name": "IFCEXTRUDEDAREASOLID",
         "count": 23
       },
       {
-        "id": "IFCPOLYGONALBOUNDEDHALFSPACE",
+        "name": "IFCPOLYGONALBOUNDEDHALFSPACE",
         "count": 33
       },
       {
-        "id": "IFCHALFSPACESOLID",
+        "name": "IFCHALFSPACESOLID",
         "count": 10
       },
       {
-        "id": "IFCBOOLEANCLIPPINGRESULT",
+        "name": "IFCBOOLEANCLIPPINGRESULT",
         "count": 20
       }
     ],
     "IFCPOLYLOOP": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 10449140
       }
     ],
     "IFCFACEOUTERBOUND": [
       {
-        "id": "IFCPOLYLOOP",
+        "name": "IFCPOLYLOOP",
         "count": 1582891
       }
     ],
     "IFCFACE": [
       {
-        "id": "IFCFACEOUTERBOUND",
+        "name": "IFCFACEOUTERBOUND",
         "count": 3165782
       },
       {
-        "id": "IFCFACEBOUND",
+        "name": "IFCFACEBOUND",
         "count": 250
       }
     ],
     "IFCFACEBOUND": [
       {
-        "id": "IFCPOLYLOOP",
+        "name": "IFCPOLYLOOP",
         "count": 125
       }
     ],
     "IFCCLOSEDSHELL": [
       {
-        "id": "IFCFACE",
+        "name": "IFCFACE",
         "count": 3165782
       }
     ],
     "IFCFACETEDBREP": [
       {
-        "id": "IFCCLOSEDSHELL",
+        "name": "IFCCLOSEDSHELL",
         "count": 2321
       }
     ],
     "IFCREPRESENTATIONMAP": [
       {
-        "id": "IFCAXIS2PLACEMENT3D",
+        "name": "IFCAXIS2PLACEMENT3D",
         "count": 481
       },
       {
-        "id": "IFCSHAPEREPRESENTATION",
+        "name": "IFCSHAPEREPRESENTATION",
         "count": 481
       }
     ],
     "IFCDOORLININGPROPERTIES": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 123
       }
     ],
     "IFCDOORPANELPROPERTIES": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 123
       }
     ],
     "IFCDOORSTYLE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 123
       },
       {
-        "id": "IFCDOORLININGPROPERTIES",
+        "name": "IFCDOORLININGPROPERTIES",
         "count": 246
       },
       {
-        "id": "IFCDOORPANELPROPERTIES",
+        "name": "IFCDOORPANELPROPERTIES",
         "count": 246
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 658
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 242
       }
     ],
     "IFCCARTESIANTRANSFORMATIONOPERATOR3D": [
       {
-        "id": "IFCCARTESIANPOINT",
+        "name": "IFCCARTESIANPOINT",
         "count": 1
       }
     ],
     "IFCMAPPEDITEM": [
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 1387
       },
       {
-        "id": "IFCCARTESIANTRANSFORMATIONOPERATOR3D",
+        "name": "IFCCARTESIANTRANSFORMATIONOPERATOR3D",
         "count": 1387
       }
     ],
     "IFCDOOR": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 675
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 675
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 675
       }
     ],
     "IFCMATERIALLIST": [
       {
-        "id": "IFCMATERIAL",
+        "name": "IFCMATERIAL",
         "count": 6070
       }
     ],
     "IFCBUILDINGELEMENTPROXYTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 64
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 248
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 126
       }
     ],
     "IFCBUILDINGELEMENTPROXY": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 130
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 130
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 130
       }
     ],
     "IFCARBITRARYCLOSEDPROFILEDEF": [
       {
-        "id": "IFCPOLYLINE",
+        "name": "IFCPOLYLINE",
         "count": 326
       },
       {
-        "id": "IFCCOMPOSITECURVE",
+        "name": "IFCCOMPOSITECURVE",
         "count": 108
       }
     ],
     "IFCARBITRARYPROFILEDEFWITHVOIDS": [
       {
-        "id": "IFCPOLYLINE",
+        "name": "IFCPOLYLINE",
         "count": 300
       },
       {
-        "id": "IFCCOMPOSITECURVE",
+        "name": "IFCCOMPOSITECURVE",
         "count": 2
       }
     ],
     "IFCSLAB": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 35
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 35
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 35
       }
     ],
     "IFCSLABTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 35
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 318
       }
     ],
     "IFCHALFSPACESOLID": [
       {
-        "id": "IFCPLANE",
+        "name": "IFCPLANE",
         "count": 10
       }
     ],
     "IFCGROUP": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 29
       }
     ],
     "IFCWINDOWLININGPROPERTIES": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 10
       }
     ],
     "IFCWINDOWSTYLE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 10
       },
       {
-        "id": "IFCWINDOWLININGPROPERTIES",
+        "name": "IFCWINDOWLININGPROPERTIES",
         "count": 20
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 54
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 20
       }
     ],
     "IFCWINDOW": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 31
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 31
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 31
       }
     ],
     "IFCFURNITURETYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 4
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 16
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 8
       }
     ],
     "IFCFURNISHINGELEMENT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 16
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 16
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 16
       }
     ],
     "IFCCOMPOSITECURVESEGMENT": [
       {
-        "id": "IFCPOLYLINE",
+        "name": "IFCPOLYLINE",
         "count": 310
       },
       {
-        "id": "IFCTRIMMEDCURVE",
+        "name": "IFCTRIMMEDCURVE",
         "count": 215
       }
     ],
     "IFCCIRCLE": [
       {
-        "id": "IFCAXIS2PLACEMENT2D",
+        "name": "IFCAXIS2PLACEMENT2D",
         "count": 299
       }
     ],
     "IFCTRIMMEDCURVE": [
       {
-        "id": "IFCCIRCLE",
+        "name": "IFCCIRCLE",
         "count": 299
       }
     ],
     "IFCCOMPOSITECURVE": [
       {
-        "id": "IFCCOMPOSITECURVESEGMENT",
+        "name": "IFCCOMPOSITECURVESEGMENT",
         "count": 1050
       }
     ],
     "IFCSTAIR": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 2
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 2
       }
     ],
     "IFCSTAIRFLIGHT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 2
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 2
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 2
       }
     ],
     "IFCSTAIRFLIGHTTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 2
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 8
       }
     ],
     "IFCCURTAINWALL": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 144
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 144
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 103
       }
     ],
     "IFCCURTAINWALLTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 9
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 48
       }
     ],
     "IFCMEMBERTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 256
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 1530
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 510
       }
     ],
     "IFCMEMBER": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 503
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 503
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 503
       }
     ],
     "IFCRELAGGREGATES": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 44
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 247
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 46
       },
       {
-        "id": "IFCMEMBER",
+        "name": "IFCMEMBER",
         "count": 1006
       },
       {
-        "id": "IFCPLATE",
+        "name": "IFCPLATE",
         "count": 76
       },
       {
-        "id": "IFCSTAIR",
+        "name": "IFCSTAIR",
         "count": 2
       },
       {
-        "id": "IFCSTAIRFLIGHT",
+        "name": "IFCSTAIRFLIGHT",
         "count": 4
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 4
       },
       {
-        "id": "IFCRAILING",
+        "name": "IFCRAILING",
         "count": 2
       },
       {
-        "id": "IFCPROJECT",
+        "name": "IFCPROJECT",
         "count": 1
       },
       {
-        "id": "IFCSITE",
+        "name": "IFCSITE",
         "count": 2
       }
     ],
     "IFCPLATETYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 28
       },
       {
-        "id": "IFCPROPERTYSET",
+        "name": "IFCPROPERTYSET",
         "count": 158
       },
       {
-        "id": "IFCREPRESENTATIONMAP",
+        "name": "IFCREPRESENTATIONMAP",
         "count": 56
       }
     ],
     "IFCPLATE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 38
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 38
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 38
       }
     ],
     "IFCCIRCLEPROFILEDEF": [
       {
-        "id": "IFCAXIS2PLACEMENT2D",
+        "name": "IFCAXIS2PLACEMENT2D",
         "count": 3
       }
     ],
     "IFCRAILING": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 11
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 11
       },
       {
-        "id": "IFCPRODUCTDEFINITIONSHAPE",
+        "name": "IFCPRODUCTDEFINITIONSHAPE",
         "count": 11
       }
     ],
     "IFCDISTRIBUTIONPORT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 3
       },
       {
-        "id": "IFCLOCALPLACEMENT",
+        "name": "IFCLOCALPLACEMENT",
         "count": 3
       }
     ],
     "IFCRELCONNECTSPORTTOELEMENT": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 3
       },
       {
-        "id": "IFCDISTRIBUTIONPORT",
+        "name": "IFCDISTRIBUTIONPORT",
         "count": 3
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 3
       }
     ],
     "IFCRELASSIGNSTOGROUP": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 29
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 38
       },
       {
-        "id": "IFCGROUP",
+        "name": "IFCGROUP",
         "count": 29
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 180
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 6
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 12
       }
     ],
     "IFCRELCONTAINEDINSPATIALSTRUCTURE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 1
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 3214
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 1304
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 260
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 66
       },
       {
-        "id": "IFCOPENINGELEMENT",
+        "name": "IFCOPENINGELEMENT",
         "count": 8
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 62
       },
       {
-        "id": "IFCFURNISHINGELEMENT",
+        "name": "IFCFURNISHINGELEMENT",
         "count": 32
       },
       {
-        "id": "IFCSTAIR",
+        "name": "IFCSTAIR",
         "count": 4
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 82
       },
       {
-        "id": "IFCRAILING",
+        "name": "IFCRAILING",
         "count": 20
       },
       {
-        "id": "IFCSITE",
+        "name": "IFCSITE",
         "count": 1
       }
     ],
     "IFCRELASSOCIATESMATERIAL": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 2712
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 3214
       },
       {
-        "id": "IFCMATERIALLAYERSETUSAGE",
+        "name": "IFCMATERIALLAYERSETUSAGE",
         "count": 1741
       },
       {
-        "id": "IFCWALLTYPE",
+        "name": "IFCWALLTYPE",
         "count": 34
       },
       {
-        "id": "IFCMATERIALLAYERSET",
+        "name": "IFCMATERIALLAYERSET",
         "count": 29
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 70
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 206
       },
       {
-        "id": "IFCCURTAINWALLTYPE",
+        "name": "IFCCURTAINWALLTYPE",
         "count": 4
       },
       {
-        "id": "IFCDOORSTYLE",
+        "name": "IFCDOORSTYLE",
         "count": 246
       },
       {
-        "id": "IFCMATERIAL",
+        "name": "IFCMATERIAL",
         "count": 10
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 1350
       },
       {
-        "id": "IFCMATERIALLIST",
+        "name": "IFCMATERIALLIST",
         "count": 932
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXYTYPE",
+        "name": "IFCBUILDINGELEMENTPROXYTYPE",
         "count": 126
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 258
       },
       {
-        "id": "IFCSLABTYPE",
+        "name": "IFCSLABTYPE",
         "count": 62
       },
       {
-        "id": "IFCSTAIRFLIGHT",
+        "name": "IFCSTAIRFLIGHT",
         "count": 4
       },
       {
-        "id": "IFCMEMBER",
+        "name": "IFCMEMBER",
         "count": 1006
       },
       {
-        "id": "IFCWINDOWSTYLE",
+        "name": "IFCWINDOWSTYLE",
         "count": 20
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 62
       },
       {
-        "id": "IFCFURNITURETYPE",
+        "name": "IFCFURNITURETYPE",
         "count": 8
       },
       {
-        "id": "IFCFURNISHINGELEMENT",
+        "name": "IFCFURNISHINGELEMENT",
         "count": 32
       },
       {
-        "id": "IFCMEMBERTYPE",
+        "name": "IFCMEMBERTYPE",
         "count": 510
       },
       {
-        "id": "IFCPLATETYPE",
+        "name": "IFCPLATETYPE",
         "count": 56
       },
       {
-        "id": "IFCPLATE",
+        "name": "IFCPLATE",
         "count": 76
       },
       {
-        "id": "IFCRAILING",
+        "name": "IFCRAILING",
         "count": 4
       }
     ],
     "IFCRELDEFINESBYTYPE": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 546
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 3214
       },
       {
-        "id": "IFCWALLTYPE",
+        "name": "IFCWALLTYPE",
         "count": 17
       },
       {
-        "id": "IFCDOOR",
+        "name": "IFCDOOR",
         "count": 1350
       },
       {
-        "id": "IFCDOORSTYLE",
+        "name": "IFCDOORSTYLE",
         "count": 121
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXY",
+        "name": "IFCBUILDINGELEMENTPROXY",
         "count": 260
       },
       {
-        "id": "IFCBUILDINGELEMENTPROXYTYPE",
+        "name": "IFCBUILDINGELEMENTPROXYTYPE",
         "count": 64
       },
       {
-        "id": "IFCSLAB",
+        "name": "IFCSLAB",
         "count": 70
       },
       {
-        "id": "IFCSLABTYPE",
+        "name": "IFCSLABTYPE",
         "count": 35
       },
       {
-        "id": "IFCWINDOW",
+        "name": "IFCWINDOW",
         "count": 62
       },
       {
-        "id": "IFCWINDOWSTYLE",
+        "name": "IFCWINDOWSTYLE",
         "count": 10
       },
       {
-        "id": "IFCFURNISHINGELEMENT",
+        "name": "IFCFURNISHINGELEMENT",
         "count": 32
       },
       {
-        "id": "IFCFURNITURETYPE",
+        "name": "IFCFURNITURETYPE",
         "count": 4
       },
       {
-        "id": "IFCSTAIRFLIGHT",
+        "name": "IFCSTAIRFLIGHT",
         "count": 4
       },
       {
-        "id": "IFCSTAIRFLIGHTTYPE",
+        "name": "IFCSTAIRFLIGHTTYPE",
         "count": 2
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 288
       },
       {
-        "id": "IFCCURTAINWALLTYPE",
+        "name": "IFCCURTAINWALLTYPE",
         "count": 9
       },
       {
-        "id": "IFCMEMBER",
+        "name": "IFCMEMBER",
         "count": 1006
       },
       {
-        "id": "IFCMEMBERTYPE",
+        "name": "IFCMEMBERTYPE",
         "count": 256
       },
       {
-        "id": "IFCPLATE",
+        "name": "IFCPLATE",
         "count": 76
       },
       {
-        "id": "IFCPLATETYPE",
+        "name": "IFCPLATETYPE",
         "count": 28
       }
     ],
     "IFCRELCONNECTSPATHELEMENTS": [
       {
-        "id": "IFCOWNERHISTORY",
+        "name": "IFCOWNERHISTORY",
         "count": 1971
       },
       {
-        "id": "IFCWALLSTANDARDCASE",
+        "name": "IFCWALLSTANDARDCASE",
         "count": 3925
       },
       {
-        "id": "IFCCURTAINWALL",
+        "name": "IFCCURTAINWALL",
         "count": 17
       }
     ],
     "IFCPRESENTATIONLAYERASSIGNMENT": [
       {
-        "id": "IFCSHAPEREPRESENTATION",
+        "name": "IFCSHAPEREPRESENTATION",
         "count": 12036
       }
     ]
