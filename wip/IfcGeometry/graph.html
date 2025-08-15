@@ -16,7 +16,14 @@
             <label for="layoutMode"><strong>Layout:</strong></label>
             <select id="layoutMode">
                 <option value="force">Force</option>
-                <option value="hier">Hierarchical</option>
+                <option value="hier-right">Hierarchical →</option>
+                <option value="hier-down">Hierarchical ↓</option>
+                <option value="hier-left">Hierarchical ←</option>
+                <option value="hier-up">Hierarchical ↑</option>
+                <option value="circle">Circle</option>
+                <option value="grid">Grid</option>
+                <option value="radial">Radial (BFS)</option>
+                <option value="concentric">Concentric</option>
             </select>
         </div>
 
@@ -34,6 +41,8 @@
     <svg></svg>
 
     <script>
+
+
         // ===== Example hard-coded data =====
         // 'nodes' defines per-node properties (color, count).
         // 'relations' maps SOURCE -> one or more { name: TARGET, count: edgeCount }.
@@ -75,11 +84,25 @@
         let layoutMode = "force"; // "force" | "hier"
         let frozen = false;
 
-        const rScale = d3.scaleSqrt().domain([0, maxNodeCount]).range([12, 64]);
-
         // =======================
         // SVG & simulation
         // =======================
+
+        // Precompute once
+        const counts = nodes.map(n => n.count || 0).sort(d3.ascending);
+        const p95 = d3.quantile(counts, 0.95) || 1;
+
+        // Use capped domain and clamp
+        const rScale = d3.scaleSqrt()
+            .domain([0, p95])
+            .range([12, 48])
+            .clamp(true);
+
+        function nodeRadius(d) {
+            const c = Math.min(d.count || 0, p95);
+            return sizeByCount ? rScale(c) : 22;
+        }
+
         const svg = d3.select("svg");
         const container = svg.append("g");
 
@@ -180,9 +203,9 @@
         // =======================
         // Helpers
         // =======================
-        function nodeRadius(d) {
-            return sizeByCount ? (10 + rScale(d.count || 0)) : 22;
-        }
+
+
+
         function isPinned(d) { return d.fx != null && d.fy != null; }
 
         function toggleUserPin(d) {
@@ -237,17 +260,51 @@
             svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
         }
 
+        // ---- Graph helpers for layouts ----
+        function buildAdjacency() {
+            const map = new Map(nodes.map(n => [n.id, new Set()]));
+            for (const l of links) {
+                const a = idOf(l.source), b = idOf(l.target);
+                if (!map.has(a)) map.set(a, new Set());
+                if (!map.has(b)) map.set(b, new Set());
+                map.get(a).add(b);
+                map.get(b).add(a);
+            }
+            return map;
+        }
+
+        function degreeMap() {
+            const adj = buildAdjacency();
+            const deg = new Map(nodes.map(n => [n.id, 0]));
+            for (const [k, set] of adj) deg.set(k, set.size);
+            return deg;
+        }
+
+        function pickRootByDegree() {
+            const deg = degreeMap();
+            let best = nodes[0]?.id, bestD = -1;
+            for (const n of nodes) {
+                const d = deg.get(n.id) || 0;
+                if (d > bestD) { best = n.id; bestD = d; }
+            }
+            return best;
+        }
+
+        // Pins node positions as "layout" pins
+        function pinAt(n, x, y) {
+            n.x = x; n.y = y; n.fx = x; n.fy = y; n.pinMode = "layout";
+        }
+
         // =======================
         // Hierarchical layout (ELK)
         // =======================
         const elk = new ELK();
-        async function runHierLayout() {
-            // Create a simple layered graph for ELK
+        async function runHierLayout(direction = "RIGHT") {
             const elkGraph = {
                 id: "root",
                 layoutOptions: {
                     "elk.algorithm": "layered",
-                    "elk.direction": "RIGHT",
+                    "elk.direction": direction,                 // <— now dynamic
                     "elk.spacing.nodeNode": "30",
                     "elk.layered.spacing.nodeNodeBetweenLayers": "60",
                     "elk.spacing.edgeEdge": "20"
@@ -259,21 +316,17 @@
             };
 
             const result = await elk.layout(elkGraph);
-
-            // Pin nodes at ELK positions (as "layout" pins, distinct from user pins)
             const posById = new Map(result.children.map(c => [c.id, c]));
             nodes.forEach(n => {
                 const c = posById.get(n.id);
                 if (c) {
                     const x = c.x + c.width / 2, y = c.y + c.height / 2;
-                    n.x = x; n.y = y; n.fx = x; n.fy = y;
-                    if (n.pinMode !== "user") n.pinMode = "layout";
+                    pinAt(n, x, y);
                 }
             });
 
-            positionPinIcons();
-            ticked(); // reflect immediately
-            if (!frozen) { simulation.alpha(0.001).restart(); } // tiny nudge to settle links
+            positionPinIcons(); ticked();
+            if (!frozen) simulation.alpha(0.001).restart();
         }
 
         function clearLayoutPins() {
@@ -282,6 +335,162 @@
             });
             positionPinIcons();
             if (!frozen) simulation.alpha(0.15).restart();
+        }
+
+
+        function runCircleLayout() {
+            const cx = svg.node().clientWidth / 2;
+            const cy = svg.node().clientHeight / 2;
+            const R = Math.max(120, Math.min(cx, cy) - 60);
+            const N = nodes.length;
+            nodes.forEach((n, i) => {
+                const a = (2 * Math.PI * i) / N;
+                pinAt(n, cx + R * Math.cos(a), cy + R * Math.sin(a));
+            });
+            positionPinIcons(); ticked();
+            if (!frozen) simulation.alpha(0.03).restart();
+        }
+
+        function runGridLayout() {
+            const W = svg.node().clientWidth, H = svg.node().clientHeight;
+            const N = nodes.length;
+            const cols = Math.ceil(Math.sqrt(N * (W / H)));
+            const rows = Math.ceil(N / cols);
+            const pad = 80;
+            const cellW = (W - 2 * pad) / Math.max(1, cols);
+            const cellH = (H - 2 * pad) / Math.max(1, rows);
+            nodes.forEach((n, i) => {
+                const c = i % cols, r = Math.floor(i / cols);
+                const x = pad + c * cellW + cellW / 2;
+                const y = pad + r * cellH + cellH / 2;
+                pinAt(n, x, y);
+            });
+            positionPinIcons(); ticked();
+            if (!frozen) simulation.alpha(0.03).restart();
+        }
+
+        function runRadialLayout(rootId = null) {
+            const adj = buildAdjacency();
+            const root = rootId || pickRootByDegree();
+
+            // BFS layers
+            const depth = new Map(nodes.map(n => [n.id, Infinity]));
+            const Q = [root];
+            depth.set(root, 0);
+            for (let qi = 0; qi < Q.length; qi++) {
+                const u = Q[qi];
+                for (const v of (adj.get(u) || [])) if (depth.get(v) === Infinity) {
+                    depth.set(v, depth.get(u) + 1);
+                    Q.push(v);
+                }
+            }
+            // Unreached nodes => last layer
+            let maxD = 0;
+            for (const v of depth.values()) if (isFinite(v) && v > maxD) maxD = v;
+            for (const n of nodes) if (depth.get(n.id) === Infinity) depth.set(n.id, maxD + 1);
+            maxD = Math.max(maxD, ...nodes.map(n => depth.get(n.id)));
+
+            // Place per layer on concentric circles
+            const cx = svg.node().clientWidth / 2;
+            const cy = svg.node().clientHeight / 2;
+            const ringGap = 140; // distance between layers
+            const baseR = 40;
+
+            // Group nodes by depth
+            const layers = Array.from({ length: maxD + 1 }, () => []);
+            nodes.forEach(n => layers[depth.get(n.id)].push(n));
+
+            layers.forEach((layer, li) => {
+                const R = baseR + li * ringGap;
+                const k = layer.length;
+                if (k === 1) {
+                    pinAt(layer[0], cx + R, cy);
+                } else {
+                    layer.forEach((n, i) => {
+                        const a = (2 * Math.PI * i) / k;
+                        pinAt(n, cx + R * Math.cos(a), cy + R * Math.sin(a));
+                    });
+                }
+            });
+
+            positionPinIcons(); ticked();
+            if (!frozen) simulation.alpha(0.03).restart();
+        }
+
+        function runConcentricLayout({
+            baseR = 60,        // starting radius for inner ring (px)
+            gapPx = 18,        // linear gap along the ring between neighbors (px)
+            minRadialGap = 40  // extra radial clearance between rings (px)
+        } = {}) {
+            const rect = svg.node().getBoundingClientRect();
+            const cx = (rect.width || window.innerWidth) / 2;
+            const cy = (rect.height || window.innerHeight) / 2;
+            const twoPi = 2 * Math.PI;
+
+            // Order nodes (big first spreads them out better). Tweak metric as desired.
+            const deg = degreeMap();
+            const metric = n => (deg.get(n.id) || 0) + (n.count || 0);
+            const ordered = nodes.slice().sort((a, b) => metric(b) - metric(a));
+
+            const rings = [];
+            let R = baseR;
+            let i = 0;
+
+            // Greedy packing by circumference: put nodes on a ring until their
+            // required arc lengths would exceed the ring's circumference.
+            while (i < ordered.length) {
+                const ring = [];
+                let circ = twoPi * R;
+                let used = 0;
+                let maxR = 0;
+
+                while (i < ordered.length) {
+                    const n = ordered[i];
+                    const ri = nodeRadius(n);          // pixel radius of this node
+                    const need = 2 * ri + gapPx;       // required arc length on circumference (px)
+
+                    // If first node can't fit, grow ring so it does
+                    if (ring.length === 0 && need > circ) {
+                        R = (need * 1.05) / twoPi;
+                        circ = twoPi * R;
+                    }
+
+                    // Take it if it fits (or if it's the first)
+                    if (ring.length === 0 || used + need <= circ) {
+                        ring.push({ n, ri, need });
+                        used += need;
+                        if (ri > maxR) maxR = ri;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+
+                rings.push({ R, ring, maxR });
+                // Grow next ring by this ring’s max diameter + extra gap
+                R += (maxR * 2 + minRadialGap);
+            }
+
+            // Place nodes on each ring: turn linear arc lengths into angles so the circle is filled.
+            rings.forEach(({ R, ring }) => {
+                const circ = twoPi * R;
+                const totalNeed = ring.reduce((s, x) => s + x.need, 0);
+                const scale = circ / totalNeed; // stretch factor so we use full 360°
+
+                let t = 0; // accumulated arc length
+                ring.forEach(({ n, need }) => {
+                    const L = need * scale;   // actual arc length assigned
+                    const a = (t + L / 2) / R; // angle (rad) = arc / radius, centered in its slot
+                    const x = cx + R * Math.cos(a);
+                    const y = cy + R * Math.sin(a);
+                    pinAt(n, x, y);           // sets x,y,fx,fy and pinMode="layout"
+                    t += L;
+                });
+            });
+
+            positionPinIcons();
+            ticked();
+            if (!frozen) simulation.alpha(0.03).restart();
         }
 
         // =======================
@@ -360,11 +569,22 @@
         // Control handlers
         layoutModeSel.addEventListener("change", async () => {
             layoutMode = layoutModeSel.value;
-            if (layoutMode === "hier") {
-                await runHierLayout();
-            } else {
+
+            if (layoutMode === "force") {
                 clearLayoutPins();
+            } else if (layoutMode.startsWith("hier-")) {
+                const dir = layoutMode.split("-")[1].toUpperCase(); // RIGHT/DOWN/LEFT/UP
+                await runHierLayout(dir);
+            } else if (layoutMode === "circle") {
+                runCircleLayout();
+            } else if (layoutMode === "grid") {
+                runGridLayout();
+            } else if (layoutMode === "radial") {
+                runRadialLayout(); // or pass a specific rootId
+            } else if (layoutMode === "concentric") {
+                runConcentricLayout({ rings: 4 });
             }
+
             saveState();
         });
 
