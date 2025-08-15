@@ -75,8 +75,7 @@
         let layoutMode = "force"; // "force" | "hier"
         let frozen = false;
 
-        const rScale = d3.scaleSqrt().domain([0, maxNodeCount]).range([12, 32]);
-        const edgeWScale = d3.scaleLinear().domain([0, maxEdgeCount]).range([1.5, 6]);
+        const rScale = d3.scaleSqrt().domain([0, maxNodeCount]).range([12, 64]);
 
         // =======================
         // SVG & simulation
@@ -123,7 +122,7 @@
                 d3.drag()
                     .on("start", (event, d) => {
                         if (!event.active && !frozen) simulation.alphaTarget(0.3).restart();
-                        if (!isPinned(d)) { d.fx = d.x; d.fy = d.y; } // temp fix while dragging
+                        if (!isPinned(d)) { d.pinMode = "user"; d.fx = d.x; d.fy = d.y; } // temp fix while dragging
                     })
                     .on("drag", (event, d) => {
                         d.fx = event.x; d.fy = event.y;
@@ -131,7 +130,6 @@
                     })
                     .on("end", (event, d) => {
                         if (!event.active && !frozen) simulation.alphaTarget(0);
-                        if (!isPinned(d)) { d.fx = null; d.fy = null; } // release if not pinned
                         saveState();
                     })
             );
@@ -196,10 +194,20 @@
             positionPinIcons();
         }
 
-        function unpinAll() {
-            nodes.forEach(d => { if (d.pinMode === "user") { d.fx = null; d.fy = null; d.pinMode = null; } });
+        function unpinAll({ includeLayout = true } = {}) {
+            let changed = false;
+            nodes.forEach(d => {
+                if (isPinned(d) && (includeLayout || d.pinMode !== "layout")) {
+                    d.fx = null; d.fy = null; d.pinMode = null;
+                    changed = true;
+                }
+            });
             positionPinIcons();
-        }
+            if (changed) {
+                if (!frozen) simulation.alpha(0.15).restart();
+                else ticked(); // at least redraw icons while frozen
+            }
+        }        
 
         function applySizes() {
             nodeCircle.attr("r", d => nodeRadius(d));
