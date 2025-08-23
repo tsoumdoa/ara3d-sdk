@@ -72,7 +72,6 @@
     <ProjectReference Include="..\Ara3D.IO.BFAST\Ara3D.IO.BFAST.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.IO.G3D\Ara3D.IO.G3D.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.IO.GltfExporter\Ara3D.IO.GltfExporter.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Ara3D.IO.IfcParser\Ara3D.IO.IfcParser.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.IO.PLY\Ara3D.IO.PLY.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.IO.StepParser\Ara3D.IO.StepParser.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.IO.VIM\Ara3D.IO.VIM.csproj" PrivateAssets="All" />

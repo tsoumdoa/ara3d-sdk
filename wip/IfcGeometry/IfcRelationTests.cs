@@ -40,7 +40,7 @@ public static class IfcRelationTests
         OutputRelations(graph, graph.InverseRelations);
     }
 
-    public static void OutputRelations(StepGraph graph, MultiDictionary<UInt128, UInt128> relations)
+    public static void OutputRelations(StepGraph graph, MultiDictionary<int, int> relations)
     {
         var nameRelations = new Dictionary<string, HashSet<string>>();
         foreach (var rel in relations)

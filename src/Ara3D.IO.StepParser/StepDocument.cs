@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Ara3D.Logging;
 using Ara3D.Memory;
 using Ara3D.Utils;
-using System.Runtime.CompilerServices;
 
 namespace Ara3D.IO.StepParser;
 
@@ -16,7 +15,7 @@ public sealed unsafe class StepDocument : IDisposable
     public readonly byte* DataEnd;
     public readonly IBuffer Data;
     public readonly UnmanagedList<StepDefinition> Definitions = new();
-    public readonly StepValueData ValueData;
+    public readonly StepRawValueData RawValueData;
 
     public StepDocument(FilePath filePath, ILogger logger = null)
         : this(Serializer.ReadAllBytesAligned(filePath), filePath, logger)
@@ -33,7 +32,7 @@ public sealed unsafe class StepDocument : IDisposable
         logger.Log($"Starting tokenization");
 
         var capacityEstimate = Data.NumBytes() / 32;
-        ValueData = new StepValueData((int)capacityEstimate);
+        RawValueData = new StepRawValueData((int)capacityEstimate);
         var estNumDefs = capacityEstimate / 8; // Estimate about 8 tokens per definition on average
         Definitions = new UnmanagedList<StepDefinition>((int)estNumDefs);
 
@@ -49,7 +48,6 @@ public sealed unsafe class StepDocument : IDisposable
                 break;
 
             //var id = StepValues.ParseId(idToken);
-
             //Debug.Assert(!Definitions.ContainsKey(id), $"Duplicate definition found for ID {id} in {filePath.GetFileName()}");
             //Debug.Assert(tokens.Count > 2, "Expected at least 3 tokens for a definition identifier begin_group end_group"));
             //Debug.Assert(tokens[0].Type == StepTokenType.Identifier, "Expected Identifier token at start");
@@ -58,17 +56,34 @@ public sealed unsafe class StepDocument : IDisposable
 
             var curToken = tokens.Begin();
             var endToken = tokens.End();
-            var valueIndex = ValueData.Values.Count;
-            ValueData.AddTokens(ref curToken, endToken);
+            var valueIndex = RawValueData.Values.Count;
+            RawValueData.AddTokens(ref curToken, endToken);
             //Debug.Assert(curToken == endToken, "Did not consume all tokens in definition");
                 
-            var definition = new StepDefinition(idToken, valueIndex);
+            var definition = new StepDefinition(idToken, valueIndex, cur);
             Definitions.Add(definition);
                 
             tokens.Clear();
         }
 
-        logger.Log($"Number of instance definitions = {Definitions.Count}");
+#if DEBUG
+        foreach (var val in RawValueData.Values)
+        {
+            if (val.IsEntity)
+            {
+                var entityAttributesIndex = val.GetEntityAttributeValueIndex();
+                if (!RawValueData.Values[entityAttributesIndex].IsList)
+                    throw new Exception("ERROR!");
+            }
+        }
+
+        foreach (var def in Definitions)
+        {
+            var tmp = RawValueData.GetEntityValue(def);
+            if (!tmp.IsEntity)
+                throw new Exception($"Expected definition {def.Id} to be an entity");
+        }
+#endif
     }
 
     public static bool Assert(bool condition, string text)
@@ -88,26 +103,6 @@ public sealed unsafe class StepDocument : IDisposable
     public static StepDocument Create(FilePath fp) 
         => new(fp);
 
-    public sealed class U128Comparer : IEqualityComparer<UInt128>
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(UInt128 x, UInt128 y) => x == y;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetHashCode(UInt128 v)
-        {
-            // Extract halves; use your own accessors if custom struct
-            ulong lo = (ulong)v;
-            ulong hi = (ulong)(v >> 64);
-            // Mix: xor-shifts + multiply provides good avalanching
-            ulong x = lo ^ (hi * 0x9E3779B97F4A7C15UL);
-            x ^= x >> 33; x *= 0xff51afd7ed558ccdUL;
-            x ^= x >> 33; x *= 0xc4ceb9fe1a85ec53UL;
-            x ^= x >> 33;
-            return (int)x;
-        }
-
-    }
     public Dictionary<StepToken, StepDefinition> GetDefinitionLookup()
     {
         var r = new Dictionary<StepToken, StepDefinition>(Definitions.Count);
@@ -123,8 +118,30 @@ public sealed unsafe class StepDocument : IDisposable
         var r = new Dictionary<StepToken, string>(Definitions.Count);
         foreach (var def in Definitions)
         {
-            r.TryAdd(def.IdToken, ValueData.GetEntityName(def));
+            r.TryAdd(def.IdToken, RawValueData.GetEntityName(def));
         }
         return r;
     }
+
+    public ReadOnlySpan<byte> Epilogue()
+    {
+        if (Definitions.Count == 0)
+            return new(DataStart, (int)(DataEnd - DataStart));
+
+        var def = Definitions[^1];
+        var end = def.End;
+        return new(end, (int)(DataEnd - end));
+    }
+
+    public ReadOnlySpan<byte> BeforeDef(int index)
+    {
+        Debug.Assert(index >= 0);
+        Debug.Assert(index < Definitions.Count);
+        var begin = index == 0 ? DataStart : Definitions[index-1].End;
+        var end = Definitions[index].Begin;
+        return new(begin, (int)(end - begin));
+    }
+
+    public IEnumerable<StepDefinition> GetDefinitions(string name)
+        => Definitions.Where(def => RawValueData.GetEntityName(def) == name);
 }

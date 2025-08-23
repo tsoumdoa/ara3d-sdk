@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Ara3D.Memory;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Ara3D.IO.StepParser;
 
-public readonly unsafe struct StepToken
+public readonly unsafe struct StepToken : IEquatable<StepToken>
 {
     public readonly byte* Begin;
     public readonly byte* End;
@@ -44,6 +42,10 @@ public readonly unsafe struct StepToken
     public double AsNumber()
         => double.Parse(Span);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int AsId()
+        => int.Parse(Span.Slice(1));
+
     /// <summary>
     /// Reads 16 consecutive bytes from <paramref name="p"/> into a <see cref="UInt128"/>
     /// and zeroes every byte from index <paramref name="n"/> (inclusive) up to byte 15.
@@ -59,25 +61,38 @@ public readonly unsafe struct StepToken
         return value & mask;
     }
 
-    /// <summary>
-    /// Read 16 bytes from the token, zeroing the tail bytes
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public UInt128 ToUInt128()
-        => ReadU128(Begin, (int)(End - Begin));
-
     public int Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => (int)(End - Begin);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(StepToken other)
-        => Span.SequenceEqual(other.Span);
+        => Length == other.Length && MemEquals(Begin, other.Begin, Length);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool MemEquals(byte* a, byte* b, int len)
+    {
+        // Compare 8, then 4, then tail bytes (unaligned OK)
+        int i = 0;
+        for (; i + 8 <= len; i += 8)
+            if (Unsafe.ReadUnaligned<ulong>(a + i) != Unsafe.ReadUnaligned<ulong>(b + i)) return false;
+        if ((len - i) >= 4)
+        {
+            if (Unsafe.ReadUnaligned<uint>(a + i) != Unsafe.ReadUnaligned<uint>(b + i)) return false;
+            i += 4;
+        }
+        for (; i < len; i++)
+            if (a[i] != b[i]) return false;
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Equals(object? obj)
         => obj is StepToken other && Equals(other);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode()
     {
         var hc = new HashCode();

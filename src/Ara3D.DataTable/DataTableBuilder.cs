@@ -27,6 +27,9 @@ namespace Ara3D.DataTable
         public DataColumnBuilder AddColumn(string name, Type type)
             => AddColumn([], name, type);
 
+        public DataColumnBuilder AddColumn<T>(IReadOnlyList<T> values, string name)
+            => AddColumn(values.Select(v => (object)v).ToArray(), name, typeof(T));
+
         public DataColumnBuilder AddColumn(IReadOnlyList<object> values, string name, Type type)
         {
             if (Columns.Count != 0)

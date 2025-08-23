@@ -10,4 +10,5 @@ public enum StepKind
     Unassigned = 5,
     Symbol = 6,
     String = 7,
+    Unknown = 8,
 }

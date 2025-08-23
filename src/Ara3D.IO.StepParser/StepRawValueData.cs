@@ -10,13 +10,13 @@ namespace Ara3D.IO.StepParser;
 /// Acts as a factory for values and tokens, stores the data associated with them and provides methods to access the data.
 /// This allows tokens and values to stay as simple unmanaged types of a fixed length which greatly enhances performance.   
 /// </summary>
-public unsafe class StepValueData
+public unsafe class StepRawValueData
 {
-    public UnmanagedList<StepValue> Values = new();
+    public UnmanagedList<StepRawValue> Values = new();
     public UnmanagedList<StepToken> Tokens = new();
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepValueData(int capacity)
+    public StepRawValueData(int capacity)
     {
         Values.Accomodate(capacity);
         Tokens.Accomodate(capacity);
@@ -93,7 +93,12 @@ public unsafe class StepValueData
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddEntity(StepToken token)
-        => AddTokenAndValue(token, StepKind.Entity);
+    {
+        var tokenIndex = AddToken(token);
+        var valueIndex = Values.Count;
+        var val = new StepRawValue(StepKind.Entity, tokenIndex, valueIndex + 1);
+        AddValue(val);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddNumber(StepToken token)
@@ -107,13 +112,12 @@ public unsafe class StepValueData
     private void AddSymbol(StepToken token)
         => AddTokenAndValue(token, StepKind.Symbol);
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddTokenAndValue(StepToken token, StepKind kind)
     {
         Debug.Assert(kind is StepKind.Entity or StepKind.Id or StepKind.Number or StepKind.String or StepKind.Symbol);
         var id = AddToken(token);
-        AddValue(new StepValue(kind, id));
+        AddValue(new StepRawValue(kind, id));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -122,7 +126,7 @@ public unsafe class StepValueData
         // Advance past the begin list 
         cur++;
 
-        AddValue(new StepValue(StepKind.List, 0));
+        AddValue(new StepRawValue(StepKind.List, 0));
         var curIndex = Values.Count;
 
         while (cur != end && cur->Type != StepTokenType.EndGroup)
@@ -132,19 +136,19 @@ public unsafe class StepValueData
         }
 
         var listCount = Values.Count - curIndex;
-        Values[curIndex-1] = new StepValue(StepKind.List, curIndex, listCount);
+        Values[curIndex-1] = new StepRawValue(StepKind.List, curIndex, listCount);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddRedeclared()
-        => AddValue(new StepValue(StepKind.Redeclared, 0));
+        => AddValue(new StepRawValue(StepKind.Redeclared, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddUnassigned()
-        => AddValue(new StepValue(StepKind.Unassigned, 0));
+        => AddValue(new StepRawValue(StepKind.Unassigned, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void AddValue(StepValue value)
+    private void AddValue(StepRawValue value)
         => Values.Add(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -159,10 +163,14 @@ public unsafe class StepValueData
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetEntityName(StepDefinition def)
-        => Tokens[Values[def.ValueIndex].Index].ToString();
+        => GetEntityName(GetEntityValue(def));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepValue GetEntityValue(StepDefinition def)
+    public string GetEntityName(StepRawValue entity)
+        => Tokens[entity.Index].ToString();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public StepRawValue GetEntityValue(StepDefinition def)
     {
         var r = Values[def.ValueIndex];
         Debug.Assert(r.Kind == StepKind.Entity);
@@ -170,7 +178,7 @@ public unsafe class StepValueData
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepValue GetAttributesValue(StepDefinition def)
+    public StepRawValue GetEntityAttributesValue(StepDefinition def)
     {
         var r = Values[def.ValueIndex + 1];
         Debug.Assert(r.Kind == StepKind.List);
@@ -178,21 +186,21 @@ public unsafe class StepValueData
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepValue[] GetAttributes(StepDefinition def)
-        => AsArray(GetAttributesValue(def));
+    public StepRawValue[] GetAttributes(StepDefinition def)
+        => AsArray(GetEntityAttributesValue(def));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string ToString(StepDefinition def)
-        => $"{GetEntityName(def)}{ToString(GetAttributesValue(def))}";
+        => $"{GetEntityName(def)}{ToString(GetEntityAttributesValue(def))}";
 
     //== 
     // String building methods
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string ToString(StepValue value)
+    public string ToString(StepRawValue value)
         => BuildString(value, new StringBuilder()).ToString();
 
-    public StringBuilder BuildString(StepValue value, StringBuilder sb)
+    public StringBuilder BuildString(StepRawValue value, StringBuilder sb)
     {
         return value.Kind switch
         {
@@ -208,7 +216,7 @@ public unsafe class StepValueData
         };
     }
 
-    public StringBuilder BuildStringFromList(StepValue value, StringBuilder sb)
+    public StringBuilder BuildStringFromList(StepRawValue value, StringBuilder sb)
     {
         var vals = AsArray(value);
         sb.Append('(');
@@ -241,53 +249,51 @@ public unsafe class StepValueData
     // StepValue methods
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepToken AsToken(StepValue value)
+    public StepToken AsToken(StepRawValue value)
     {
         Debug.Assert(value.Kind is StepKind.Entity or StepKind.Id or StepKind.Number or StepKind.String or StepKind.Symbol);
         return Tokens[value.Index];
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public double AsNumber(StepValue value)
+    public double AsNumber(StepRawValue value)
     {
         Debug.Assert(value.Kind == StepKind.Number);
         return AsToken(value).AsNumber();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public UInt128 AsId(StepValue value)
+    public int AsId(StepRawValue value)
     {
         Debug.Assert(value.Kind == StepKind.Id);
-        return AsToken(value).ToUInt128();
+        return AsToken(value).AsId();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string AsString(StepValue value)
-    {
-        return Encoding.ASCII.GetString(AsToken(value).Span);
-    }
+    public string AsString(StepRawValue value)
+        => Encoding.ASCII.GetString(AsToken(value).Span);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string AsTrimmedString(StepValue value)
+    public string AsTrimmedString(StepRawValue value)
     {
         Debug.Assert(value.Kind is StepKind.String or StepKind.Symbol);
         return Encoding.ASCII.GetString(AsToken(value).Span[1..^1]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public StepValue[] AsArray(StepValue value)
+    public StepRawValue[] AsArray(StepRawValue value)
     {
         Debug.Assert(value.Kind == StepKind.List);
         var n = value.Count;
         var offset = value.Index;
-        var r = new StepValue[n];
+        var r = new StepRawValue[n];
         for (var i = 0; i < n; ++i)
             r[i] = Values[i + offset];
         return r;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public double[] AsNumbers(StepValue value)
+    public double[] AsNumbers(StepRawValue value)
     {
         Debug.Assert(value.Kind == StepKind.List);
         var vals = AsArray(value);
@@ -297,13 +303,13 @@ public unsafe class StepValueData
         return r;
     }
 
-    public UInt128[] AsIds(StepValue value)
+    public StepToken[] AsTokens(StepRawValue value)
     {
         Debug.Assert(value.Kind == StepKind.List);
         var vals = AsArray(value);
-        var r = new UInt128[vals.Length];
+        var r = new StepToken[vals.Length];
         for (var i = 0; i < vals.Length; ++i)
-            r[i] = AsId(vals[i]);
+            r[i] = AsToken(vals[i]);
         return r;
     }
 }

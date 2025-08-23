@@ -204,7 +204,7 @@ public static class AttributeExtensions
         return r;
     }
 
-    public static Attribute CreateAttribute(this StepGraph graph, StepValue val)
+    public static Attribute CreateAttribute(this StepGraph graph, StepRawValue val)
     {
         switch (val.Kind)
         {

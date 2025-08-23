@@ -6,18 +6,18 @@ namespace Ara3D.IO.StepParser
 {
     public class StepGraph
     {
-        public StepValueData Data;
-        public Dictionary<UInt128, StepDefinition> Definitions = new();
-        public MultiDictionary<UInt128, UInt128> Relations = new();
-        public MultiDictionary<UInt128, UInt128> InverseRelations = new();
-        public Dictionary<UInt128, StepValue[]> Attributes = new();
+        public StepRawValueData Data;
+        public Dictionary<int, StepDefinition> Definitions = new();
+        public MultiDictionary<int, int> Relations = new();
+        public MultiDictionary<int, int> InverseRelations = new();
+        public Dictionary<int, StepRawValue[]> Attributes = new();
 
-        public string GetEntityName(UInt128 id)
+        public string GetEntityName(int id)
             => Data.GetEntityName(Definitions[id]);
 
         public StepGraph(StepDocument doc)
         {
-            Data = doc.ValueData;
+            Data = doc.RawValueData;
             foreach (var def in doc.Definitions)
             {
                 var defId = def.Id;

@@ -13,8 +13,4 @@
       <Link>web-ifc-dll.dll</Link>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Ara3D.IO.IfcParser\Ara3D.IO.IfcParser.csproj" />
-  </ItemGroup>
 </Project>
