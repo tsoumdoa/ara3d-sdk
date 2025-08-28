@@ -86,6 +86,31 @@ namespace Ara3D.Models
             return new TriangleMesh3D(points, indices);
         }
 
+        public IReadOnlyList<Point3D> TransformedPoints()
+        {
+            var points = new UnmanagedList<Point3D>();
+
+            foreach (var node in Elements)
+            {
+                var mesh = node.Mesh;
+                var mat = node.Transform;
+
+                if (!mat.Equals(Matrix4x4.Identity))
+                {
+                    foreach (var p in mesh.Points)
+                        points.Add(mat.Transform(p));
+                }
+                else
+                {
+                    points.AddRange(mesh.Points);
+                }
+            }
+            return points;
+        }
+
+        public Bounds3D GetBounds()
+            => TransformedPoints().Bounds();
+
         public Model3D WithTransforms(IReadOnlyList<Matrix4x4> transforms)
             => new(Meshes, Materials, transforms, ElementStructs, DataSet);
 

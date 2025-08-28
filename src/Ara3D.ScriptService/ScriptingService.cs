@@ -6,6 +6,8 @@ using Ara3D.Logging;
 using Ara3D.Services;
 using Ara3D.Utils;
 using Ara3D.Utils.Roslyn;
+using Microsoft.CodeAnalysis;
+using Compilation = Ara3D.Utils.Roslyn.Compilation;
 
 namespace Ara3D.ScriptService
 {
@@ -18,8 +20,7 @@ namespace Ara3D.ScriptService
         public ILogger Logger { get; set; }
         public ScriptingOptions Options { get; }
         public Assembly Assembly => WatchingCompiler?.Compiler?.Assembly;
-        public IReadOnlyList<Type> Types { get; private set; }
-        public IReadOnlyList<object> Objects { get; private set; }
+        public IReadOnlyList<ScriptType> Types { get; private set; } = [];
 
         public ScriptingService(IServiceManager app, ILogger logger, ScriptingOptions options)
             : base(app)
@@ -30,8 +31,6 @@ namespace Ara3D.ScriptService
             WatchingCompiler = new DirectoryWatchingCompiler(Logger, Options.ScriptsFolder, Options.LibrariesFolder);
             WatchingCompiler.RecompileEvent += WatchingCompilerRecompileEvent;
             UpdateDataModel();
-            Types = Array.Empty<Type>();
-            Objects = Array.Empty<object>();
         }
 
         public void ExecuteCommand(IScriptedCommand command)
@@ -76,46 +75,69 @@ namespace Ara3D.ScriptService
             set => WatchingCompiler.AutoRecompile = value;
         }
 
-        public IReadOnlyList<object> CreateObjects(IEnumerable<Type> types)
+        public static Dictionary<string, FilePath> BuildTypeToFileMap(Compilation compilation)
         {
-            var objects = new List<object>();
-            foreach (var t in types)
+            var result = new Dictionary<string, FilePath>(StringComparer.Ordinal);
+
+            if (compilation == null)
+                return result;
+
+            void Visit(INamespaceSymbol ns)
             {
-                if (!t.HasDefaultConstructor())
-                    continue;
-                try
-                {
-                    var obj = Activator.CreateInstance(t);
-                    Logger.Log($"Created object of type {t}");
-                    objects.Add(obj);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError($"Error while checking default constructor for type {t}: {e}");
-                }
+                foreach (var t in ns.GetTypeMembers())
+                    AddTypeAndPartials(t);
+                foreach (var child in ns.GetNamespaceMembers())
+                    Visit(child);
             }
 
-            return objects;
+            void AddTypeAndPartials(INamedTypeSymbol type)
+            {
+                // One type may have multiple declaring syntax locations (partials)
+                var paths = type.DeclaringSyntaxReferences
+                    .Select(r => r.SyntaxTree.FilePath)
+                    .Where(p => !string.IsNullOrEmpty(p))
+                    .Distinct()
+                    .ToArray();
+
+                if (paths.Length > 0)
+                    result[type.ToDisplayString()] = paths[0]; // or store all paths if you prefer
+
+                foreach (var nested in type.GetTypeMembers())
+                    AddTypeAndPartials(nested);
+            }
+
+            Visit(compilation.Compiler.GlobalNamespace);
+            return result;
         }
 
         public void UpdateDataModel()
         {
-            Types = Compiler?.ExportedTypes.ToArray() ?? [];
-            Objects = CreateObjects(Types);
+            var typeNameToFilePath = BuildTypeToFileMap(Compiler?.Compilation);
+
+            // Create "ScriptTypes" which have a default value 
+            var types = Compiler?.ExportedTypes.ToArray() ?? [];
+            var scriptTypes = new List<ScriptType>();
+            foreach (var type in types)
+            {
+                var path = typeNameToFilePath.GetValueOrDefault(type.FullName ?? "");
+                scriptTypes.Add(new ScriptType(type, path));
+            }
+            Types = scriptTypes;
 
             Repository.Value = new ScriptingDataModel()
             {
                 Dll = Assembly?.Location ?? "",
                 Directory = WatchingCompiler?.Directory,
-                TypeNames = Types.Select(t => t.FullName).OrderBy(t => t).ToArray(),
-                Files = Compiler?.Input?.SourceFiles?.Select(sf => sf.FilePath).OrderBy(x => x.Value).ToArray() ?? Array.Empty<FilePath>(),
+                TypeNames = Types.Select(t => t.Type.FullName).OrderBy(t => t).ToArray(),
+                Files = Compiler?.Input?.SourceFiles?.Select(sf => sf.FilePath).OrderBy(x => x.Value).ToArray() ?? [],
                 Assemblies = Compiler?.Refs?.Select(fp => fp.Value).ToList(),
-                Diagnostics = Compiler?.Compilation?.Diagnostics?.Select(d => d.ToString()).ToArray() ?? Array.Empty<string>(),
+                Diagnostics = Compiler?.Compilation?.Diagnostics?.Select(d => d.ToString()).ToArray() ?? [],
                 ParseSuccess = Compiler?.Input?.HasParseErrors == false,
                 EmitSuccess = Compiler?.CompilationSuccess == true,
                 LoadSuccess = Assembly != null,
                 Options = Options,
             };
         }
+
     }
 }

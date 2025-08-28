@@ -1,5 +1,4 @@
-﻿using Ara3D.IO.IfcParser;
-using Ara3D.IO.StepParser;
+﻿using Ara3D.IO.StepParser;
 using Ara3D.Logging;
 using Ara3D.Utils;
 
@@ -7,8 +6,7 @@ namespace Ara3D.IfcLoader
 {
     public class IfcFile
     {
-        public IfcGraph Graph;
-        public StepDocument Document => Graph.Document;
+        public StepDocument Document;
         public IfcModel Model;
         public IntPtr ApiPtr;
         public FilePath FilePath;
@@ -44,7 +42,7 @@ namespace Ara3D.IfcLoader
         private void LoadNonGeometryData(ILogger? logger)
         {
             logger?.Log($"Loading IFC data");
-            Graph = IfcGraph.Load(FilePath, logger);
+            Document = new StepDocument(FilePath, logger);
             logger?.Log($"Completed loading IFC data");
         }
 

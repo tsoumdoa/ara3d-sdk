@@ -8,11 +8,11 @@ namespace Ara3D.Studio.API;
 public class ModelAsset : IModelAsset
 {
     public string Name { get; set; }
-    public FilePath FilePath { get; set; }
-    public IModelLoader Loader { get; set; }
-    public Model3D? Model { get; set; }
+    public FilePath FilePath { get; }
+    public IModelLoader Loader { get; }
+    public Model3D? Model { get; private set; }
 
-    public  ModelAsset(FilePath filePath, IModelLoader loader)
+    public ModelAsset(FilePath filePath, IModelLoader loader)
     {
         FilePath = filePath;
         Name = FilePath.GetFileName();

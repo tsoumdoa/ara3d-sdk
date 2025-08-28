@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +13,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>web-ifc-dll.dll</Link>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ara3D.IO.StepParser\Ara3D.IO.StepParser.csproj" />
+    <ProjectReference Include="..\..\src\Ara3D.Models\Ara3D.Models.csproj" />
   </ItemGroup>
 </Project>
