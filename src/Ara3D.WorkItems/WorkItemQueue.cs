@@ -63,7 +63,11 @@ namespace Ara3D.WorkItems
         {
             var reader = _channel.Reader;
             var shutdown = _shutdownCts.Token;
+            ProcessAllPendingWork(reader, shutdown);
+        }
 
+        public void ProcessAllPendingWork(ChannelReader<WorkItem> reader, CancellationToken shutdown)
+        {
             // Drain the batch
             while (reader.TryRead(out var work))
             {
@@ -133,9 +137,11 @@ namespace Ara3D.WorkItems
                 {
                     // Wait until there is data or the channel is completed.
                     // IMPORTANT: only bind to the shutdown token here; preemption should not break the loop.
-                    var channelStillOpen = reader.WaitToReadAsync(shutdown).GetAwaiter().GetResult();
-                    if (!channelStillOpen) break; // channel completed
+                    var channelStillOpen = reader.WaitToReadAsync(shutdown).AsTask().GetAwaiter().GetResult();
+                    if (!channelStillOpen) 
+                        break; // channel completed
 
+                    ProcessAllPendingWork(reader, shutdown);
                 }
             }
             catch (OperationCanceledException) when (shutdown.IsCancellationRequested)
