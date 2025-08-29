@@ -52,7 +52,7 @@ namespace Ara3D.Utils
             Watcher.Error += Watcher_Error;
             Watcher.EnableRaisingEvents = true;
             OnChange = onChange;
-            Thread = new Thread(StartThread);
+            Thread = new Thread(StartThread) { IsBackground = true };
             Thread.Start();
         }
 

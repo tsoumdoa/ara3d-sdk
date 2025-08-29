@@ -1076,14 +1076,7 @@
         }
       },
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
-      "System.Security.Cryptography.ProtectedData/9.0.5": {
-        "runtime": {
-          "lib/net9.0/System.Security.Cryptography.ProtectedData.dll": {
-            "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.525.21509"
-          }
-        }
-      },
+      "System.Security.Cryptography.ProtectedData/9.0.5": {},
       "System.Text.Encodings.Web/8.0.0": {},
       "System.Text.Json/8.0.5": {},
       "Ultz.Native.GLFW/3.4.0": {
@@ -1314,7 +1307,7 @@
         },
         "runtime": {
           "Ara3D.Authentication.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1322,7 +1315,7 @@
       "Ara3D.Collections/1.0.0": {
         "runtime": {
           "Ara3D.Collections.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1334,7 +1327,7 @@
         },
         "runtime": {
           "Ara3D.DataTable.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1342,7 +1335,7 @@
       "Ara3D.Domo/1.0.0": {
         "runtime": {
           "Ara3D.Domo.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1350,7 +1343,7 @@
       "Ara3D.Events/1.0.0": {
         "runtime": {
           "Ara3D.Events.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1362,7 +1355,19 @@
         },
         "runtime": {
           "Ara3D.Geometry.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Ara3D.IfcLoader/1.0.0": {
+        "dependencies": {
+          "Ara3D.IO.StepParser": "1.0.0",
+          "Ara3D.Models": "1.0.0"
+        },
+        "runtime": {
+          "Ara3D.IfcLoader.dll": {
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1377,7 +1382,7 @@
         },
         "runtime": {
           "Ara3D.IO.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1390,7 +1395,7 @@
         },
         "runtime": {
           "Ara3D.IO.BFAST.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1402,7 +1407,20 @@
         },
         "runtime": {
           "Ara3D.IO.G3D.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Ara3D.IO.StepParser/1.0.0": {
+        "dependencies": {
+          "Ara3D.Logging": "1.0.0",
+          "Ara3D.Memory": "1.0.0",
+          "Ara3D.Utils": "1.0.0"
+        },
+        "runtime": {
+          "Ara3D.IO.StepParser.dll": {
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1415,13 +1433,14 @@
         },
         "runtime": {
           "Ara3D.IO.VIM.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
       },
       "Ara3D.IO.Windows/1.0.0": {
         "dependencies": {
+          "Ara3D.IfcLoader": "1.0.0",
           "Ara3D.Models": "1.0.0",
           "Ara3D.Studio.API": "1.0.0",
           "Ara3D.Utils": "1.0.0",
@@ -1431,7 +1450,7 @@
         },
         "runtime": {
           "Ara3D.IO.Windows.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1442,7 +1461,7 @@
         },
         "runtime": {
           "Ara3D.Logging.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1450,7 +1469,7 @@
       "Ara3D.Memory/1.0.0": {
         "runtime": {
           "Ara3D.Memory.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1461,7 +1480,7 @@
         },
         "runtime": {
           "Ara3D.MemoryMappedFiles.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1476,7 +1495,7 @@
         },
         "runtime": {
           "Ara3D.Models.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1487,7 +1506,7 @@
         },
         "runtime": {
           "Ara3D.PropKit.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1499,7 +1518,7 @@
         },
         "runtime": {
           "Ara3D.SceneEval.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1511,7 +1530,7 @@
         },
         "runtime": {
           "Ara3D.ScriptService.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1524,7 +1543,7 @@
         },
         "runtime": {
           "Ara3D.Services.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1538,7 +1557,7 @@
         },
         "runtime": {
           "Ara3D.Studio.API.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1557,7 +1576,7 @@
         },
         "runtime": {
           "Ara3D.Studio.Data.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1571,7 +1590,7 @@
         },
         "runtime": {
           "Ara3D.Studio.Samples.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1583,7 +1602,7 @@
         },
         "runtime": {
           "Ara3D.Studio.WpfControls.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1591,7 +1610,7 @@
       "Ara3D.Utils/1.0.0": {
         "runtime": {
           "Ara3D.Utils.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1604,7 +1623,7 @@
         },
         "runtime": {
           "Ara3D.Utils.Roslyn.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1612,7 +1631,7 @@
       "Ara3D.WorkItems/1.0.0": {
         "runtime": {
           "Ara3D.WorkItems.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1620,7 +1639,7 @@
       "SharpGLTF.Core/1.0.0": {
         "runtime": {
           "SharpGLTF.Core.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -2440,6 +2459,11 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Ara3D.IfcLoader/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
     "Ara3D.IO/1.0.0": {
       "type": "project",
       "serviceable": false,
@@ -2451,6 +2475,11 @@
       "sha512": ""
     },
     "Ara3D.IO.G3D/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Ara3D.IO.StepParser/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

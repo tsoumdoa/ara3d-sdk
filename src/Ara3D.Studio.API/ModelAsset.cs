@@ -11,6 +11,7 @@ public class ModelAsset : IModelAsset
     public FilePath FilePath { get; }
     public IModelLoader Loader { get; }
     public Model3D? Model { get; private set; }
+    public string FileType => FilePath.GetExtension();
 
     public ModelAsset(FilePath filePath, IModelLoader loader)
     {

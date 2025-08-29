@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using Ara3D.PropKit;
 using Ara3D.Utils;
 
@@ -31,6 +32,8 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
     public SceneEvalNode Input { get; set; }
     public PropProviderWrapper PropProvider { get; private set; }
     public object EvaluatableObject { get; private set; }
+    public Attribute[] EvaluatableObjectAttributes { get; private set; }
+    public bool InvalidateOnPropChange { get; private set; }
     public string Name { get; private set; }
     public event EventHandler Invalidated;
     private object _cached;
@@ -43,7 +46,13 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
         Graph = graph ?? throw new ArgumentNullException(nameof(graph));
         UpdateEvaluatableObject(evaluableObject);
         PropProvider = evaluableObject.GetBoundPropProvider();
-        PropProvider.PropertyChanged += (s, e) => InvalidateCache();
+        PropProvider.PropertyChanged += PropProvider_PropertyChanged;
+    }
+
+    private void PropProvider_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (InvalidateOnPropChange)
+            InvalidateCache();
     }
 
     public object GetCachedObject()
@@ -170,7 +179,21 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
             PropProvider.Dispose();
         }
+
         EvaluatableObject = obj;
+        EvaluatableObjectAttributes = [];
+        InvalidateOnPropChange = true; // Default behavior 
+        if (obj != null)
+        {
+            var t = obj.GetType();
+            EvaluatableObjectAttributes = t.GetCustomAttributes().ToArray();
+            var applyModeAttr = EvaluatableObjectAttributes.OfType<ApplyModeAttribute>().FirstOrDefault();
+            if (applyModeAttr != null)
+            {
+                InvalidateOnPropChange = applyModeAttr.Mode == ApplyMode.Dynamic;
+            }
+        }
+
         PropProvider = newWrapper;
         PropProvider.PropertyChanged += (s, e) => InvalidateCache();
     }
