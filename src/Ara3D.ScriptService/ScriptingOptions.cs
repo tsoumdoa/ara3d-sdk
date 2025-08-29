@@ -1,29 +1,19 @@
-﻿using Ara3D.Utils;
+﻿using System;
+using Ara3D.Utils;
 
 namespace Ara3D.ScriptService
 {
     public class ScriptingOptions
     {
-        public string AppName { get; set; }
-        public string OrgName { get; set; }
-        public FilePath ConfigFile { get; set; }
         public DirectoryPath ScriptsFolder { get; set; }
         public DirectoryPath LibrariesFolder { get; set; }
         
-        public static ScriptingOptions CreateFromName(string appName)
-            => CreateFromName("Ara 3D", appName);
-
-        public static ScriptingOptions CreateFromName(string orgName, string appName)
+        public ScriptingOptions(DirectoryPath scripts, DirectoryPath libraries)
         {
-            var appData = SpecialFolders.LocalApplicationData;
-            return new ScriptingOptions()
-            {
-                OrgName = orgName,
-                AppName = appName,
-                ConfigFile = appData.RelativeFile(orgName, appName, "config.json"),
-                ScriptsFolder = appData.RelativeFolder(orgName, appName, "Scripts"),
-                LibrariesFolder = appData.RelativeFolder(orgName, appName, "Libraries"),
-            };
+            if (!scripts.Exists()) throw new Exception($"Scripts path does not exist {scripts}");
+            ScriptsFolder = scripts;
+            if (!libraries.Exists()) throw new Exception($"Libraries path does not exist {libraries}");
+            LibrariesFolder = libraries;
         }
     }
 }

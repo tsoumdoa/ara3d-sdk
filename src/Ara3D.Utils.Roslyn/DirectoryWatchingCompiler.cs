@@ -66,6 +66,11 @@ namespace Ara3D.Utils.Roslyn
             }
 
             Watcher = new DirectoryWatcher(inputDir, "*.cs", recursive, OnChange);
+
+            Log($"Creating the output folder: {Directory}");
+            OutputFolder.Create();
+            DeleteOldFiles(OutputFolder);
+
         }
 
         public void OnChange()            
@@ -80,6 +85,20 @@ namespace Ara3D.Utils.Roslyn
         public CompilerOptions GetOptionsWithNewName() 
             => Options.WithNewOutputFilePath(GenerateUniqueFileName());
 
+        public void DeleteOldFiles(DirectoryPath dir)
+        {
+            var keep = 10;
+            var filesToDelete = dir
+                .GetFiles("*.dll")
+                .OrderByDescending(f => f.GetLastWriteTime())
+                .Skip(keep)
+                .ToList();
+            foreach (var fp in filesToDelete)
+            {
+                fp.Delete();
+            }
+        }
+
         public void Compile()
         {
             try
@@ -90,9 +109,6 @@ namespace Ara3D.Utils.Roslyn
                 var token = TokenSource.Token;
 
                 Compiler = null;
-
-                Log($"Creating and clearing the output folder, if possible: {Directory}");
-                OutputFolder.TryToCreateAndClearDirectory();
 
                 Log($"Compilation task started of {Directory}");
                 var refsFile = Directory.RelativeFile(RefsFileName);
@@ -162,13 +178,7 @@ namespace Ara3D.Utils.Roslyn
                     }
                 }
 
-                // Add all locally loaded assemblies
                 Options = Options.WithNewReferences(refs.Select(r => new FilePath(r)));
-
-                Log($"All references:");
-                foreach (var f in Options.MetadataReferences)
-                    Log($"  Reference: {f.Display}");
-
                 Options = GetOptionsWithNewName();
                 Log($"Generated new output file name = {Options.OutputFile}");
 
@@ -179,7 +189,8 @@ namespace Ara3D.Utils.Roslyn
                 try
                 {
                     Log("Creating compiler");
-                    Compiler = new Compiler(inputFiles, refs, Options, Logger, token);
+                    var input = new CompilerInput(inputFiles, Options, refs);
+                    Compiler = new Compiler(input, Logger, token);
                 }
                 catch (Exception ex)
                 {

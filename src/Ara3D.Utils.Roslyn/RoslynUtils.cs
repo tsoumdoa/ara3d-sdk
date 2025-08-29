@@ -12,14 +12,6 @@ namespace Ara3D.Utils.Roslyn
 {
     public static partial class RoslynUtils
     {
-        public static CompilerInput ToCompilerInput(this ParsedSourceFile sourceFile,
-            CompilerOptions options = default)
-            => new[] { sourceFile }.ToCompilerInput(options);
-
-        public static CompilerInput ToCompilerInput(this IEnumerable<ParsedSourceFile> sourceFiles,
-            CompilerOptions options = default)
-            => new CompilerInput(sourceFiles, options ?? CompilerOptions.CreateDefault());
-
         public static IEnumerable<MetadataReference> ReferencesFromFiles(IEnumerable<FilePath> files)
             => files.Distinct().Where(fp => fp.Exists()).Select(x => MetadataReference.CreateFromFile(x));
 
@@ -57,11 +49,11 @@ namespace Ara3D.Utils.Roslyn
             return path;
         }
 
-        public static Compilation CompileCSharpStandard(this CompilerInput input,
-            CSharpCompilation compiler = default,
+        public static Compilation CompileCSharpStandard(this ParsedCompilerInput input,
+            CSharpCompilation compilation = null,
             CancellationToken token = default)
         {
-            compiler = compiler ?? CSharpCompilation.Create(
+            compilation ??= CSharpCompilation.Create(
                 input.Options.AssemblyName,
                 input.SyntaxTrees,
                 input.Options.MetadataReferences,
@@ -74,24 +66,10 @@ namespace Ara3D.Utils.Roslyn
             using (var peStream = File.OpenWrite(outputPath))
             {
                 var emitOptions = new EmitOptions(false, DebugInformationFormat.Embedded);
-                emitResult = compiler.Emit(peStream, null, null, null, null, emitOptions,
+                emitResult = compilation.Emit(peStream, null, null, null, null, emitOptions,
                     null, null, input.EmbeddedTexts, token);
             }
-            if (!emitResult.Success)
-                outputPath.Delete();
-            return new Compilation(input, compiler, emitResult);
+            return new Compilation(input, compilation, emitResult);
         }
-
-        public static Compilation CompileCSharpStandard(this FilePath path, CompilerOptions options = default, CancellationToken token = default)
-            => path.ParseCSharp().ToCompilerInput(options).CompileCSharpStandard(default, token);
-
-        public static Compilation CompileCSharpStandard(string source, CompilerOptions options = default, CancellationToken token = default)
-            => ParseCSharp(source).ToCompilerInput(options).CompileCSharpStandard(default, token);
-
-        public static Compilation CompileCSharpStandard(this ParsedSourceFile inputFile, CompilerOptions options = default, CancellationToken token = default)
-            => inputFile.ToCompilerInput(options).CompileCSharpStandard(default, token);
-
-        public static Compilation CompileCSharpStandard(this IEnumerable<ParsedSourceFile> inputFiles, CompilerOptions options = default, CancellationToken token = default)
-            => inputFiles.ToCompilerInput(options).CompileCSharpStandard(default, token);
     }
 }

@@ -610,6 +610,9 @@ namespace Ara3D.Utils
         public static FilePath GetFullPath(this FilePath self)
             => new FileInfo(self).FullName;
 
+        public static DateTime GetModifiedTime(this FilePath self)
+            => self.GetInfo().LastWriteTimeUtc;
+
         public static FilePath CreateTempFile()
             => Path.GetTempFileName();
 

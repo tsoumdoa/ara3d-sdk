@@ -14,18 +14,6 @@ namespace Ara3D.Utils.Roslyn
         public static IEnumerable<IMethodSymbol> GetMethods(this INamedTypeSymbol type)
             => type.GetMembers().OfType<IMethodSymbol>();
 
-        public static IEnumerable<IMethodSymbol> GetExtensionMethods(this INamedTypeSymbol type)
-            => type.GetMethods().Where(m => m.IsExtensionMethod);
-
-        public static INamedTypeSymbol GetTypeByMetaDataName(this Compilation compilation, string name)
-            => compilation.Compiler.GetTypeByMetadataName(name);
-
-        public static IEnumerable<ISymbol> GetNamedSymbolDeclarations(this Compilation compilation, string name)
-            => compilation.Compiler.GetSymbolsWithName(name);
-
-        public static IEnumerable<INamespaceOrTypeSymbol> GetAllLinkedNamespacesAndTypes(this Compilation compilation)
-            => compilation.Compiler.GlobalNamespace.GetAllNested();
-
         public static IEnumerable<INamespaceOrTypeSymbol> GetAllNested(this INamespaceOrTypeSymbol symbol)
         {
             yield return symbol;
@@ -38,27 +26,6 @@ namespace Ara3D.Utils.Roslyn
             }
         }
 
-        public static IEnumerable<INamespaceSymbol> GetAllLinkedNamespaces(this Compilation compilation)
-            => compilation.GetAllLinkedNamespacesAndTypes().OfType<INamespaceSymbol>();
-
-        public static IEnumerable<ITypeSymbol> GetAllLinkedTypes(this Compilation compilation)
-            => compilation.GetAllLinkedNamespacesAndTypes().OfType<ITypeSymbol>();
-
-        public static IEnumerable<ICompilationUnitSyntax> GetCompilationUnits(this Compilation compilation)
-            => compilation.Input.SyntaxTrees.Select(st => st.GetRoot() as CompilationUnitSyntax);
-        
-        public static IEnumerable<(TypeDeclarationSyntax, INamedTypeSymbol)> GetTypeDeclarationsWithSymbols(
-            this Compilation compilation)
-        {
-            foreach (var st in compilation.Input.SyntaxTrees)
-            {
-                var model = compilation.Compiler.GetSemanticModel(st);
-                foreach (var n in st.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>())
-                {
-                    yield return (n, model.GetDeclaredSymbol(n));
-                }
-            }
-        }
 
         public static IEnumerable<ISymbol> GetDeclaredAndBaseMembers(this ITypeSymbol sym)
         {
@@ -72,29 +39,8 @@ namespace Ara3D.Utils.Roslyn
         public static IEnumerable<ITypeSymbol> GetFieldTypes(this ITypeSymbol sym)
             => sym.GetDeclaredAndBaseMembers().OfType<IFieldSymbol>().Select(f => f.Type);
 
-        public static IEnumerable<ISymbol> GetExpressionAndTypeSymbols(this Compilation compilation)
-        {
-            foreach (var st in compilation.Input.SyntaxTrees)
-            {
-                var model = compilation.Compiler.GetSemanticModel(st);
-                foreach (var node in st.GetRoot().DescendantNodesAndSelf())
-                {
-                    switch (node)
-                    {
-                        case StatementSyntax _:
-                        case TypeDeclarationSyntax _:
-                        case MemberDeclarationSyntax _:
-                            continue;
-                        default:
-                            yield return model.GetSymbolInfo(node).Symbol;
-                            break;
-                    }
-                }
-            }
-        }
-
         // https://stackoverflow.com/questions/69636558/determining-if-a-private-field-is-read-using-roslyn
-        private static bool IsFieldRead(SyntaxNodeAnalysisContext context, IFieldSymbol fieldSymbol)
+        public static bool IsFieldRead(SyntaxNodeAnalysisContext context, IFieldSymbol fieldSymbol)
         {
             var classDeclarationSyntax = context.Node.Parent;
             while (!(classDeclarationSyntax is ClassDeclarationSyntax))
@@ -172,18 +118,7 @@ namespace Ara3D.Utils.Roslyn
             var node = syntaxReference.GetSyntax();
             return model.GetTypeInfo(node).Type;
         }
-
-        public static IEnumerable<SyntaxNode> GetAllNodes(this Compilation compilation)
-            => compilation.Input.SyntaxTrees.SelectMany(st => st.GetRoot().DescendantNodesAndSelf());
-
-        public static IEnumerable<(SemanticModel, SyntaxTree)> GetModelsAndTrees(this Compilation compilation)
-        {
-            for (var i = 0; i < compilation.Input.SourceFiles.Count; i++)
-            {
-                yield return (compilation.SemanticModels[i], compilation.Input.SourceFiles[i].SyntaxTree);
-            }
-        }
-
+        
         public static SyntaxNode GetAssociatedStatementOrExpression(this SyntaxNode node)
         {
             if (node is StatementSyntax)

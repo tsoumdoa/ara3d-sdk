@@ -12,7 +12,7 @@ namespace Ara3D.ScriptService
         public IReadOnlyList<string> Diagnostics = Array.Empty<string>();
         public FilePath Dll = "";
         public DirectoryPath Directory = "";
-        public ScriptingOptions Options = new ScriptingOptions();
+        public ScriptingOptions Options;
         public bool ParseSuccess;
         public bool EmitSuccess;
         public bool LoadSuccess;

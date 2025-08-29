@@ -8,11 +8,13 @@ namespace Ara3D.Utils.Roslyn
 {
     public class CompilerOptions
     {
-        public CompilerOptions(IEnumerable<FilePath> fileReferences, FilePath outputFileName, bool debug)
-            => (FileReferences, OutputFile, Debug) = (fileReferences.ToList(), outputFileName, debug);
+        public CompilerOptions(IEnumerable<FilePath> fileReferences, FilePath outputFileName, bool debug, bool useCache)
+            => (FileReferences, OutputFile, Debug, UseCache) 
+                = (fileReferences.ToList(), outputFileName, debug, useCache);
 
         public FilePath OutputFile { get; }
         public bool Debug { get; }
+        public bool UseCache { get; }
         public IReadOnlyList<FilePath> FileReferences { get; }
 
         public string AssemblyName
@@ -21,8 +23,7 @@ namespace Ara3D.Utils.Roslyn
         public LanguageVersion Language
             => LanguageVersion.CSharp12;
 
-        public CSharpParseOptions ParseOptions
-            => new CSharpParseOptions(Language);
+        public CSharpParseOptions ParseOptions => new(Language);
 
         public CSharpCompilationOptions CompilationOptions
             => new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
@@ -32,18 +33,18 @@ namespace Ara3D.Utils.Roslyn
         public IEnumerable<MetadataReference> MetadataReferences
             => RoslynUtils.ReferencesFromFiles(FileReferences);
 
-        public CompilerOptions WithNewOutputFilePath(string fileName = null)
-            => new CompilerOptions(FileReferences, fileName, Debug);
+        public CompilerOptions WithNewOutputFilePath(string fileName = null) =>
+            new(FileReferences, fileName, Debug, UseCache);
 
-        public CompilerOptions WithNewReferences(IEnumerable<FilePath> fileReferences)
-            => new CompilerOptions(fileReferences, OutputFile, Debug);
+        public CompilerOptions WithNewReferences(IEnumerable<FilePath> fileReferences) =>
+            new(fileReferences, OutputFile, Debug, UseCache);
 
         public static CompilerOptions CreateDefault()
-            => new CompilerOptions(RoslynUtils.LoadedAssemblyLocations(), 
-                RoslynUtils.GenerateNewDllFileName(), true);
+            => new(RoslynUtils.LoadedAssemblyLocations(), 
+                RoslynUtils.GenerateNewDllFileName(), true, true);
 
         public static CompilerOptions CreateDefault(Type[] types)
-            => new CompilerOptions(types.Select(t => (FilePath)t.Assembly.Location),
-                RoslynUtils.GenerateNewDllFileName(), true);
+            => new(types.Select(t => (FilePath)t.Assembly.Location),
+                RoslynUtils.GenerateNewDllFileName(), true, true);
     }
 }
