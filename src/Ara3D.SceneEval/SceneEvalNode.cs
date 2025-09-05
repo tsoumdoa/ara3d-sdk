@@ -175,7 +175,8 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
         {
             var props = PropProvider.GetPropValues();
             foreach (var prop in props)
-                newWrapper.TrySetValue(prop.Descriptor, prop.Value);
+                if (!prop.Descriptor.IsReadOnly)
+                    newWrapper.TrySetValue(prop.Descriptor, prop.Value);
 
             PropProvider.Dispose();
         }

@@ -10,6 +10,13 @@ namespace Ara3D.Utils
     /// </summary>
     public static class AssemblyUtil
     {
+        static AssemblyUtil()
+        {
+            MainAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        }
+
+        public static readonly Assembly MainAssembly;
+
         public static AssemblyData GetAssemblyData(this Type type)
             => type.Assembly.ToAssemblyData();
 

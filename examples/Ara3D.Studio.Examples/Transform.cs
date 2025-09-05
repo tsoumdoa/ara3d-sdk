@@ -1,5 +1,6 @@
 ﻿namespace Ara3D.Studio.Samples;
 
+[ApplyMode(ApplyMode.OnDemand)]
 public class Transform : IModelModifier
 {
     [Range(0.01f, 10f)] public float Scale = 1f;
@@ -8,7 +9,7 @@ public class Transform : IModelModifier
     [Range(-100f, 100f)] public float YOffset; 
     [Range(-100f, 100f)] public float ZOffset;
 
-    [Range(-360, 360f)] public float Yaw;
+    [Range(-360f, 360f)] public float Yaw;
     [Range(-360f, 360f)] public float Pitch;
     [Range(-360f, 360f)] public float Roll;
 

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Ara3D.Studio.Samples;
+﻿namespace Ara3D.Studio.Samples;
 
 public class CloningDemo : IModelGenerator
 {

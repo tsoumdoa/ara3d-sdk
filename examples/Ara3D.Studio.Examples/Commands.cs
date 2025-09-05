@@ -1,19 +1,3 @@
-using System.Diagnostics;
-using System.IO;
-using System.Windows.Forms;
-using Ara3D.ScriptService;
-
-/// <summary>
-/// Shows a message box with the text: "Hello world!"
-/// </summary>
-public class HelloWorld : IScriptedCommand
-{
-    public string Name => "Hello World!";
-
-    public void Execute()
-        => MessageBox.Show(Name);
-}
-
 /// <summary>
 /// Shows a message box with a counter value which is incremented each time. 
 /// </summary>

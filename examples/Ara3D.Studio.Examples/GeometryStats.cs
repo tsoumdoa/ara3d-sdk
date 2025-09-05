@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Ara3D.Studio.Samples
+﻿namespace Ara3D.Studio.Samples
 {
     public class GeometryStats : IModelModifier
     {

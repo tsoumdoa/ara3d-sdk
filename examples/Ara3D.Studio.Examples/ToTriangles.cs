@@ -1,6 +1,4 @@
-﻿using Ara3D.Models;
-
-namespace Ara3D.Studio.Samples;
+﻿namespace Ara3D.Studio.Samples;
 
 public class ToTriangles : IModelModifier
 {

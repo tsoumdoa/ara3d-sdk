@@ -54,6 +54,6 @@ namespace Ara3D.Utils
         public static DirectoryPath Temp => Path.GetTempPath();
 
         public static DirectoryPath GetDir(this Environment.SpecialFolder folder)
-            => Environment.GetFolderPath(folder);
+            => Environment.GetFolderPath(folder, Environment.SpecialFolderOption.Create);
     }
 }

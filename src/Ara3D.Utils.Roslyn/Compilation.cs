@@ -13,7 +13,10 @@ public class Compilation
     public EmitResult EmitResult { get; }
     public bool Result => EmitResult.Success;
     public FilePath OutputFilePath => Input.Options.OutputFile;
-    public IEnumerable<string> Diagnostics => EmitResult.Diagnostics.Select(d => d.ToString());
+    public IEnumerable<string> Diagnostics => EmitResult
+        .Diagnostics
+        .Where(d => d.Severity == DiagnosticSeverity.Error)
+        .Select(d => d.ToString());
     public IEnumerable<FilePath> InputFiles => Input.RawInput.InputFiles;
 
     public Compilation(ParsedCompilerInput input, CSharpCompilation compilation, EmitResult emitResult)
