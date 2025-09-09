@@ -24,6 +24,9 @@ namespace Ara3D.DataTable
             _NumRows++;
         }
 
+        public void AddRow(params object[] values)
+            => AddRow((IReadOnlyList<object>)values);
+
         public DataColumnBuilder AddColumn(string name, Type type)
             => AddColumn([], name, type);
 

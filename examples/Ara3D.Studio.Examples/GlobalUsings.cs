@@ -16,13 +16,11 @@ global using Ara3D.Domo;
 global using Ara3D.Geometry;
 global using Ara3D.Logging;
 global using Ara3D.Memory;
-global using Ara3D.MemoryMappedFiles;
 global using Ara3D.Models;
 global using Ara3D.PropKit;
 global using Ara3D.SceneEval;
 global using Ara3D.Services;
 global using Ara3D.ScriptService;
 global using Ara3D.Studio.API;
-global using Ara3D.Studio.Data;
 global using Ara3D.Utils;
 
