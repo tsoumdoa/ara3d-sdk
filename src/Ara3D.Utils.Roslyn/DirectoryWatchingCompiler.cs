@@ -190,7 +190,7 @@ namespace Ara3D.Utils.Roslyn
                 {
                     Log("Creating compiler");
                     var input = new CompilerInput(inputFiles, Options, refs);
-                    Compiler = new Compiler(input, Logger, token);
+                    Compiler = new Compiler(AssemblyUtil.VersionString, input, Logger, token);
                 }
                 catch (Exception ex)
                 {

@@ -60,8 +60,9 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
     public object Eval(EvalContext context)
     {
-        if (context.CancellationToken.IsCancellationRequested)
-            throw new OperationCanceledException(context.CancellationToken);
+        // TODO: reinstate wif we can get a CancellationToken
+        //if (context.CancellationToken.IsCancellationRequested)
+        //    throw new OperationCanceledException(context.CancellationToken);
         if (_cached == null)
             Interlocked.CompareExchange(ref _cached, EvalCore(context), null);
         return _cached;

@@ -109,7 +109,19 @@ namespace Ara3D.Models
         }
 
         public Bounds3D GetBounds()
-            => TransformedPoints().Bounds();
+        {
+            var r = new Bounds3D();
+            var meshBounds = Meshes.Map(m => m.Bounds).ToArray();
+            foreach (var es in ElementStructs)
+            {
+                if (es.MeshIndex < 0) continue;
+                var rawBounds = meshBounds[es.MeshIndex];
+                var mat = es.TransformIndex >= 0 ? Transforms[es.TransformIndex] : Matrix4x4.Identity;
+                var lclBounds = rawBounds.Transform(mat);
+                r = r.Include(lclBounds);
+            }
+            return r;
+        }
 
         public Model3D WithTransforms(IReadOnlyList<Matrix4x4> transforms)
             => new(Meshes, Materials, transforms, ElementStructs, DataSet);

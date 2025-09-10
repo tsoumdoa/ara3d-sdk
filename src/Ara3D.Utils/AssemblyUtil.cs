@@ -15,6 +15,10 @@ namespace Ara3D.Utils
             MainAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
         }
 
+
+        public static string VersionString
+            => MainAssembly.GetName().Version?.ToString();
+
         public static readonly Assembly MainAssembly;
 
         public static AssemblyData GetAssemblyData(this Type type)

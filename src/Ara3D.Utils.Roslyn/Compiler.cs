@@ -21,6 +21,7 @@ namespace Ara3D.Utils.Roslyn
         public IReadOnlyList<FilePath> InputFiles => Input.InputFiles;
 
         public Compiler(
+            string version,
             CompilerInput input,
             ILogger logger, 
             CancellationToken token)
@@ -28,32 +29,32 @@ namespace Ara3D.Utils.Roslyn
             Input = input;
             Logger = logger;
 
-            Log(".:Consulting Cache:.");
-            Output = TryLoadCache();
+            Log(":Consulting Cache:");
+            Output = TryLoadCache(version);
             if (Output?.Success == true)
                 return;
 
-            Log(".:Parsing:.");
+            Log(":Parsing:");
             if (token.IsCancellationRequested) return;
             var parsedInput = new ParsedCompilerInput(input, token);
 
-            Log(".:Compiling:.");
+            Log(":Compiling:");
             if (token.IsCancellationRequested) return;
             var compilation = parsedInput.CompileCSharpStandard(null, token);
 
-            Log($".:Writing Cache:.");
-            var result = SerializableCompilationResult.Create(compilation);
+            Log($":Writing Cache:");
+            var result = SerializableCompilationResult.Create(compilation, version);
             CacheFilePath.WriteJson(result);
             Output = new CompilerOutput(result);
 
-            Log($".:Diagnostics:.");
+            Log($":Diagnostics:");
             foreach (var x in Output.Result.Diagnostics)
                 Log($"  {x}");
 
-            Log(Output.Success ? ".:Compilation Succeeded:." : ".:Compilation Failed:.");
+            Log(Output.Success ? ":Compilation Succeeded:" : ":Compilation Failed:");
         }
 
-        public CompilerOutput TryLoadCache()
+        public CompilerOutput TryLoadCache(string version)
         {
             if (Options.UseCache && CacheFilePath.Exists())
             {
@@ -61,7 +62,7 @@ namespace Ara3D.Utils.Roslyn
                 {
                     Logger.Log("Consulting cache file");
                     var cache = LoadCache();
-                    if (cache.IsValid(InputFiles))
+                    if (cache.IsValid(version, InputFiles))
                     {
                         Logger.Log("Cache is valid.");
                         Logger.Log($"Attempting to load assembly from {OutputFile}");

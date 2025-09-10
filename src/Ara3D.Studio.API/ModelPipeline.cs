@@ -23,7 +23,7 @@ public class ModelPipeline
 
     public Model3D Evaluate(Model3D model)
     {
-        var context = new EvalContext(CancellationToken.None, 0, Logger.Console);
+        var context = new EvalContext(0, Logger.Console);
         foreach (var modifier in _modifiers)
             model = modifier.Eval(model, context);
         return model;

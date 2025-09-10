@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 using System.Threading.Channels;
 
 namespace Ara3D.WorkItems
