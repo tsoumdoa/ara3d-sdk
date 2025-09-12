@@ -126,17 +126,32 @@ namespace Ara3D.Utils
         public static string ToBitConverterLowerInvariant(this byte[] bytes)
             => BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
 
-        public static Regex RegexUppercaseAcronym = new Regex("([A-Z]+)([A-Z][a-z])", RegexOptions.Compiled);
-        public static Regex RegexUppercase = new Regex("([a-z0-9])([A-Z])", RegexOptions.Compiled);
-
         public static string SplitCamelCase(this string input)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input.Length <= 1)
                 return input;
-            var result = RegexUppercaseAcronym.Replace(input, "$1 $2");
-            result = RegexUppercase.Replace(result, "$1 $2");
-            result = char.ToUpper(result[0]) + result.Substring(1);
-            return result;
+
+            var sb = new StringBuilder();
+            sb.Append(input[0]);
+            for (var i = 1; i < input.Length; i++)
+            {
+                var prev = input[i - 1];
+                var cur = input[i];
+                if (cur == '_')
+                {
+                    sb.Append(' ');
+                }
+                else if (cur.IsLetter() && prev.IsLetter() && cur.IsUpper() && prev.IsLower())
+                {
+                    sb.Append(' ').Append(cur);
+                }
+                else
+                {
+                    sb.Append(cur);
+                }
+            }
+
+            return sb.ToString();
         }
 
         public static string LetterUpperCharsString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

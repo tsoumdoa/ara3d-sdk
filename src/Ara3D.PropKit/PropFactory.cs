@@ -122,7 +122,7 @@ public static class PropFactory
         Action<object, object> setter)
     {
         var name = mi.Name;
-        var displayName = mi.Name;
+        var displayName = mi.Name.SplitCamelCase();
         var description = "";
         var units = "";
 
@@ -145,8 +145,9 @@ public static class PropFactory
             if (!prop.CanRead)
                 continue;
 
-            var isReadOnly = !prop.CanWrite;
-
+            var setMeth = prop.GetSetMethod(false);
+            var isReadOnly = !prop.CanWrite || setMeth == null || setMeth.IsPrivate;
+            
             Func<object, object> getter = prop.GetValue;
             Action<object, object> setter = !isReadOnly ? prop.SetValue : null;
 

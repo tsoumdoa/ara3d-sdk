@@ -48,7 +48,7 @@ public class PropProvider : IPropContainer
         if (acc == null)
             return false;
         var cur = acc.GetValue(obj);
-        if (cur.Equals(value))
+        if (cur?.Equals(value) ?? false)
             return true;
         acc.SetValue(obj, value);
         NotifyPropertyChanged(name);

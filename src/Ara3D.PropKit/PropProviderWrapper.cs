@@ -30,7 +30,9 @@ public class PropProviderWrapper :
 
     public void NotifyPropertyChanged(string propName = null)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName ?? string.Empty));
+        //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName ?? string.Empty));
+        // This allows readonly (dependent) properties to be reread as well. 
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     }
 
     public dynamic AsDynamic

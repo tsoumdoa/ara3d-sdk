@@ -1,6 +1,5 @@
 ﻿namespace Ara3D.Studio.Samples;
 
-[ApplyMode(ApplyMode.OnDemand)]
 public class Transform : IModelModifier
 {
     [Range(0.01f, 10f)] public float Scale = 1f;

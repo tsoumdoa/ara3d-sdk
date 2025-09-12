@@ -13,41 +13,43 @@ namespace Ara3D.SceneEval;
 /// </summary>
 public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 {
-    private bool _enabled = true; 
-    public bool Enabled
-    {
-        get => _enabled;
-        set
-        {
-            if (_enabled == value) 
-                return;
-            _enabled = value;
-            InvalidateCache();
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enabled)));
-            Graph.NotifyGraphChanged();
-        }
-    }
 
     public SceneEvalGraph Graph { get; }
     public SceneEvalNode Input { get; set; }
     public PropProviderWrapper PropProvider { get; private set; }
     public object EvaluatableObject { get; private set; }
     public Attribute[] EvaluatableObjectAttributes { get; private set; }
-    public bool InvalidateOnPropChange { get; private set; }
+    public bool InvalidateOnPropChange { get; private set; } = true;
     public string Name { get; private set; }
-    public event EventHandler Invalidated;
     private object _cached;
     private object[] _args;
     private Func<object[], object> _evalFunc;
     public event PropertyChangedEventHandler PropertyChanged;
+    private bool _enabled = true;
 
     public SceneEvalNode(SceneEvalGraph graph, object evaluableObject)
     {
         Graph = graph ?? throw new ArgumentNullException(nameof(graph));
         UpdateEvaluatableObject(evaluableObject);
-        PropProvider = evaluableObject.GetBoundPropProvider();
-        PropProvider.PropertyChanged += PropProvider_PropertyChanged;
     }
+
+    public override string ToString()
+    {
+        return $"{GetType().Name}:{Name}";
+    }
+
+    public bool Enabled
+    {
+        get => _enabled;
+        set
+        {
+            if (_enabled == value)
+                return;
+            _enabled = value;
+            InvalidateCache();
+        }
+    }
+
 
     private void PropProvider_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
@@ -60,9 +62,6 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
     public object Eval(EvalContext context)
     {
-        // TODO: reinstate wif we can get a CancellationToken
-        //if (context.CancellationToken.IsCancellationRequested)
-        //    throw new OperationCanceledException(context.CancellationToken);
         if (_cached == null)
             Interlocked.CompareExchange(ref _cached, EvalCore(context), null);
         return _cached;
@@ -75,12 +74,9 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
     public void SetInput(SceneEvalNode input)
     {
-        if (Input != null)
-            input.Invalidated -= InputInvalidated;
         Input = input;
-        Input.Invalidated += InputInvalidated;
         InvalidateCache();
-        Graph.NotifyGraphChanged();
+        Graph.NotifyGraphChanged(this, EventArgs.Empty);
     }
 
     private object EvalCore(EvalContext context)
@@ -98,28 +94,25 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
         if (!Enabled)
         {
-            if (_args.Length >= 2)
-                return _args[0];
-            else
-                return null;
+            return _args.Length >= 2 
+                ? _args[0] 
+                : null;
         }
 
         return _cached = _evalFunc(_args);
     }
 
-    public void InvalidateCache()
+    public bool IsCacheValid()
+        => _cached != null;
+
+    public void InvalidateCache(bool notify = true)
     {
-        //if (_cached == null) return;
         _cached = null;
-        Invalidated?.Invoke(this, EventArgs.Empty);
+        if (notify)
+            Graph.UpdateDownstreamCaches(this);
     }
 
-    /// <summary>
-    /// Looking at only primary dependencies can be adapted to provide a "stack" view of an object
-    /// evaluation graph or a "tree" where the first item in the path is a parent and the rest are children.
-    /// The first item in the list is the root.  
-    /// </summary>
-    public IReadOnlyList<SceneEvalNode> GetPrimaryDependencyPath()
+    public List<SceneEvalNode> GetInputPath()
     {
         var list = new List<SceneEvalNode>();
         var cur = this;
@@ -128,26 +121,23 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
             list.Add(cur);
             cur = cur.Input; 
         }
-        list.Reverse();
         return list;
+    }
+
+    public SceneEvalNode GetSource()
+    {
+        var cur = this;
+        while (!cur.IsSource)
+            cur = cur.Input;
+        return cur;
     }
 
     public bool IsSource
         => Input == null;
 
-    public SceneEvalNode GetRoot()
-        => Graph.GetRoot(this);
-
     public void Dispose()
-    {
-        if (Input != null)
-            Input.Invalidated -= InputInvalidated;
-        PropProvider.Dispose();
-    }
-
-    public IEnumerable<SceneEvalNode> GetAllNodes()
-        => GetPrimaryDependencyPath().Append(this);
-
+        => PropProvider.Dispose();
+    
     private string GetName(object obj)
     {
         var type = obj.GetType();
@@ -169,9 +159,12 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
     public void UpdateEvaluatableObject(object obj)
     {
         if (obj == null) throw new Exception("Evaluatable object cannot be null.");
+
         (_args, _evalFunc) = GetArgsAndEvalFunction(obj);
         Name = GetName(obj);
         var newWrapper = obj.GetBoundPropProvider();
+
+        // Remove the old property provider, but first copy the values from it
         if (PropProvider != null)
         {
             var props = PropProvider.GetPropValues();
@@ -184,19 +177,18 @@ public class SceneEvalNode : IDisposable, INotifyPropertyChanged
 
         EvaluatableObject = obj;
         EvaluatableObjectAttributes = [];
-        InvalidateOnPropChange = true; // Default behavior 
-        if (obj != null)
+
+        // Determine if invalidation happens automatically, or is explicit
+        InvalidateOnPropChange = true; 
+        var t = obj.GetType();
+        EvaluatableObjectAttributes = t.GetCustomAttributes().ToArray();
+        var applyModeAttr = EvaluatableObjectAttributes.OfType<ApplyModeAttribute>().FirstOrDefault();
+        if (applyModeAttr != null)
         {
-            var t = obj.GetType();
-            EvaluatableObjectAttributes = t.GetCustomAttributes().ToArray();
-            var applyModeAttr = EvaluatableObjectAttributes.OfType<ApplyModeAttribute>().FirstOrDefault();
-            if (applyModeAttr != null)
-            {
-                InvalidateOnPropChange = applyModeAttr.Mode == ApplyMode.Dynamic;
-            }
+            InvalidateOnPropChange = applyModeAttr.Mode == ApplyMode.Dynamic;
         }
 
         PropProvider = newWrapper;
-        PropProvider.PropertyChanged += (s, e) => InvalidateCache();
+        PropProvider.PropertyChanged += PropProvider_PropertyChanged;
     }
 }

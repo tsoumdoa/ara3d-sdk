@@ -9,7 +9,7 @@ public class PushNodes : IModelModifier
     {
         var vec = (Vector3)self.Value.Translation - center;
         var newPos = center + vec * amount;
-        return self * Matrix4x4.CreateTranslation(newPos);   
+        return self.WithTranslation(newPos);   
     }
 
     public Model3D Eval(Model3D m, EvalContext eval)
