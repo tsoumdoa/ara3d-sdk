@@ -169,5 +169,11 @@ namespace Ara3D.Models
 
         public Model3D WithStructs(IReadOnlyList<ElementStruct> structs)
             => new(Meshes, Materials, Transforms, structs, DataSet);
+
+        public Model3D FilterMeshes(Model3D model, Func<TriangleMesh3D, bool> f)
+        {
+            var meshIndexes = model.Meshes.IndicesWhere(f).ToHashSet();
+            return model.WithStructs(model.ElementStructs.Where(es => meshIndexes.Contains(es.MeshIndex)).ToList());
+        }
     }
 }

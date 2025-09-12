@@ -32,7 +32,7 @@ public class ParametricSurfaceDemo : IModelGenerator
 
         SurfaceNames = SurfaceLookup.Keys.OrderBy(k => k).ToList();
     }
-
+        
     public ParametricSurface GetSurface(int n)
         => SurfaceLookup[SurfaceNames[n]];
 
