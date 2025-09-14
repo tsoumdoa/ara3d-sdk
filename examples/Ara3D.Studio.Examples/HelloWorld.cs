@@ -1,11 +1,11 @@
 /// <summary>
 /// Shows a message box with the text: "Hello world!"
 /// </summary>
-public class HelloWorld : IScriptedCommand
+public class HelloWorld : SimpleCommand
 {
-    public string Name 
+    public override string Name 
         => "Hello World!";
 
-    public void Execute()
+    public override void Execute()
         => MessageBox.Show(Name);
 }

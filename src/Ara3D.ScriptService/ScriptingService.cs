@@ -31,20 +31,6 @@ public class ScriptingService :
         UpdateDataModel();
     }
 
-    public void ExecuteCommand(IScriptedCommand command)
-    {
-        try
-        {
-            Logger.Log($"Starting command execution: {command.Name}");
-            command.Execute();
-            Logger.Log($"Finished command execution: {command.Name}");
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"Command execution failed: {e}");
-        }
-    }
-
     public void Compile()
     {
         WatchingCompiler.Compile();
