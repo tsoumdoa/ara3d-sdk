@@ -24,5 +24,10 @@ namespace Ara3D.Models
 
         public Material WithRoughness(float roughness)
             => new(Color, Metallic, roughness);
+
+        public float Red => Color.R;
+        public float Green => Color.G;
+        public float Blue => Color.B;
+        public float Alpha => Color.A;
     }
 }

@@ -4,7 +4,7 @@
 public class HelloWorld : SimpleCommand
 {
     public override string Name 
-        => "Hello World!";
+        => "Hello Santiago";
 
     public override void Execute()
         => MessageBox.Show(Name);

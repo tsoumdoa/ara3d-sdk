@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Ara3D.Utils
@@ -34,5 +35,16 @@ namespace Ara3D.Utils
 
         public IEnumerable<T> OrderedMembers()
             => this.OrderBy(kv => kv.Value).Select(kv => kv.Key);
+    }
+
+    public static class IndexedSetExtensions
+    {
+        public static IndexedSet<T> ToIndexedSet<T>(this IEnumerable<T> self)
+        {
+            var r = new IndexedSet<T>();
+            foreach (var x in self)
+                r.Add(x);
+            return r;
+        }
     }
 }

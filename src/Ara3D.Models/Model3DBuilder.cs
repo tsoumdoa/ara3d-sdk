@@ -70,19 +70,18 @@ public class Model3DBuilder
         => AddElement(element.Mesh, element.Material, element.Transform);
 
     public int AddElement(TriangleMesh3D mesh, Material material, Matrix4x4 transform)
-        => AddElement(AddMesh(mesh), AddMaterial(material), AddTransform(transform));
+        => AddElement(ElementStructs.Count, AddMesh(mesh), AddMaterial(material), AddTransform(transform));
 
     public int AddElement(int meshIndex, int materialIndex, int transformIndex)
+        => AddElement(ElementStructs.Count, meshIndex, materialIndex, transformIndex);
+
+    public int AddElement(int entityIndex, int meshIndex, int materialIndex, int transformIndex)
     {
         Debug.Assert(!_frozen);
         Debug.Assert(meshIndex >= 0 && meshIndex < Meshes.Count);
         Debug.Assert(materialIndex >= 0 && materialIndex < Materials.Count);
         Debug.Assert(transformIndex >= 0 && transformIndex < Transforms.Count);
-        ElementStructs.Add(new ElementStruct(
-            elementIndex: ElementStructs.Count, 
-            materialIndex: materialIndex, 
-            meshIndex: meshIndex, 
-            transformIndex: transformIndex));
+        ElementStructs.Add(new ElementStruct(entityIndex, materialIndex, meshIndex, transformIndex));
         return ElementStructs.Count - 1;
     }
 
@@ -94,7 +93,7 @@ public class Model3DBuilder
             var meshIndex = AddMesh(element.Mesh);
             var materialIndex = AddMaterial(element.Material);
             var transformIndex = AddTransform(element.Transform);
-            AddElement(meshIndex, materialIndex, transformIndex);
+            AddElement(ElementStructs.Count, meshIndex, materialIndex, transformIndex);
         }
     }
 
@@ -104,14 +103,16 @@ public class Model3DBuilder
         var meshOffset = Meshes.Count;
         var materialOffset = Materials.Count;
         var transformOffset = Transforms.Count;
-        var elementOffset = ElementStructs.Count;
+        var entityOffset = ElementStructs.Count;
+
         Meshes.AddRange(m.Meshes);
         Materials.AddRange(m.Materials);
         Transforms.AddRange(m.Transforms);
+        
         foreach (var element in m.ElementStructs)
         {
             ElementStructs.Add(new ElementStruct(
-                elementIndex: elementOffset + element.ElementIndex,
+                entityIndex: entityOffset + element.EntityIndex,
                 materialIndex: materialOffset + element.MaterialIndex,
                 meshIndex: meshOffset + element.MeshIndex,
                 transformIndex: transformOffset + element.TransformIndex));

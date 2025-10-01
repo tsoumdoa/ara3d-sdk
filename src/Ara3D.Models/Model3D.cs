@@ -1,7 +1,7 @@
-﻿using Ara3D.DataTable;
+﻿using Ara3D.Collections;
+using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Memory;
-using Ara3D.Collections;
 
 namespace Ara3D.Models
 {
@@ -170,10 +170,13 @@ namespace Ara3D.Models
         public Model3D WithStructs(IReadOnlyList<ElementStruct> structs)
             => new(Meshes, Materials, Transforms, structs, DataSet);
 
-        public Model3D FilterMeshes(Model3D model, Func<TriangleMesh3D, bool> f)
+        public Model3D FilterMeshes(Func<TriangleMesh3D, bool> f)
         {
-            var meshIndexes = model.Meshes.IndicesWhere(f).ToHashSet();
-            return model.WithStructs(model.ElementStructs.Where(es => meshIndexes.Contains(es.MeshIndex)).ToList());
+            var meshIndexes = Meshes.IndicesWhere(f).ToHashSet();
+            return WithStructs(ElementStructs.Where(es => meshIndexes.Contains(es.MeshIndex)).ToList());
         }
+
+        public Model3D FilterElements(Func<ElementStruct, bool> f)
+            => WithStructs(ElementStructs.Where(f).ToList());
     }
 }

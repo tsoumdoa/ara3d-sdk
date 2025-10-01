@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -78,7 +79,7 @@ namespace Ara3D.Collections
         /// Converts the IArray into a system array.
         /// </summary>
         public static T[] ToArray<T>(this IReadOnlyList<T> self)
-            => self.CopyTo(new T[self.Count]);
+            => self as T[] ?? self.CopyTo(new T[self.Count]);
 
         /// <summary>
         /// Converts the array into a function that returns values from an integer, returning a default value if out of range.
@@ -910,5 +911,19 @@ namespace Ara3D.Collections
 
         public static ReadOnlyList<T> Replace<T>(this IReadOnlyList<T> self, T src, T dest)
             => self.Select(x => x.Equals(self) ? dest : x);
+
+        public static ReadOnlySpan<U> Reinterpret<T, U>(this IReadOnlyList<T> xs) where T: unmanaged where U: unmanaged
+            => xs.AsSpan().Reinterpret<T, U>();
+
+        public static ReadOnlySpan<U> Reinterpret<T, U>(this ReadOnlySpan<T> xs) where T : unmanaged where U : unmanaged
+            => MemoryMarshal.Cast<T, U>(xs);
+
+        public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyList<T> self)
+            => self as T[] ?? (self is List<T> list 
+                ? CollectionsMarshal.AsSpan<T>(list)
+                : self.ToArray());
+
+        public static Array ToSystemArray<T>(this IReadOnlyList<T> self)
+            => self.ToArray();
     }
 }

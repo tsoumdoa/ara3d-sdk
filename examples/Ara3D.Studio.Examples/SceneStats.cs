@@ -6,7 +6,8 @@ public class SceneStats : IScriptedCommand
 
     public void Execute(IHostApplication app)
     {
-        var g = new ColumnarGeometry();
+        /*
+        var g = new Model3D();
         foreach (var m in app.GetModels())
             g.AddModel(m);
 
@@ -18,7 +19,9 @@ public class SceneStats : IScriptedCommand
         app.Logger.Log($"  Element Size = {g.ElementCount * 16:N0}, Count = {g.ElementCount:N0}");
         app.Logger.Log($"  Mesh Size = {g.MeshCount * 8:N0}, Count = {g.MeshCount:N0}");
         app.Logger.Log($"  Material Size = {g.MaterialCount * 8:N0}, Count = {g.MaterialCount:N0}");
+        */
     }
+
 
     public bool CanExecute(IHostApplication hostApplication)
         => true;

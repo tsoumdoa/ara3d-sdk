@@ -1,5 +1,4 @@
 ﻿using Ara3D.Collections;
-using Ara3D.DataTable;
 using Ara3D.PropKit;
 
 namespace Ara3D.DataTable;

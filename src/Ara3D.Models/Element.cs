@@ -7,6 +7,7 @@ namespace Ara3D.Models;
 /// </summary>
 public class Element
 {
+    public int EntityIndex { get; }
     public TriangleMesh3D Mesh { get; }
     public Material Material { get; }
     public Matrix4x4 Transform { get; }
@@ -28,5 +29,6 @@ public class Element
         Mesh = mesh;
         Material = material;
         Transform = transform;
+        EntityIndex = -1;
     }
 }

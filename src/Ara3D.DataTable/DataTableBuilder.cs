@@ -9,47 +9,51 @@ namespace Ara3D.DataTable
             => Name = tableName;
 
         public string Name { get; }
-        private int _NumRows = 0;
-
+        private int _NumRows => Columns.Count > 0 ? Columns[0].Count : 0;
         public IReadOnlyList<IDataRow> Rows => _NumRows.Select(this.GetRow);
-        public IReadOnlyList<IDataColumn> Columns => ColumnBuilders.Cast<IDataColumn>().ToList();
-        public List<DataColumnBuilder> ColumnBuilders { get; } = new();
+        public IReadOnlyList<IDataColumn> Columns => _columns;
+        private List<IDataColumn> _columns { get; } = new();
 
-        public void AddRow(IReadOnlyList<object> values)
+        public DataColumnBuilder AddColumn<T>(string name)
+            => AddColumn(name, typeof(T));
+
+        public IDataColumn AddColumn(IDataColumn col)
         {
-            if (values.Count != Columns.Count)
-                throw new Exception($"Number of values in row ({values.Count}) must match number of columns {Columns.Count}");
-            for (var i = 0; i < ColumnBuilders.Count; i++)
-                ColumnBuilders[i].Values.Add(values[i]);
-            _NumRows++;
+            _columns.Add(col);
+            return col;
+        }
+
+        public IDataColumn AddColumn<T>(T[] values, string name)
+            => AddColumn(values, name, typeof(T));
+
+        public IDataColumn AddColumn(Array values, string name, Type type)
+        {
+            var descriptor = new DataDescriptor(name, type, Columns.Count);
+            return AddColumn(new DataColumn(values, descriptor, descriptor.Index));
+        }
+
+        public DataColumnBuilder AddColumn(string name, Type type)
+        {
+            var descriptor = new DataDescriptor(name, type, Columns.Count);
+            var r = new DataColumnBuilder(descriptor, descriptor.Index);
+            _columns.Add(r);
+            return r;
         }
 
         public void AddRow(params object[] values)
             => AddRow((IReadOnlyList<object>)values);
 
-        public DataColumnBuilder AddColumn(string name, Type type)
-            => AddColumn([], name, type);
-
-        public DataColumnBuilder AddColumn<T>(IReadOnlyList<T> values, string name)
-            => AddColumn(values.Select(v => (object)v).ToArray(), name, typeof(T));
-
-        public DataColumnBuilder AddColumn(IReadOnlyList<object> values, string name, Type type)
+        public void AddRow(IReadOnlyList<object> values)
         {
-            if (Columns.Count != 0)
+            if (values.Count != Columns.Count)
+                throw new Exception($"Number of value {values.Count} does not match number of columns {Columns.Count}");
+
+            for (var i = 0; i < Columns.Count; i++)
             {
-                if (values.Count != _NumRows)
-                    throw new Exception($"Number of values in column {values.Count} must match number of rows {_NumRows}");
+                if (Columns[i] is not DataColumnBuilder columnBuilder)
+                    throw new Exception($"Column {i} is not a DataColumnBuilder");
+                columnBuilder.Add(values[i]);
             }
-
-            var descriptor = new DataDescriptor(name, type, Columns.Count);
-            var r = new DataColumnBuilder(descriptor, descriptor.Index);
-            r.Values.AddRange(values);
-            ColumnBuilders.Add(r);
-            if (Columns.Count == 1)
-                _NumRows = values.Count;
-
-            Debug.Assert(Columns.All(c => c.Count == _NumRows));
-            return r;
         }
 
         public object this[int column, int row] 

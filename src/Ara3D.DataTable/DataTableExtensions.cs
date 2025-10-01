@@ -13,11 +13,12 @@ public static class DataTableExtensions
     {
         var n = ddr.FieldCount;
         var r = new DataTableBuilder(name);
+        var cols = new List<DataColumnBuilder>();
         for (var i = 0; i < n; i++)
-            r.AddColumn(ddr.GetName(i), ddr.GetFieldType(i));
+            cols.Add(r.AddColumn(ddr.GetName(i), ddr.GetFieldType(i)));
         while (ddr.Read())
             for (var i = 0; i < n; i++)
-                r.ColumnBuilders[i].Values.Add(ddr[i]);
+                cols[i].Add(ddr[i]);
         return r;
     }
 
@@ -49,6 +50,16 @@ public static class DataTableExtensions
             return self.AddTable(table);
         }
         return self.AddColumns(table, columns.ToArray());
+    }
+
+    public static T[] GetTypedValues<T>(this IDataColumn column)
+    {
+        if (typeof(T) != column.GetDataType())
+            throw new Exception($"Type {typeof(T)} does not match {column.GetDataType()}");
+        var tmp = column.AsArray();
+        if (tmp is T[] r)
+            return r;
+        throw new Exception("Unable to retrieve a typed array of values");
     }
 
     public static IReadOnlyList<object> GetValues(this IDataColumn column)
@@ -182,6 +193,9 @@ public static class DataTableExtensions
     {
         var propSet = typeof(T).GetPropProvider();
         var descriptors = propSet.GetDescriptors();
+
+        // TODO: what I want is actually a special kind of list builder that takes generic objects, but knows its type. 
+        // 
         var columns = descriptors.Count.Select(_ => new List<object>()).ToList();
 
         foreach (var value in values)
@@ -197,7 +211,7 @@ public static class DataTableExtensions
 
         for (var i = 0; i < columns.Count; i++)
         {
-            self.AddColumn(columns[i], descriptors[i].Name, descriptors[i].Type);
+            self.AddColumn(columns[i].ToArray(), descriptors[i].Name, descriptors[i].Type);
         }
 
         return self;

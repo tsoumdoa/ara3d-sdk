@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ara3D.Geometry\Ara3D.Geometry.csproj" />
+    <ProjectReference Include="..\Ara3D.Models\Ara3D.Models.csproj" />
+  </ItemGroup>
+
 </Project>

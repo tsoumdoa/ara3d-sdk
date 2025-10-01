@@ -9,6 +9,14 @@ public class DataSetBuilder : IDataSet
         return r;
     }
 
+    public DataTableBuilder AddTable(IDataTable table)
+    {
+        var r = AddTable(table.Name);
+        foreach (var col in table.Columns)
+            r.AddColumn(col);
+        return r;
+    }
+
     private readonly List<DataTableBuilder> _tableBuilders = new();
     public IReadOnlyList<IDataTable> Tables => _tableBuilders.Cast<IDataTable>().ToList();
 }

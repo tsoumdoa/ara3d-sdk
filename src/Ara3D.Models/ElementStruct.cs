@@ -6,15 +6,15 @@
 /// </summary>
 public readonly struct ElementStruct
 {
-    public ElementStruct(int elementIndex, int materialIndex, int meshIndex, int transformIndex)
+    public ElementStruct(int entityIndex, int materialIndex, int meshIndex, int transformIndex)
     {
-        ElementIndex = elementIndex;
+        EntityIndex = entityIndex;
         MaterialIndex = materialIndex;
         MeshIndex = meshIndex;
         TransformIndex = transformIndex;
     }
 
-    public int ElementIndex { get; }
+    public int EntityIndex { get; }
     public int MaterialIndex { get; }
     public int MeshIndex { get; }
     public int TransformIndex { get; }
