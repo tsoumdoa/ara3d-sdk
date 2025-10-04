@@ -5,7 +5,7 @@ public class FilterCategory : IModelModifier
     public bool KeepCategory(string s)
     {
         s = s.ToLowerInvariant();
-        return s.Contains("elec") || s.Contains("cond") || s.Contains("light") || s.Contains("center") || s.Contains("device") || s.Contains("data") || s.Contains("specialty");
+        return s.Contains("elec") || s.Contains("cond") || s.Contains("light") || s.Contains("center") || s.Contains("device") || s.Contains("data");// || s.Contains("specialty");
     }
 
     public Model3D Eval(Model3D model3D, EvalContext context)
