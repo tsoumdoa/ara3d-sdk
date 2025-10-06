@@ -8,9 +8,9 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/ara3d/ara3d-sdk</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ara3d/ara3d-sdk</RepositoryUrl>
-    <Version>1.4.2</Version>
-    <AssemblyVersion>1.4.2</AssemblyVersion>  
-    <AssemblyFileVersion>1.4.2</AssemblyFileVersion>
+    <Version>1.5.0</Version>
+    <AssemblyVersion>1.5.0</AssemblyVersion>  
+    <AssemblyFileVersion>1.5.0</AssemblyFileVersion>
     <Authors>Ara 3D Inc.</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) Ara 3D Inc 2025, Licensed under MIT License</Copyright>
@@ -83,7 +83,6 @@
     <ProjectReference Include="..\Ara3D.ScriptService\Ara3D.ScriptService.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.Services\Ara3D.Services.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.Studio.API\Ara3D.Studio.API.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Ara3D.Studio.Data\Ara3D.Studio.Data.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.Utils.Roslyn\Ara3D.Utils.Roslyn.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Ara3D.WorkItems\Ara3D.WorkItems.csproj" PrivateAssets="All" />

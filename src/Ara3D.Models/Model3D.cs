@@ -1,4 +1,5 @@
-﻿using Ara3D.Collections;
+﻿using System.Diagnostics;
+using Ara3D.Collections;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Memory;
@@ -24,6 +25,7 @@ namespace Ara3D.Models
             Transforms = transforms;
             ElementStructs = elements;
             DataSet = dataSet ?? new ReadOnlyDataSet([]);
+            AssertValid();
             Elements = elements.Select(GetElement);     
         }
 
@@ -178,5 +180,17 @@ namespace Ara3D.Models
 
         public Model3D FilterElements(Func<ElementStruct, bool> f)
             => WithStructs(ElementStructs.Where(f).ToList());
+
+        public void AssertValid()
+        {
+            for (var i = 0; i < ElementStructs.Count; i++)
+            {
+                var es = ElementStructs[i];
+                Debug.Assert(es.TransformIndex >= 0);
+                Debug.Assert(es.TransformIndex < Transforms.Count);
+                Debug.Assert(es.MeshIndex < Meshes.Count);
+                Debug.Assert(es.MaterialIndex < Materials.Count);
+            }
+        }
     }
 }

@@ -2,19 +2,23 @@
 
 public class Clone : IModelModifier
 {
-    public bool AtFaceCenters;
-    [Range(0f, 1f)] public float Scale = 0.1f;
-
-    public static Element ToElement(TriangleMesh3D mesh, Point3D position, Material mat)
-        => new(mesh, mat, Matrix4x4.CreateTranslation(position)); 
-
-    public Model3D Eval(Model3D m, EvalContext eval)
+    [Range(1, 100)] public int Rows = 2;
+    [Range(1, 100)] public int Columns = 2;
+    [Range(1f, 20f)] public float Spacing = 7f;
+    
+    public Model3D Eval(Model3D model, EvalContext eval)
     {
-        var mat = m.Materials.FirstOrDefault() ?? Material.Default;
-        var instancedMesh = PlatonicSolids.TriangulatedCube.Scale(Scale);
-        var mergedMesh = m.ToMesh();
-        var points = AtFaceCenters ? mergedMesh.Triangles.Map(f => f.Center) : mergedMesh.Points;
-        return Model3D.Create(points.Select(p => ToElement(instancedMesh, p, mat)));
-    }
+        var offset = MathF.Pow(2, Spacing);
+        var positions = new List<Vector3>();
+        
+        for (var i = 0; i < Columns; i++)
+        {
+            for (var j = 0; j < Rows; j++)
+            {
+                positions.Add(new Vector3(i * offset, j * offset, 0));
+            }
+        }
 
+        return model.Clone(positions);
+    }
 }
