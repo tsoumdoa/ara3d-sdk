@@ -45,7 +45,7 @@
             => new(points);
 
         public static IReadOnlyList<Point2D> CirclePoints(this Integer n)
-            => n.LinearSpace.Map(t => t.Circle());
+            => (n + 1).LinearSpace.Map(t => t.Circle());
 
         public static Polygon RegularPolygon(int n)
             => CirclePoints(n).ToPolygon();

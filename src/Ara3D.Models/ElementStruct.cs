@@ -18,4 +18,9 @@ public readonly struct ElementStruct
     public int MaterialIndex { get; }
     public int MeshIndex { get; }
     public int TransformIndex { get; }
+
+    public ElementStruct WithEntityIndex(int entityIndex) => new(entityIndex, MaterialIndex, MeshIndex, TransformIndex);
+    public ElementStruct WithMaterialIndex(int materialIndex) => new(EntityIndex, materialIndex, MeshIndex, TransformIndex);
+    public ElementStruct WithMeshIndex(int meshIndex) => new(EntityIndex, MaterialIndex, meshIndex, TransformIndex);
+    public ElementStruct WithTransformIndex(int transformIndex) => new(EntityIndex, MaterialIndex, MeshIndex, transformIndex);
 }

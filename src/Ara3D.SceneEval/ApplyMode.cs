@@ -1,6 +1,5 @@
 ﻿namespace Ara3D.SceneEval;
 
-
 public enum ApplyMode
 {
     /// <summary>

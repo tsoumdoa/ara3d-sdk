@@ -197,5 +197,13 @@ namespace Ara3D.Geometry
         /// </summary>
         [MethodImpl(AggressiveInlining)]
         public Vector2 Min(Vector2 value2) => SNVector2.Min(Value, value2);
+
+        /// <summary>
+        /// Returns the minimum of two <see cref="Vector2"/> instances.
+        /// </summary>
+        [MethodImpl(AggressiveInlining)]
+        public static float Dot(Vector2 value1, Vector2 value2) 
+            => SNVector2.Dot(value1, value2);
+
     }
 }

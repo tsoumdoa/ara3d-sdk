@@ -131,6 +131,15 @@ namespace Ara3D.Models
         public Model3D WithDataSet(IDataSet dataSet)
             => new(Meshes, Materials, Transforms, ElementStructs, dataSet);
 
+        public Model3D WithMaterials(IReadOnlyList<Material> materials)
+            => new(Meshes, materials, Transforms, ElementStructs, DataSet);
+
+        public Model3D AssignMaterialsToElements(IReadOnlyList<Material> materials)
+            => new(Meshes, materials, Transforms, ElementStructs.Select((es, i) => es.WithMaterialIndex(i)), DataSet);
+
+        public Model3D AssignMaterialsToElements(IReadOnlyList<Material> materials, Func<ElementStruct, int> f)
+            => new(Meshes, materials, Transforms, ElementStructs.Select(es => es.WithMaterialIndex(f(es))), DataSet);
+
         public Model3D ModifyTransforms(Func<Matrix4x4, Matrix4x4> f)
             => WithTransforms(Transforms.Select(f));
 

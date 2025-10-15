@@ -191,6 +191,20 @@ namespace Ara3D.Utils
                 .ToDictionary(fi => fi.Name, fi => fi.GetValue(self));
 
         /// <summary>
+        /// Given a dictionary of string/object pairs, sets properties
+        /// </summary>
+        public static T SetProperties<T>(this Dictionary<string, object> self, T host)
+        {
+            var props = self.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var p in props)
+            {
+                if (self.TryGetValue(p.Name, out var value))
+                    p.SetValue(host, value);
+            }
+            return host;
+        }
+
+        /// <summary>
         /// Given a method info, an object to invoke it on, and args, returns a func object (lambda)
         /// </summary>
         public static Func<T> InvokableMethod<T>(this MethodInfo mi, object self, params object[] args)
