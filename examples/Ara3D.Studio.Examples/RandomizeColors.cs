@@ -111,11 +111,12 @@ public static class UniformColors
 
 public class RandomizeColors : IModelModifier
 {
-    [Range(0.0, 1.0)] public double MinLightness = 0.62;
-    [Range(0.0, 1.0)] public double MaxLightness = 0.88;
-    [Range(0.0, 1.0)] public double ChromaMargin = 0.90;
-    [Range(0.0, 1.0)] public double Metallic = 0.90;
-    [Range(0.0, 1.0)] public double Roughness = 0.90;
+    [Range(0.0f, 1.0f)] public float MinLightness = 0.62f;
+    [Range(0.0f, 1.0f)] public float MaxLightness = 0.88f;
+    [Range(0.0f, 1.0f)] public float ChromaMargin = 0.90f;
+    [Range(0.0f, 1.0f)] public float Metallic = 0.90f;
+    [Range(0.0f, 1.0f)] public float Roughness = 0.90f;
+    
     public bool UseEntities = true;
 
     public Model3D Eval(Model3D model3D, EvalContext context)

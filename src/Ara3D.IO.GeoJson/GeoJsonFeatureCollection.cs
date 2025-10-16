@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 ﻿namespace Ara3D.IO.GeoJson;
-=======
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace Ara3D.IO.GeoJson;
->>>>>>> 22292231a48842c7a08bd4647b494e76a6ad633d
 
 public abstract class GeoJsonObject
 {
