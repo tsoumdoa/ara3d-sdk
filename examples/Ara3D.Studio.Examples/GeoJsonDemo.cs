@@ -25,7 +25,7 @@ public class GeoJsonDemo : IModelGenerator
         var groups = fc.features.GroupBy(f => f["level_id"]);
         var roomIndex = 0;
         foreach (var group in groups)
-        {
+        {   
             foreach (var feature in group)
             {
                 if (feature is ImdfUnit imdfUnit)
@@ -43,7 +43,7 @@ public class GeoJsonDemo : IModelGenerator
                         }
                     }
 
-                    if (loops.Length == 0 || loops[0].Length == 0) continue;
+                    if (loops.Length == 0 || loops[0].Length == 0) continue;    
                     var height = loops[0][0].Z;
 
                     var loops2D = loops.Select(loop => loop.Select(v => v.To2D));

@@ -34,6 +34,12 @@ namespace Ara3D.SceneEval
             Sinks.Clear();
         }
 
+        public SceneEvalNode FindNode(object obj)
+            => GetAllNodes().FirstOrDefault(node => node.EvaluatableObject == obj);
+
+        public void Invalidate(object obj)
+            => FindNode(obj)?.InvalidateCache();
+
         public SceneEvalNode ReplaceSink(SceneEvalNode oldSink, object obj)
         {
             var sinkIndex = Sinks.IndexOf(oldSink);

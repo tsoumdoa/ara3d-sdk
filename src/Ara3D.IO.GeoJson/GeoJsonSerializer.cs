@@ -85,4 +85,35 @@ public static class GeoJsonSerializer
 
         return r;
     }
+
+    public static GeoJsonFeatureCollection LoadFeatureCollection(this DirectoryPath dir)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
+        options.Converters.Add(new GeoJsonFeatureConverter());
+
+        var r = new GeoJsonFeatureCollection();
+        foreach (var file in dir.GetFiles("*.json"))
+        {
+            var text = file.ReadAllText();
+            using var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+
+            var feature = root.ToGeoJsonFeature();
+            r.features.Add(feature);
+
+            foreach (var kv in feature.properties.ToList())
+            {
+                if (kv.Value == null) continue;
+                var je = (JsonElement)kv.Value;
+                feature.properties[kv.Key] = je.ToObject();
+            }
+        }
+
+        return r;
+    }
 }

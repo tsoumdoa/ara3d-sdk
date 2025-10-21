@@ -7,4 +7,5 @@ public interface IHostApplication
 {
     IEnumerable<Model3D> GetModels();
     ILogger Logger { get; }
+    void Invalidate(object obj);
 }
