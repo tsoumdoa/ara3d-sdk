@@ -15,7 +15,7 @@ namespace Ara3D.Bowerbird.RevitSamples
         public BosBackgroundExporterForm BosForm;
         public List<long> Ids = new();
         public int QueueSize; 
-        public override string Name => "Background Export BOM";
+        public override string Name => "BOM Background Export";
         public RoomUpdater RoomUpdater;
 
         public static Guid AddInGuid = new ("8F4295CE-00A0-4E39-A64E-412DD8F2814B");

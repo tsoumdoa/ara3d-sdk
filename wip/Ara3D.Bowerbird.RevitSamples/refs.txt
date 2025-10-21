@@ -17,12 +17,14 @@ RevitAPIIFC.dll
 RevitAPIUI.dll
 RevitAPIFoundation.dll
 AdWindows.dll
+Ara3D.BimOpenGeometry.dll
 Ara3D.BimOpenSchema.dll
 Ara3D.BimOpenSchema.IO.dll
 Ara3D.Bowerbird.dll
 Ara3D.Collections.dll
 Ara3D.DataTable.dll
 Ara3D.Domo.dll
+Ara3D.Extras.dll
 Ara3D.Events.dll
 Ara3D.Geometry.dll
 Ara3D.IO.A3D.dll
@@ -77,4 +79,3 @@ System.Drawing.Common.dll
 System.IO.Packaging.dll
 UIFramework.dll
 ZstdSharp.dll
-C:\Program Files\dotnet\shared\Microsoft.NETCore.App\8.0.8\System.IO.Pipes.dll

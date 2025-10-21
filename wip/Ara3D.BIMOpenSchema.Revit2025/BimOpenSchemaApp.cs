@@ -1,27 +1,21 @@
-﻿using Ara3D.BimOpenSchema;
-using Ara3D.BimOpenSchema.IO;
-using Ara3D.Logging;
+﻿using Ara3D.Logging;
 using Ara3D.Utils;
 using Autodesk.Revit.UI;
-using Parquet;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using Ara3D.Bowerbird.RevitSamples;
-using static Ara3D.BIMOpenSchema.Revit2025.BIMOpenSchemaExporterForm;
 using Bitmap = System.Drawing.Bitmap;
 using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Ara3D.BIMOpenSchema.Revit2025
 {
-    public class OpenSchemaApp : IExternalApplication
+    public class BimOpenSchemaApp : IExternalApplication
     {
-        public static OpenSchemaApp Instance { get; private set; }
+        public static BimOpenSchemaApp Instance { get; private set; }
         public RevitContext RevitContext { get; private set; }
         public UIControlledApplication UicApp { get; private set; }
         public UIApplication UiApp { get; private set; }
@@ -72,7 +66,7 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             var rvtRibbonPanel = application.CreateRibbonPanel("BIM Open Schema");
             var pushButtonData = new PushButtonData("Parquet Exporter", "Export to Parquet", 
                 Assembly.GetExecutingAssembly().Location,
-                typeof(OpenSchemaExternalCommand).FullName);
+                typeof(BimOpenSchemaExternalCommand).FullName);
             // https://www.revitapidocs.com/2020/544c0af7-6124-4f64-a25d-46e81ac5300f.htm
             if (!(rvtRibbonPanel.AddItem(pushButtonData) is PushButton runButton))
                 return Result.Failed;

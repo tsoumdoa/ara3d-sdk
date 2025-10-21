@@ -45,6 +45,7 @@
 		<PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Ara3D.BimOpenGeometry\Ara3D.BimOpenGeometry.csproj" />
 	  <ProjectReference Include="..\Ara3D.Bowerbird.Demo\Ara3D.Bowerbird.Demo.csproj" />
 	  <ProjectReference Include="..\Ara3D.Bowerbird\Ara3D.Bowerbird.csproj" />
 	</ItemGroup>

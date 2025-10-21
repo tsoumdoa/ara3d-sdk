@@ -14,7 +14,8 @@
     <PackageReference Include="System.IO.Pipes" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup> 
+    <ProjectReference Include="..\..\src\Ara3D.BimOpenGeometry\Ara3D.BimOpenGeometry.csproj" />
     <ProjectReference Include="..\..\src\Ara3D.BimOpenSchema\Ara3D.BimOpenSchema.csproj" />
     <ProjectReference Include="..\..\src\Ara3D.IO.PLY\Ara3D.IO.PLY.csproj" />
     <ProjectReference Include="..\Ara3D.BimOpenSchema.IO\Ara3D.BimOpenSchema.IO.csproj" />
@@ -38,7 +39,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(ProjectDir)*.cs &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts\&quot; /y&#xD;&#xA;xcopy $(ProjectDir)*.ref &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts\&quot; /y" />
+    <Exec Command="mkdir &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts&quot; &#xD;&#xA;del &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts\*.*&quot; &#xD;&#xA;xcopy $(ProjectDir)*.cs &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts\&quot; /y&#xD;&#xA;xcopy $(ProjectDir)*.txt &quot;%25localappdata%25\Ara 3D\Bowerbird for Revit 2025\Scripts\&quot; /y" />
   </Target>
 
 
