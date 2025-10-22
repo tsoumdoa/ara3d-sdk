@@ -1,8 +1,6 @@
     
 set AddinsDir=%programdata%\Autodesk\Revit\Addins\
 set BowerbirdDir=%AddinsDir%\2025\Ara3D.Bowerbird\
-set ScriptsDir=%localappdata%\Ara 3D\Bowerbird for Revit 2025\Scripts\
-
 
 :: -------- 1) No argument?  Leave quietly --------------------
 if "%~1"=="" (
@@ -18,14 +16,9 @@ xcopy /Y *2025.addin %AddinsDir%\2025
 if not exist "%BowerbirdDir%" mkdir "%BowerbirdDir%"
 
 xcopy %1 "%BowerbirdDir%" /h /i /c /k /e /r /y
-mkdir "%ScriptsDir%"
-del "%ScriptsDir%"\*.* /y
-xcopy ..\Ara3D.Bowerbird.RevitSamples\*.cs "%ScriptsDir%" /y
-xcopy ..\Ara3D.Bowerbird.RevitSamples\*.txt "%ScriptsDir%" /y
 
 echo Done.
 goto :eof
-
 
 :clean
 echo Removing Bowerbird for Revit 2025 …

@@ -80,7 +80,7 @@ namespace Ara3D.Bowerbird.Demo
             UpdateListBox(listBoxAssemblies, data.Assemblies);
             UpdateListBox(listBoxTypes, data.TypeNames);
             UpdateListBox(listBoxErrors, data.Diagnostics);
-            UpdateListBox(listBoxCommands, Service.Commands.Select(c => c.Name).OrderBy(x => x));
+            UpdateListBox(listBoxCommands, Service.Commands.Select(c => c.Name));
         }
 
         private void CheckBoxAutoRecompileOnCheckedChanged(object sender, EventArgs e)

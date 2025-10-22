@@ -34,7 +34,7 @@ namespace Ara3D.Utils.Roslyn
         public FilePath GenerateUniqueFileName()
             => BaseFilePath.ToUniqueTimeStampedFileName();
 
-        public DirectoryWatchingCompiler(ILogger logger, DirectoryPath inputDir, DirectoryPath libsDir, bool recursive = false, 
+        public DirectoryWatchingCompiler(ILogger logger, DirectoryPath inputDir, DirectoryPath libsDir, bool recursive = false,
             CompilerOptions options = null)
         {
             LoadedAssemblies = RoslynUtils.LoadedAssemblyLocations().ToList();

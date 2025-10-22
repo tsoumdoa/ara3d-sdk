@@ -67,6 +67,7 @@ public class BowerbirdService
                     _commands.Add(command as INamedCommand);
                 else
                     Logger.Log($"Failed to create command from {t}, returned null");
+                _commands.Sort((c1, c2) => string.Compare(c1.Name, c2.Name, StringComparison.Ordinal));
             }
             catch (Exception ex)
             {

@@ -4,13 +4,25 @@ using System.Linq;
 using Ara3D.BimOpenGeometry;
 using Ara3D.Geometry;
 using Autodesk.Revit.DB;
-using Document = Autodesk.Revit.DB.Document;
-using Element = Autodesk.Revit.DB.Element;
+using RevitDocument = Autodesk.Revit.DB.Document;
+using RevitElement = Autodesk.Revit.DB.Element;
 using Material = Ara3D.Models.Material;
-using Mesh = Ara3D.Bowerbird.RevitSamples.Mesh;
 using RevitMesh = Autodesk.Revit.DB.Mesh;
 
+/*
 namespace Ara3D.Bowerbird.RevitSamples;
+
+public class MeshGroup
+{
+
+}
+
+public class MeshWithMaterial
+{
+    public string MeshCode;
+    public int MeshIndex;
+    public int MaterialIndex;
+}
 
 public class RevitBimGeometryBuilder
 {
@@ -25,8 +37,9 @@ public class RevitBimGeometryBuilder
         return bldr.BuildModel();
     }
 
+    public BimGeometryBuilder Builder { get; set; }
     public Dictionary<(Guid, long), Material> MaterialLookup = new();
-    public Document CurrentDoc { get; private set; }
+    public RevitDocument CurrentDoc { get; private set; }
     public Guid CurrentDocId => CurrentDoc.CreationGUID;
     public Options Options = new()
     {
@@ -43,35 +56,29 @@ public class RevitBimGeometryBuilder
     public static Vector3 ToVector3(XYZData xyz)
         => ((float)xyz.X, (float)xyz.Y, (float)xyz.Z);
 
-    public static Mesh ToMesh(RevitMesh m)
+    public static TriangleMesh3D ToMesh(RevitMesh m)
     {
         if (m == null)
-            return null;
+            return new([], []);
 
-        var r = new Mesh();
+        var points = m.Vertices.Select(p => new Point3D((float)p.X, (float)p.Y, (float)p.Z)).ToList();
         var n = m.NumTriangles;
+        var faces = new Integer3[n];
         for (var i = 0; i < n; i++)
         {
             var tri = m.get_Triangle(i);
             var v0 = (int)tri.get_Index(0);
             var v1 = (int)tri.get_Index(1);
             var v2 = (int)tri.get_Index(2);
-            r.IndexData.Add(v0);
-            r.IndexData.Add(v1);
-            r.IndexData.Add(v2);
+            faces[i] = (v0, v1, v2);
         }
-
-        foreach (var v in m.Vertices)
-        {
-            r.PointXData.Add((float)v.X);
-            r.PointYData.Add((float)v.Y);
-            r.PointZData.Add((float)v.Z);
-        }
-
-        return r;
+        return new(points, faces);
     }
 
-    public Material ToMaterial(PbrMaterialInfo pbr) 
+    public int AddMesh(RevitMesh m)
+        => 
+
+    public Material? ToMaterial(PbrMaterialInfo pbr) 
         => pbr == null
             ? Material.Default
             : new Material(pbr.BaseColor ?? pbr.ShadingColor, (float)(pbr.Metallic ?? 0),
@@ -279,7 +286,7 @@ public class RevitBimGeometryBuilder
             o.X, o.Y, o.Z, 1f);
     }
 
-    public MeshGroup ProcessElement(Element e)
+    public MeshGroup ProcessElement(RevitElement e)
     {
         if (e == null || !e.IsValidObject || e.Id == ElementId.InvalidElementId)
             return null;
@@ -310,11 +317,11 @@ public class RevitBimGeometryBuilder
         }
     }
 
-    public MeshGroup ProcessElements(Document doc)
+    public MeshGroup ProcessElements(RevitDocument doc)
     {
         var collector = new FilteredElementCollector(doc).WhereElementIsNotElementType();
         var r = new MeshGroup();
-        foreach (Element e in collector)
+        foreach (RevitElement e in collector)
         {
             var tmp = ProcessElement(e);
             if (tmp != null)
@@ -323,7 +330,7 @@ public class RevitBimGeometryBuilder
         return r;
     }
 
-    public MeshGroup ProcessDocument(Document doc, bool includeLinks)
+    public MeshGroup ProcessDocument(RevitDocument doc, bool includeLinks)
     {
         var oldDoc = CurrentDoc;
         try
@@ -365,3 +372,4 @@ public class RevitBimGeometryBuilder
         }
     }
 }
+*/
