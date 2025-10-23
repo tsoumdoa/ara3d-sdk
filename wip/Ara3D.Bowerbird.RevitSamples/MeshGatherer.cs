@@ -179,6 +179,5 @@ public class MeshGatherer
             DetailLevel = ViewDetailLevel.Medium,
             ComputeReferences = false,
             IncludeNonVisibleObjects = false,
-            View = null
         };
 }

@@ -7,7 +7,7 @@ namespace Ara3D.Utils.Roslyn
 {
     /// <summary>
     /// Used for a single compilation event.
-    /// This uses a cache to minimize recompilation 
+    /// This optionally uses a cache to minimize recompilation 
     /// </summary>
     public class Compiler
     {
@@ -29,10 +29,13 @@ namespace Ara3D.Utils.Roslyn
             Input = input;
             Logger = logger;
 
-            Log(":Consulting Cache:");
-            Output = TryLoadCache(version);
-            if (Output?.Success == true)
-                return;
+            if (Options.UseCache)
+            {
+                Log(":Consulting Cache:");
+                Output = TryLoadCache(version);
+                if (Output?.Success == true)
+                    return;
+            }
 
             Log(":Parsing:");
             if (token.IsCancellationRequested) return;

@@ -41,10 +41,13 @@ namespace Ara3D.Utils.Roslyn
 
         public static CompilerOptions CreateDefault()
             => new(RoslynUtils.LoadedAssemblyLocations(), 
-                RoslynUtils.GenerateNewDllFileName(), true, true);
+                RoslynUtils.GenerateNewDllFileName(), true, false);
+
+        public CompilerOptions WithCaching()
+            => new(FileReferences, OutputFile, Debug, true);
 
         public static CompilerOptions CreateDefault(Type[] types)
             => new(types.Select(t => (FilePath)t.Assembly.Location),
-                RoslynUtils.GenerateNewDllFileName(), true, true);
+                RoslynUtils.GenerateNewDllFileName(), true, false);
     }
 }
