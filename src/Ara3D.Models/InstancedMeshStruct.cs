@@ -1,13 +1,12 @@
-﻿namespace Ara3D.Studio.Data
+﻿namespace Ara3D.Models;
+
+public struct InstancedMeshStruct
 {
-    public struct InstancedMeshStruct
+    public readonly InstanceStruct Instance;
+    public readonly MeshSliceStruct Mesh;
+    public InstancedMeshStruct(InstanceStruct instance, MeshSliceStruct mesh)
     {
-        public readonly InstanceStruct Instance;
-        public readonly MeshSliceStruct Mesh;
-        public InstancedMeshStruct(InstanceStruct instance, MeshSliceStruct mesh)
-        {
-            Instance = instance;
-            Mesh = mesh;
-        }
+        Instance = instance;
+        Mesh = mesh;
     }
 }

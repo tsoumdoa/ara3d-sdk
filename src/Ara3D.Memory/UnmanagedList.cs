@@ -32,12 +32,6 @@ namespace Ara3D.Memory
             _pointer = Memory.Bytes.GetPointer<T>();
         }
 
-        public long Capacity
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _capacity;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {

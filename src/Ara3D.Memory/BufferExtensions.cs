@@ -97,7 +97,10 @@ namespace Ara3D.Memory
         public static T* End<T>(this IBuffer<T> buffer) where T : unmanaged
             => (T*)Unsafe.AsPointer(ref buffer[0]) + buffer.Count;
 
-        public static IBuffer<T> Cast<T>(this IBuffer buffer) where T: unmanaged
+        public static IBuffer<T> Cast<T>(this IBuffer buffer) where T : unmanaged
+            => buffer.CastMemory<T>();
+
+        public static IBuffer<T> CastMemory<T>(this IBuffer buffer) where T : unmanaged
             => new Buffer<T>(buffer.Bytes);
     }
 }

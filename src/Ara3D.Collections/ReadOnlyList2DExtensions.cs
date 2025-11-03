@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Ara3D.Collections
 {
@@ -31,5 +32,20 @@ namespace Ara3D.Collections
 
         public static ReadOnlyList2D<TR> Select<T, TR>(this IReadOnlyList2D<T> self, Func<T, TR> f)
             => new ReadOnlyList2D<TR>(self.OneDimArray().Select(f), self.NumColumns, self.NumRows);
+
+        public static ReadOnlyListAdapter2D<T> ToReadOnlyList2D<T>(this T[,] data)
+            => new ReadOnlyListAdapter2D<T>(data);
+
+        public static FunctionalReadOnlyList2D<U> Select<T, U>(this IReadOnlyList2D<T> self, Func<int, int, U> f)
+            => new FunctionalReadOnlyList2D<U>(self.NumColumns, self.NumRows, f);
+
+        public static FunctionalReadOnlyList2D<T> Select<T>(this int numColumns, int numRows, Func<int, int, T> f)
+            => new FunctionalReadOnlyList2D<T>(numColumns, numRows, f);
+
+        public static FunctionalReadOnlyList2D<U> Select<T, U>(this IReadOnlyList2D<T> self, Func<T, int, int, U> f)
+            => new FunctionalReadOnlyList2D<U>(self.NumColumns, self.NumRows, (i, j) => f(self[i,j], i, j));
+
+        public static FunctionalReadOnlyList2D<U> SampleUV<T, U>(this IReadOnlyList2D<T> self, Func<float, float, T, U> f)
+            => self.Select((x, i, j) => f((float)i / self.NumColumns, (float)j / self.NumRows, x));
     }
 }

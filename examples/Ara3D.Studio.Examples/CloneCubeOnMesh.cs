@@ -10,7 +10,7 @@ public class CloneCubeOnMesh : IModelModifier
 
     public Model3D Eval(Model3D m, EvalContext eval)
     {
-        var mat = m.Materials.FirstOrDefault() ?? Material.Default;
+        var mat = m.Materials.Count > 0 ? m.Materials[0] : Material.Default;
         var instancedMesh = PlatonicSolids.TriangulatedCube.Scale(Scale);
         var mergedMesh = m.ToMesh();
         var points = AtFaceCenters ? mergedMesh.Triangles.Map(f => f.Center) : mergedMesh.Points;
