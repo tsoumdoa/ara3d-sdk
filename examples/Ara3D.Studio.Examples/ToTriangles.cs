@@ -1,7 +1,22 @@
 ﻿namespace Ara3D.Studio.Samples;
 
+/*
 public class ToTriangles : IModelModifier
 {
+    // TODO: put into main triangle mesh 
+    public static Point3D Center(TriangleMesh3D mesh)
+    {
+        
+        mesh.Points.Select(p => p.Vector3).Average();
+    }
+
+    // TODO: put into main triangle mesh 
+    public static TriangleMesh3D ScaleAroundCenter(TriangleMesh3D mesh, float amount)
+    {
+        var center = mesh.Center();
+
+    }
+
     public static TriangleMesh3D ToMesh(Triangle3D t)
         => new(t.Points, [new Integer3(0, 1, 2)]);
 
@@ -20,3 +35,4 @@ public class ToTriangles : IModelModifier
         return new Model3D(meshes, model.Materials, transforms, elements, null);
     }
 }
+*/

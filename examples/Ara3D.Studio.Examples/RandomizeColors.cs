@@ -117,17 +117,13 @@ public class RandomizeColors : IModelModifier
     [Range(0.0f, 1.0f)] public float Metallic = 0.90f;
     [Range(0.0f, 1.0f)] public float Roughness = 0.90f;
     
-    public bool UseEntities = true;
-
     public Model3D Eval(Model3D model3D, EvalContext context)
     {
-        var nIds = model3D.ElementStructs.Select(es => es.EntityIndex).ToIndexedSet();
-        var n = UseEntities ? nIds.Count : model3D.ElementStructs.Count;
+        var nIds = model3D.Instances.Select(es => es.MeshIndex).ToIndexedSet();
+        var n = nIds.Count;
         var colors = UniformColors.GenerateColors(n, MinLightness, MaxLightness, ChromaMargin);
         var mats = colors.Select(c => new Material(c, (float)Metallic, (float)Roughness));
-        if (!UseEntities)
-            return model3D.AssignMaterialsToElements(mats);
-
-        return model3D.AssignMaterialsToElements(mats, es => nIds[es.EntityIndex]);
+        return model3D.WithInstances(model3D.Instances.Select((node) =>
+            node.WithMaterial(node.MeshIndex >= 0 ? mats[node.MeshIndex] : Material.Default)));
     }
 }

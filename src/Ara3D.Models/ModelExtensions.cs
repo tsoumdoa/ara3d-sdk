@@ -12,14 +12,8 @@ public static class ModelExtensions
             self[i] = f(self[i]);
     }
 
-    public static Material ToMaterial(this InstanceStruct self)
-        => new(self.Color, self.Metallic, self.Roughness);
-
-    public static InstanceStruct WithMaterial(this InstanceStruct self, Material material)
-        => new InstanceStruct(self.Matrix4x4, (int)self.ObjectIndex, (int)self.SceneIndex, material.Color, material.Metallic, material.Roughness);
-
     public static InstanceStruct TransformMaterial(this InstanceStruct self, Func<Material, Material> f)
-        => self.WithMaterial(f(self.ToMaterial()));
+        => self.WithMaterial(f(self.Material));
 
     public static IRenderScene TransformInstances(this IRenderScene scene, Func<InstanceStruct, InstanceStruct> f)
     {

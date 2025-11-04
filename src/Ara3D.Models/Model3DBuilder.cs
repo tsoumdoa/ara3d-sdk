@@ -1,129 +1,53 @@
-﻿using System.Diagnostics;
-using Ara3D.DataTable;
+﻿using Ara3D.DataTable;
 using Ara3D.Geometry;
 
 namespace Ara3D.Models;
 
 public class Model3DBuilder 
 {
-    private bool _frozen;
-
     public List<TriangleMesh3D> Meshes { get; } = [];
-    public List<Material> Materials { get; } = [];
-    public List<Matrix4x4> Transforms { get; } = [];
-    public List<ElementStruct> ElementStructs { get; } = [];
+    public List<InstanceStruct> Instances { get; } = [];
     public DataSetBuilder DataSet { get; } = new();
-    public Material DefaultMaterial;
-
-    public Model3DBuilder(Material? defaultMaterial = null)
-        => DefaultMaterial = defaultMaterial ?? Material.Default;
     
-    public int AddElement(TriangleMesh3D mesh)
-        => AddElement(new Element(mesh, DefaultMaterial, Matrix4x4.Identity));
+    public Model3D Build()
+        => new(Meshes, Instances, DataSet);
 
-    public int AddElement(TriangleMesh3D mesh, Matrix4x4 transform)
-        => AddElement(new Element(mesh, DefaultMaterial, transform));
+    public void AddInstance(int meshIndex, Matrix4x4 matrix)
+        => AddInstance(meshIndex, matrix, Material.Default);
 
-    public int AddElement(TriangleMesh3D mesh, Material material)
-        => AddElement(new Element(mesh, DefaultMaterial, Matrix4x4.Identity));
+    public void AddInstance(int meshIndex, Material material)
+        => AddInstance(meshIndex, Matrix4x4.Identity, material);
+
+    public void AddInstance(int meshIndex, Matrix4x4 matrix, Material material)
+        => Instances.Add(new InstanceStruct(matrix, meshIndex, material));
+
+    public void AddInstance(int meshIndex, Material material, Matrix4x4 matrix)
+        => AddInstance(meshIndex, matrix, material);
+    
+    public void AddModel(Model3D model)
+    {
+        var meshOffset = Meshes.Count;
+        Meshes.AddRange(model.Meshes);
+        foreach (var inst in model.Instances)
+            Instances.Add(inst.WithMeshIndex(inst.MeshIndex + meshOffset));
+    }
+
+    public void AddInstance(TriangleMesh3D mesh, Material material, Matrix4x4 matrix)
+        => AddInstance(AddMesh(mesh), material, matrix);
+
+    public void AddInstance(TriangleMesh3D mesh, Material material)
+        => AddInstance(mesh, material, Matrix4x4.Identity);
+
+    public void AddInstance(TriangleMesh3D mesh, Matrix4x4 matrix)
+        => AddInstance(mesh, Material.Default, matrix);
+
+    public void AddInstance(TriangleMesh3D mesh)
+        => AddInstance(mesh, Material.Default, Matrix4x4.Identity);
 
     public int AddMesh(TriangleMesh3D mesh)
     {
-        Debug.Assert(!_frozen);
+        var r = Meshes.Count;
         Meshes.Add(mesh);
-        return Meshes.Count - 1;
-    }
-
-    public void AddMeshes(IEnumerable<TriangleMesh3D> meshes)
-    {
-        Debug.Assert(!_frozen);
-        Meshes.AddRange(meshes);
-    }
-
-    public int AddMaterial(Material material)
-    {
-        Debug.Assert(!_frozen);
-        Materials.Add(material);
-        return Materials.Count - 1;
-    }
-
-    public void AddMaterials(IEnumerable<Material> materials)
-    {
-        Debug.Assert(!_frozen);
-        Materials.AddRange(materials);
-    }
-
-    public int AddTransform(Matrix4x4 transform)
-    {
-        Debug.Assert(!_frozen);
-        Transforms.Add(transform);
-        return Transforms.Count - 1;
-    }
-
-    public void AddTransforms(IEnumerable<Matrix4x4> transforms)
-    {
-        Debug.Assert(!_frozen);
-        Transforms.AddRange(transforms);
-    }
-
-    public int AddElement(Element element)
-        => AddElement(element.Mesh, element.Material, element.Transform);
-
-    public int AddElement(TriangleMesh3D mesh, Material material, Matrix4x4 transform)
-        => AddElement(ElementStructs.Count, AddMesh(mesh), AddMaterial(material), AddTransform(transform));
-
-    public int AddElement(int meshIndex, int materialIndex, int transformIndex)
-        => AddElement(ElementStructs.Count, meshIndex, materialIndex, transformIndex);
-
-    public int AddElement(int entityIndex, int meshIndex, int materialIndex, int transformIndex)
-    {
-        Debug.Assert(!_frozen);
-        Debug.Assert(meshIndex >= 0 && meshIndex < Meshes.Count);
-        Debug.Assert(materialIndex >= 0 && materialIndex < Materials.Count);
-        Debug.Assert(transformIndex >= 0 && transformIndex < Transforms.Count);
-        ElementStructs.Add(new ElementStruct(entityIndex, materialIndex, meshIndex, transformIndex));
-        return ElementStructs.Count - 1;
-    }
-
-    public void AddElements(IEnumerable<Element> elements)
-    {
-        Debug.Assert(!_frozen);
-        foreach (var element in elements)
-        {
-            var meshIndex = AddMesh(element.Mesh);
-            var materialIndex = AddMaterial(element.Material);
-            var transformIndex = AddTransform(element.Transform);
-            AddElement(ElementStructs.Count, meshIndex, materialIndex, transformIndex);
-        }
-    }
-
-    public Model3DBuilder Add(Model3D m)
-    {
-        Debug.Assert(!_frozen);
-        var meshOffset = Meshes.Count;
-        var materialOffset = Materials.Count;
-        var transformOffset = Transforms.Count;
-        var entityOffset = ElementStructs.Count;
-
-        Meshes.AddRange(m.Meshes);
-        Materials.AddRange(m.Materials);
-        Transforms.AddRange(m.Transforms);
-        
-        foreach (var element in m.ElementStructs)
-        {
-            ElementStructs.Add(new ElementStruct(
-                entityIndex: entityOffset + element.EntityIndex,
-                materialIndex: materialOffset + element.MaterialIndex,
-                meshIndex: meshOffset + element.MeshIndex,
-                transformIndex: transformOffset + element.TransformIndex));
-        }
-
-        return this;
-    }
-
-    public Model3D Build()
-    {
-        _frozen = true;
-        return new Model3D(Meshes, Materials, Transforms, ElementStructs, DataSet);
+        return r;
     }
 }

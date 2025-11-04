@@ -16,17 +16,16 @@ public class RotatedPlatforms : IModelGenerator
         var dim = new Vector3(Width, Depth, Height);
         mesh = mesh.Scale(dim);
 
-        var elements = new List<Element>();
+        var instances = new List<Matrix4x4>();
         foreach (var i in new IntegerRange(0, Count))
         {
             var angle = rotationPerFloor * i;
             var position = Vector3.UnitZ * ((Spacing * i) + Height);
             var rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, angle);
             var transform = new Pose3D(position, rotation);
-            var element = new Element(mesh, Material.Default, transform);
-            elements.Add(element);
+            instances.Add(transform);
         }
 
-        return Model3D.Create(elements);
+        return Model3D.Create(mesh, Material.Default, instances);
     }
 }

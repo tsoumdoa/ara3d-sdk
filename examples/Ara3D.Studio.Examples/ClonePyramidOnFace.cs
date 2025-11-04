@@ -47,7 +47,7 @@ public class ClonePyramidOnFace : IModelModifier
     public Model3D Eval(Model3D model3D, EvalContext context)
     {
         var firstMesh = model3D.Meshes[0];
-        var firstMat = model3D.Materials[0];
+        var firstMat = model3D.FirstOrDefaultMaterial();
         var quads = ToQuads(firstMesh.Triangles);
         var mesh = PlatonicSolids.Tetrahedron;
         var transforms = quads.Map(AlignToQuad);

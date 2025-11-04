@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Ara3D.Collections;
+﻿using Ara3D.Collections;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Models;
@@ -75,12 +74,19 @@ public static class BimGeometryExtensions
             self.MaterialMetallic[materialIndex].ToNormalizedFloat(),
             self.MaterialRoughness[materialIndex].ToNormalizedFloat());
 
-    public static ElementStruct GetElementStruct(this BimGeometry self, int elementIndex)
-        => new(
-            self.ElementEntityIndex[elementIndex],
-            self.ElementMaterialIndex[elementIndex],
-            self.ElementMeshIndex[elementIndex],
-            self.ElementTransformIndex[elementIndex]);
+    public static InstanceStruct GetInstanceStruct(this BimGeometry self, int elementIndex)
+        => new(self.GetElementMatrix(elementIndex), self.ElementMeshIndex[elementIndex], self.GetElementMaterial(elementIndex));
+
+    public static Material GetMaterial(this BimGeometry self, int materialIndex)
+        => new(self.GetColor(materialIndex), 
+            self.MaterialMetallic[materialIndex].ToNormalizedFloat(),
+            self.MaterialRoughness[materialIndex].ToNormalizedFloat());
+
+    public static Material GetElementMaterial(this BimGeometry self, int elementIndex)
+        => self.GetMaterial(self.ElementMaterialIndex[elementIndex]);
+
+    public static Matrix4x4 GetElementMatrix(this BimGeometry self, int elementIndex)
+        => new(self.GetTransformMatrix(self.ElementTransformIndex[elementIndex]));
 
     public static Matrix4x4 GetTranslationMatrix(this BimGeometry self, int i)
         => Matrix4x4.CreateTranslation(self.GetTranslation(i));
@@ -105,12 +111,9 @@ public static class BimGeometryExtensions
 
     public static Model3D ToModel3D(this BimGeometry self)
     {
-        var defaultMaterial = new Material((0.4f, 0.4f, 0.7f, 1f), 0.1f, 0.5f);
         var meshes = self.GetNumMeshes().MapRange(i => self.GetMesh(i)).ToArray();
-        var materials = self.GetNumMaterials().MapRange(i => self.GetMaterial(i, defaultMaterial)).ToArray();
-        var transforms = self.GetNumTransforms().MapRange(i => self.GetTransformMatrix(i)).ToArray();
-        var elements = self.GetNumElements().MapRange(i => self.GetElementStruct(i)).ToArray();
-        return new Model3D(meshes, materials, transforms, elements);
+        var instances = self.GetNumElements().MapRange(i => self.GetInstanceStruct(i)).ToList();
+        return new Model3D(meshes, instances);
     }
 
     public static DataTableBuilder AddColumn<T>(this DataTableBuilder self, BimGeometry model, T[] data, string name)
@@ -163,8 +166,12 @@ public static class BimGeometryExtensions
         return r;
     }
 
+    
     public static BimGeometry ToBimGeometry(this Model3D self)
     {
+        throw new NotImplementedException();
+
+        /*
         var r = new BimGeometry();
         
         var indices = new List<int>();
@@ -261,6 +268,7 @@ public static class BimGeometryExtensions
         }
 
         return r;
+        */
     }
 
     public static T[] ReadColumn<T>(this IDataSet set, string tableName, string columnName)

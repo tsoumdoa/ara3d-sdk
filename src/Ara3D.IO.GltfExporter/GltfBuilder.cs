@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Ara3D.Geometry;
 using Ara3D.Models;
+using Ara3D.Utils;
 
 namespace Ara3D.IO.GltfExporter;
 
@@ -33,8 +34,11 @@ public class GltfBuilder
     const int FACE_VIEW_INDEX = 1; 
 
     public List<GltfMeshSlice> MeshSlices = new();
-    
-    public GltfMaterial ToMaterial(Material mat)
+
+    public GltfMaterial ToGltfMaterial(InstanceStruct inst)
+        => ToGltfMaterial(inst.Material);
+
+    public GltfMaterial ToGltfMaterial(Material mat)
         => new()
         {
             pbrMetallicRoughness = new GltfPbr()
@@ -109,7 +113,8 @@ public class GltfBuilder
         var nodesOffset = Data.nodes.Count;
         var accOffset = Data.accessors.Count;
 
-        Data.materials.AddRange(model.Materials.Select(ToMaterial));
+        var mats = model.Instances.Select(i => i.Material).ToIndexedSet();
+        Data.materials.AddRange(mats.OrderedMembers().Select(ToGltfMaterial));
 
         var slices = model.Meshes.Select(CreateMeshSlice).ToList();
         MeshSlices.AddRange(slices);
@@ -125,10 +130,10 @@ public class GltfBuilder
 
         Debug.Assert(Data.accessors.Count == accOffset + slices.Count * 2);
 
-        foreach (var es in model.ElementStructs)
+        foreach (var instance in model.Instances)
         {
-            var matIndex = es.MaterialIndex + matOffset;
-            var transform = model.Transforms[es.TransformIndex];
+            var matIndex = mats.IndexOf(instance.Material);
+            var transform = instance.Matrix4x4;
             
             var meshIndex = Data.meshes.Count;
             
@@ -141,8 +146,8 @@ public class GltfBuilder
             Debug.Assert(vertexAccessor.GltfComponentType == GltfComponentType.FLOAT);
             Debug.Assert(indexAccessor.GltfComponentType == GltfComponentType.UNSIGNED_INT);
 
-            Debug.Assert(vertexAccessor.count == slices[es.MeshIndex].VertexCount);
-            Debug.Assert(indexAccessor.count == slices[es.MeshIndex].FaceCount * 3);
+            Debug.Assert(vertexAccessor.count == slices[instance.MeshIndex].VertexCount);
+            Debug.Assert(indexAccessor.count == slices[instance.MeshIndex].FaceCount * 3);
 
             var prim = new GltfMeshPrimitive(vertexAccessorIndex, indexAccessorIndex, matIndex);
             var mesh = new GltfMesh { primitives = [prim] };

@@ -24,12 +24,12 @@ public class QuadDemo : IModelGenerator
         var x11 = new Point3D(+0.5f, +0.5f, 0);
         var points = ToArray2D([x00, x01, x10, x11], 2).Map(p => p * Scale);
         var grid = new QuadGrid3D(points, false, false);
-        var result = grid.Triangulate();
+        var mesh = grid.Triangulate();
         if (Flip)
-            result = result.FlipFaces();
+            mesh = mesh.FlipFaces();
         if (DoubleSided)
-            result = result.DoubleSided();
-        var element = new Element(result, new Material(new Color(0.8f, 0.4f, 0.2f, 1.0f), 0.5f, 0.2f));
-        return element;
+            mesh = mesh.DoubleSided();
+        var material = new Material(new Color(0.8f, 0.4f, 0.2f, 1.0f), 0.5f, 0.2f);
+        return Model3D.Create(mesh, material);
     }
 }

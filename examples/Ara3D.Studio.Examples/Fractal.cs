@@ -191,15 +191,12 @@ namespace Ara3D.Studio.Samples
             var lines = ConstructLines(s);
             var mb = new Model3DBuilder();
             mb.Meshes.Add(PlatonicSolids.TriangulatedCube);
-            mb.Materials.Add(mb.DefaultMaterial);
 
             foreach (var line in lines)
             {
                 var line3d = new Line3D(line.A.To3D(), line.B.To3D());
-                var transform = line3d.ToBoxTransform(Size,Size);
-                //var transform = GetBoxTransform(line3d);
-                var es = new ElementStruct(0, 0, 0, mb.AddTransform(transform));
-                mb.ElementStructs.Add(es);
+                var transform = line3d.ToBoxTransform(Size, Size);
+                mb.AddInstance(0, transform);
             }
 
             return mb.Build();

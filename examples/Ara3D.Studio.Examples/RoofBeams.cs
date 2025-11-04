@@ -61,9 +61,9 @@
             var columns = columnMesh.Clone(Material.Default.WithColor((0.1f, 0.5f, 1.0f, 1f)), columnPositions.Data);
 
             var mb = new Model3DBuilder();
-            mb.Add(hModel);
-            mb.Add(vModel);
-            mb.Add(columns);
+            mb.AddModel(hModel);
+            mb.AddModel(vModel);
+            mb.AddModel(columns);
             return mb.Build();
         }
     }

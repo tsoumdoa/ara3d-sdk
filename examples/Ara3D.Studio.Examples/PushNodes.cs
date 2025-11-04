@@ -14,8 +14,8 @@ public class PushNodes : IModelModifier
 
     public Model3D Eval(Model3D m, EvalContext eval)
     {
-        if (m.Elements.Count == 0) return m;
-        var center = m.NodeCenter;
-        return m.ModifyTransforms(mat => Push(mat, center, Amount));
+        if (m.Instances.Count == 0) return m;
+        var center = m.GetBounds().Center;
+        return m.WithInstances(node => node.WithMatrix(Push(node.Matrix4x4, center, Amount)));
     }   
 }

@@ -2,7 +2,7 @@
 
 namespace Ara3D.Studio.Samples;
 
-public class GeoJsonDemo2 : IModelGenerator
+public class GeoJsonDemo : IModelGenerator
 {
     [Range(0f, 2f)] public float Thickness = 0.1f;
     [Range(0f, 10f)] public float Height = 2;
@@ -35,8 +35,7 @@ public class GeoJsonDemo2 : IModelGenerator
     {
         var fc = GeoJsonSerializer.LoadFeatureCollection(Dir);
         var mb = new Model3DBuilder();
-        mb.Materials.Add(mb.DefaultMaterial);
-        mb.Meshes.Add(PlatonicSolids.TriangulatedCube);
+        mb.AddMesh(PlatonicSolids.TriangulatedCube);
 
         var groups = fc.features.GroupBy(f => f["level_id"]);
         var roomIndex = 0;
@@ -54,8 +53,7 @@ public class GeoJsonDemo2 : IModelGenerator
                         foreach (var line in lines)
                         {
                             var mat = line.ToBoxTransform(Thickness, Height) * Matrix4x4.CreateTranslation((0, 0, Height / 2));
-                            var ti = mb.AddTransform(mat);
-                            mb.ElementStructs.Add(new ElementStruct(roomIndex, 0, 0, ti));
+                            mb.AddInstance(0, mat);
                         }
                     }
 
@@ -72,8 +70,7 @@ public class GeoJsonDemo2 : IModelGenerator
                         var newMesh = floorPolygon.TrianglesFan().ToMesh();
                         var newMeshIndex = mb.AddMesh(newMesh);
                         var mat = Matrix4x4.CreateTranslation(new(0, 0, height));
-                        var ti = mb.AddTransform(mat);
-                        mb.ElementStructs.Add(new ElementStruct(roomIndex, 0, newMeshIndex, ti));
+                        mb.AddInstance(newMeshIndex, mat);
                     }
 
                     roomIndex++;

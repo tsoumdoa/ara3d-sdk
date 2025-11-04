@@ -17,6 +17,6 @@ public class PlatonicSolid : IModelGenerator
     public Model3D Eval(EvalContext context)
     {
         var mesh = PlatonicSolids.GetMesh(Shape);
-        return new Element(mesh, Material);
+        return Model3D.Create(mesh, Material);
     }
 }

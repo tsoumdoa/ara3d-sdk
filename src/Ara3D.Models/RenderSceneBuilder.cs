@@ -63,14 +63,11 @@ public class RenderSceneBuilder : IDisposable, IRenderScene
         logger.LogDebug("Computing instances");
         var instanceGroups = model.Meshes.Count.MapRange(_ => new List<InstanceStruct>()).ToArray();
             
-        foreach (var node in model.ElementStructs)
+        foreach (var node in model.Instances)
         {
-            var transform = model.Transforms[node.TransformIndex];
-            var material = model.Materials[node.MaterialIndex];
-            var instance = new InstanceStruct(transform, 0, 0, material.Color, material.Metallic, material.Roughness);
             if (instanceGroups[node.MeshIndex] == null)
                 instanceGroups[node.MeshIndex] = new List<InstanceStruct>();
-            instanceGroups[node.MeshIndex].Add(instance);
+            instanceGroups[node.MeshIndex].Add(node);
         }
 
         logger.LogDebug("Computing instance groups");

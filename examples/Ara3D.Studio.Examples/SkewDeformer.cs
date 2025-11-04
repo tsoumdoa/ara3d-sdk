@@ -27,5 +27,5 @@ public class SkewDeformer : IModelModifier
     }
 
     public Model3D Eval(Model3D model, EvalContext context)
-        => model.ModifyMeshes(Deform);
+        => model.WithMeshes(Deform);
 }

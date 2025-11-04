@@ -9,6 +9,8 @@ namespace Ara3D.BimOpenGeometry;
 /// </summary>
 public class BimGeometryBuilder
 {
+    public record ElementStruct(int EntityIndex, int MaterialIndex, int MeshIndex, int TransformIndex);
+
     public List<ElementStruct> Elements = new();
     public List<TriangleMesh3D> Meshes = new();
     public IndexedSet<Material> Materials = new();

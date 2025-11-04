@@ -4,8 +4,8 @@ public class Merge : IModelModifier
 {
     public Model3D Eval(Model3D m, EvalContext eval)
     {
-        if (m.Elements.Count == 0) return m;
-        var mat = m.Elements[0].Material;
-        return new Element(m.ToMesh(), mat);
+        var mesh = m.ToMesh(); 
+        var mat = m.FirstOrDefaultMaterial();
+        return Model3D.Create(mesh, mat);
     }
 }

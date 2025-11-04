@@ -31,6 +31,7 @@
 
         public Model3D Eval(Model3D model, EvalContext context)
         {
+
             var table = new DataTableBuilder("Meshes");
             var stats = model.Meshes.Select(GetMeshStats);
             table.AddColumnsFromFieldsAndProperties(stats);

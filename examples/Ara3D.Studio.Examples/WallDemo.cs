@@ -9,17 +9,16 @@ public class WallDemo : IModelGenerator
     
     public Model3D Eval(EvalContext ctx)
     {
-        var mb = new Model3DBuilder();
-        mb.Meshes.Add(PlatonicSolids.TriangulatedCube);
-        mb.Materials.Add(mb.DefaultMaterial);
+        var mesh = PlatonicSolids.TriangulatedCube;
         var pts = Polygons.CirclePoints(Count).Select(pt => pt * Radius);
+        var transforms = new List<Matrix4x4>();
         for (var i = 0; i < pts.Count; i++)
         {
             var line = new Line3D(pts[i].To3D, pts.ElementAtModulo(i + 1).To3D);
             var transform = line.ToBoxTransform(Thickness, Height);
-            var es = new ElementStruct(0, 0, 0, mb.AddTransform(transform));
-            mb.ElementStructs.Add(es);
+            transforms.Add(transform);
         }
-        return mb.Build();
+
+        return Model3D.Create(mesh, Material.Default, transforms);
     }
 }

@@ -44,6 +44,6 @@ public class ParametricSurfaceDemo : IModelGenerator
         var mesh = GetSurface(Surface)
             .WithClosedUV(ClosedU, ClosedV)
             .Triangulate(GridSize, GridSize);
-        return new Element(mesh, Material);
+        return Model3D.Create(mesh, Material);
     }
 }

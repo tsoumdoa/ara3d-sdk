@@ -23,7 +23,7 @@ public static unsafe class IfcToModelConverters
                     (float)m[8], -(float)m[10], (float)m[9], (float)m[11],
                     (float)m[12], -(float)m[14], (float)m[13], (float)m[15]);
 
-                mb.AddElement(mesh.ToTriangleMesh(), mat, matrix);
+                mb.AddInstance(mesh.ToTriangleMesh(), mat, matrix);
             }
         }
         return mb.Build();
