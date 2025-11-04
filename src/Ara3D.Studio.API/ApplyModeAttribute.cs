@@ -1,4 +1,4 @@
-﻿namespace Ara3D.SceneEval;
+﻿namespace Ara3D.Studio.API;
 
 /// <summary>
 /// Use on your modifiers to determine if they get reloaded. 

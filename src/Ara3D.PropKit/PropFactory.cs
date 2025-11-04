@@ -41,10 +41,12 @@ public static class PropFactory
     public static PropProvider GetPropProvider(this Type type)
         => new(GetPropAccessors(type));
 
-    public static PropAccessor CreatePropAccessor(Type type, object hostObj, RangeAttribute rangeAttr, OptionsAttribute optionsAttr, string name, string displayName, string description, string units, Func<object, object> getter, Action<object, object> setter)
+    public static PropAccessor CreatePropAccessor(Type type, object hostObj, RangeAttribute rangeAttr,
+        OptionsAttribute optionsAttr, string name, string displayName, string description, string units,
+        Func<object, object> getter, Action<object, object> setter)
     {
         var isReadOnly = setter == null;
-            
+
         if (type.IsEnum)
         {
             var names = Enum.GetNames(type);
@@ -132,7 +134,7 @@ public static class PropFactory
 
         var rangeAttr = mi.GetCustomAttribute<RangeAttribute>();
         var optionsAttr = mi.GetCustomAttribute<OptionsAttribute>();
-        
+
         return CreatePropAccessor(type, hostObj, rangeAttr, optionsAttr, name, displayName,
             description, units, getter, setter);
     }
@@ -147,9 +149,9 @@ public static class PropFactory
 
             var setMeth = prop.GetSetMethod(false);
             var isReadOnly = !prop.CanWrite || setMeth == null || setMeth.IsPrivate;
-            
-            Func<object, object> getter = prop.GetValue;
-            Action<object, object> setter = !isReadOnly ? prop.SetValue : null;
+
+            var getter = prop.GetFastGetter();
+            var setter = !isReadOnly ? prop.GetFastSetter() : null;
 
             yield return CreatePropAccessor(prop.PropertyType, hostObj, prop, getter, setter);
         }
@@ -159,8 +161,8 @@ public static class PropFactory
         {
             var isReadOnly = field.IsInitOnly;
 
-            Func<object, object> getter = field.GetValue;
-            Action<object, object> setter = !isReadOnly ? field.SetValue : null;
+            var getter = field.GetFastGetter();
+            var setter = !isReadOnly ? field.GetFastSetter() : null;
 
             yield return CreatePropAccessor(field.FieldType, hostObj, field, getter, setter);
 

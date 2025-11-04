@@ -1,8 +1,0 @@
-This is probably not a good standalone library. 
-There might be something necessary for the rest of the SDK, I will have to look at that. 
-Otherwise it is becoming very much tied to my specific use case.
-For example it assumes attributes on modifiers.
-
-There is some big room for optimization. A scene eval graph can be compiled on demand,
-and generate actual code, rather than doing everything dynamically. 
-This will help for complex scenes. 

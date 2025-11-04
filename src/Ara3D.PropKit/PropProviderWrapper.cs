@@ -88,9 +88,7 @@ public class PropProviderWrapper :
         => Props.Accessors.Select(acc => acc.Descriptor.Name);
 
     public PropValue GetPropValue(object host, string name)
-    {
-        return Props.GetPropValue(host, name);
-    }
+        => Props.GetPropValue(host, name);
 
     public PropDescriptor GetDescriptor(string name)
         => Props.GetDescriptor(name);
@@ -114,47 +112,6 @@ public class PropProviderWrapper :
     public PropertyDescriptorCollection GetProperties() => GetProperties([]);
     public object GetPropertyOwner(PropertyDescriptor pd) => this;
 
-    /// <summary>
-    /// Adapts the PropertyAccessor to the "PropertyDescriptor" class in the System.ComponentModel namespace.
-    /// </summary>
-    private class ComponentModelAdapter : PropertyDescriptor
-    {
-        private readonly PropProviderWrapper _provider;
-        private readonly PropDescriptor _desc;
-
-        public ComponentModelAdapter(PropProviderWrapper provider, PropDescriptor desc) 
-            : base(desc.Name, null)
-        {
-            _provider = provider;
-            _desc = desc;
-        }
-
-        public override Type ComponentType => typeof(PropProviderWrapper);
-        public override bool IsReadOnly => _desc.IsReadOnly;
-        public override Type PropertyType => _desc.Type;
-        public override bool CanResetValue(object component) => true;
-
-        public override object GetValue(object obj)
-        {
-            if (obj is not PropProviderWrapper ppw)
-                throw new Exception($"Internal error: expected a {nameof(PropProviderWrapper)}");
-            return _provider.GetValue(_desc);
-        }
-
-        public override void ResetValue(object component) 
-            => SetValue(component, _desc.Default);
-
-        public override void SetValue(object obj, object value)
-        {
-            if (obj is not PropProviderWrapper ppw)
-                throw new Exception($"Internal error: expected a {nameof(PropProviderWrapper)}");
-           _provider.TrySetValue(_desc, value);
-        }
-
-        public override bool ShouldSerializeValue(object component) => false;
-        public override bool SupportsChangeEvents => true;
-    }
-
     public void Dispose()
     {
         Wrapped = null;
@@ -167,7 +124,6 @@ public class PropProviderWrapper :
     public IReadOnlyList<PropValue> GetPropValues(object host)
         => Props.GetPropValues(host);
     
-
     public void SetPropValues(object host, IEnumerable<PropValue> values)
         => Props.SetPropValues(host, values);
 }

@@ -1,6 +1,6 @@
 ﻿using Ara3D.Logging;
 
-namespace Ara3D.SceneEval;
+namespace Ara3D.Studio.API;
 
 public class EvalContext
 {
