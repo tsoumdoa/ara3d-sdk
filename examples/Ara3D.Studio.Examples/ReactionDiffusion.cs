@@ -170,7 +170,7 @@ public static class ReactionDiffusion2D
     }
 }
 
-[ApplyOnDemand]
+[OnDemand]
 public class ReactionDiffusion : IModelGenerator
 {
     // Example parameters known to yield nice patterns:
