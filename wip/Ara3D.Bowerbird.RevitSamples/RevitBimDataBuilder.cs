@@ -7,9 +7,9 @@ using Document = Autodesk.Revit.DB.Document;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
-public class RevitToOpenBimSchema
+public class RevitBimDataBuilder
 {
-    public RevitToOpenBimSchema(Document rootDocument, bool includeLinks) 
+    public RevitBimDataBuilder(Document rootDocument, bool includeLinks) 
     {
         IncludeLinks = includeLinks;
         CreateCommonDescriptors();
@@ -29,9 +29,18 @@ public class RevitToOpenBimSchema
     public bool IncludeLinks;
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
+
     public Dictionary<(DocumentIndex, long), EntityIndex> ProcessedEntities = new();
     public Dictionary<(string, string), DocumentIndex> ProcessedDocuments = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
+
+    public EntityIndex GetEntityIndex(Document doc, long entityId)
+    {
+        var key = GetDocumentKey(doc);
+        var docIndex = ProcessedDocuments[key];
+        var entIndex = ProcessedEntities[(docIndex, entityId)];
+        return entIndex;
+    }
 
     public bool TryGetEntity(DocumentIndex di, ElementId id, out EntityIndex index)
         => ProcessedEntities.TryGetValue((di, id.Value), out index);

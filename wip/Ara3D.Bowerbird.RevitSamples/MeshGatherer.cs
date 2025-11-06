@@ -6,13 +6,22 @@ namespace Ara3D.Bowerbird.RevitSamples;
 
 public class MeshGatherer
 {
-    public sealed record GeometryPart(
+    public RevitBimDataBuilder RevitBimDataBuilder;
+
+    public MeshGatherer(RevitBimDataBuilder builder)
+    {
+        RevitBimDataBuilder = builder;
+    }
+
+    public sealed record GeometryPart
+    (
         Transform Transform,
         Mesh Mesh,
         ElementId MaterialId
     );
 
-    public sealed record Geometry(
+    public sealed record Geometry
+    (
         Document SourceDocument,
         long ElementId,
         ElementId DefaultMaterialId,
@@ -24,7 +33,16 @@ public class MeshGatherer
     public readonly Dictionary<Document, List<Geometry>> ElementGeometries = new ();
 
     public IEnumerable<Mesh> GetMeshes()
-        => ElementGeometries.SelectMany(kv => kv.Value).SelectMany(g => g.Parts.Select(p => p.Mesh));
+    {
+        foreach (var g in ElementGeometries.SelectMany(kv => kv.Value))
+        {
+            if (g == null)
+                continue;
+            foreach (var p in g.Parts)
+                if (p?.Mesh != null)
+                    yield return p.Mesh;
+        }
+    }
 
     public void CollectMeshes(Document doc, Options options, bool recurseLinks, Transform parent)
     {

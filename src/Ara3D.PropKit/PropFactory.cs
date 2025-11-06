@@ -146,6 +146,8 @@ public static class PropFactory
         {
             if (!prop.CanRead)
                 continue;
+            if (prop.GetIndexParameters().Length != 0)
+                continue;
 
             var setMeth = prop.GetSetMethod(false);
             var isReadOnly = !prop.CanWrite || setMeth == null || setMeth.IsPrivate;

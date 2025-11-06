@@ -18,9 +18,9 @@ namespace Ara3D.Bowerbird.RevitSamples
 {
     public static class BimOpenSchemaUtils
     {
-        public static BimGeometry ToBimGeometry(this Document doc, bool recurseLinks)
+        public static BimGeometry ToBimGeometry(this Document doc, RevitBimDataBuilder rbdb, bool recurseLinks)
         {
-            var meshGatherer = new MeshGatherer();
+            var meshGatherer = new MeshGatherer(rbdb);
             var options = MeshGatherer.DefaultGeometryOptions();
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
             var builder = new BimGeometryBuilder();
@@ -39,16 +39,23 @@ namespace Ara3D.Bowerbird.RevitSamples
                 var localDoc = kv.Key;
                 foreach (var g in kv.Value)
                 {
+                    if (g == null)
+                        continue;
                     var defaultMatIndex = builder.AddMaterial(ToMaterial(localDoc, g.DefaultMaterialId));
                     foreach (var part in g.Parts)
                     {
+                        if (part?.Mesh == null)
+                            continue;
                         var meshIndex = meshLookup[part.Mesh];
                         var matIndex = part.MaterialId == ElementId.InvalidElementId 
                             ? defaultMatIndex 
                             : builder.AddMaterial(ToMaterial(localDoc, part.MaterialId));
 
                         var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
-                        builder.AddElement((int)g.ElementId, matIndex, meshIndex, transformIndex);
+
+                        var entityIndex = rbdb.GetEntityIndex(doc, g.ElementId);
+
+                        builder.AddElement((int)entityIndex, matIndex, meshIndex, transformIndex);
                     }
                 }
             }
@@ -70,9 +77,9 @@ namespace Ara3D.Bowerbird.RevitSamples
             return ToMaterial(pbrMatInfo);
         }
 
-        public static void ExportBimOpenSchema(this Autodesk.Revit.DB.Document currentDoc, BimOpenSchemaExportSettings settings)
+        public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings)
         {
-            var bimDataBuilder = new RevitToOpenBimSchema(currentDoc, settings.IncludeLinks);
+            var bimDataBuilder = new RevitBimDataBuilder(currentDoc, settings.IncludeLinks);
             var bimData = bimDataBuilder.bdb.Data;
             var dataSet = bimData.ToDataSet();
 
@@ -94,7 +101,7 @@ namespace Ara3D.Bowerbird.RevitSamples
 
             if (settings.IncludeGeometry)
             {
-                var bimGeometry = ToBimGeometry(currentDoc, settings.IncludeLinks);
+                var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks);
                 bimGeometry.WriteParquetToZip(zip, parquetCompressionMethod, parquetCompressionLevel, zipCompressionLevel);
             }
         }
