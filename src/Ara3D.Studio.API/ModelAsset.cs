@@ -20,7 +20,24 @@ public class ModelAsset : IModelAsset
     }
 
     public async Task<Model3D> Import(ILogger logger)
-        => Model = await Loader.Import(FilePath, logger);
+    {
+        logger.Log($"STARTED loading model from {FilePath} using the {Loader.GetType().Name} loader");
+        Model = await Loader.Import(FilePath, logger);
+        logger.Log($"COMPLETED loading model from {FilePath}");
+        CheckModel(Model, logger);
+        return Model;
+    }
+
+    public static void CheckModel(Model3D model, ILogger logger)
+    {
+        logger.Log("Checking model");
+        logger.Log($"# instances = {model.Instances.Count}");
+        logger.Log($"# meshes = {model.Meshes.Count}");
+        var nMeshOutOfRange = model.Instances.Count(i => i.MeshIndex < 0 || i.MeshIndex >= model.Meshes.Count);
+        logger.Log($"# instances with meshes out of range = {nMeshOutOfRange}");
+        var nTransparent = model.Instances.Count(i => i.Transparent);
+        logger.Log($"# instances where transparent = {nTransparent}");
+    }
 
     public Model3D Eval(EvalContext context)
     {
