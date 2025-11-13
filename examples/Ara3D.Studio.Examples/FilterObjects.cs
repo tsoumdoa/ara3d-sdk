@@ -7,5 +7,5 @@ public class FilterObjects : IModelModifier
     public int MinTriangleCount => ObjectComplexity * ObjectComplexity * ObjectComplexity;
 
     public Model3D Eval(Model3D model3D, EvalContext context)
-        => model3D.Filter(mesh => mesh.Triangles.Count >= MinTriangleCount);
+        => model3D.Where(mesh => mesh.Triangles.Count >= MinTriangleCount);
 }

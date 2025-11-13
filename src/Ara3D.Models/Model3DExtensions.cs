@@ -101,11 +101,14 @@ public static class Model3DExtensions
     public static Model3D WithInstances(this Model3D self, Func<InstanceStruct, InstanceStruct> f)
         => self.WithInstances(self.Instances.Select(f));
 
-    public static Model3D Filter(this Model3D self, Func<InstanceStruct, bool> f)
+    public static Model3D Where(this Model3D self, Func<InstanceStruct, bool> f)
         => self.WithInstances(self.Instances.Where(f).ToList());
 
-    public static Model3D Filter(this Model3D self, Func<TriangleMesh3D, bool> f)
+    public static Model3D Where(this Model3D self, Func<TriangleMesh3D, bool> f)
         => self.WithInstances(self.Instances.Where(i => f(self.GetMesh(i))).ToList());
+
+    public static Model3D Where(this Model3D self, Func<InstanceStruct, int, bool> f)
+        => self.WithInstances(self.Instances.Where(f).ToList());
 
     public static Model3D Clone(this Model3D model, IReadOnlyList<Vector3> positions)
         => model.Clone(positions.Map(Matrix4x4.CreateTranslation));
@@ -135,4 +138,7 @@ public static class Model3DExtensions
 
     public static Model3D MergeTable(this Model3D self, IDataTable table)
         => self.WithDataSet(self.DataSet.AddColumnsToTable(table.Name, table.Columns));
+
+    public static System.Data.DataTable GetSystemDataTable(this Model3D self, string name)
+        => self?.DataSet?.GetTable(name)?.ToSystemDataTable();
 }

@@ -6,7 +6,8 @@
 /// This 3D format is optimized for representing complex scenes used in AEC (Architecture, Engineering, and Construction) industry
 /// to represent the built environment. 
 ///
-/// It is a collection of meshes, materials, transforms, and elements. 
+/// It is a collection of meshes, materials, transforms, and instances.
+/// A mesh is a triangular mesh consisting  
 ///
 /// Coordinates: Z-Up, right-handed.
 /// Units: meters
@@ -28,9 +29,6 @@ public class BimGeometry
     // An entity may have multiple elements.
     // Meshes, materials, and transforms may all be shared to reduce repetition 
 
-    // The index of the associated entity 
-    public int[] ElementEntityIndex { get; set; } = [];
-
     // Index of the material associated with this element
     public int[] ElementMaterialIndex { get; set; } = [];
 
@@ -43,13 +41,9 @@ public class BimGeometry
     //==
     // Vertex Table
 
-    // X position of each vertex
+    // Position of each vertex in local space
     public float[] VertexX { get; set; } = [];
-    
-    // Y position of each vertex
     public float[] VertexY { get; set; } = [];
-    
-    // Z position of each vertex
     public float[] VertexZ { get; set; } = [];
 
     //==

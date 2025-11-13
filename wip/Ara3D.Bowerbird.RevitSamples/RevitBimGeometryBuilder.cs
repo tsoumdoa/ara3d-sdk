@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ara3D.BimOpenGeometry;
 using Ara3D.Geometry;
 using Autodesk.Revit.DB;
 using RevitDocument = Autodesk.Revit.DB.Document;

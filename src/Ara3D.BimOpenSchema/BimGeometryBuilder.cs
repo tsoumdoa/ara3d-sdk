@@ -1,4 +1,7 @@
-﻿using Ara3D.Geometry;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using Ara3D.Geometry;
 using Ara3D.Models;
 using Ara3D.Utils;
 
@@ -9,12 +12,15 @@ namespace Ara3D.BimOpenGeometry;
 /// </summary>
 public class BimGeometryBuilder
 {
-    public record ElementStruct(int EntityIndex, int MaterialIndex, int MeshIndex, int TransformIndex);
+    public record ElementStruct(int MaterialIndex, int MeshIndex, int TransformIndex);
 
-    public List<ElementStruct> Elements = new();
-    public List<TriangleMesh3D> Meshes = new();
-    public IndexedSet<Material> Materials = new();
-    public IndexedSet<Matrix4x4> Matrices = new();
+    public List<ElementStruct> Elements { get; private set; } = new();
+    public List<TriangleMesh3D> Meshes { get; private set; } = new();
+    public IndexedSet<Material> Materials { get; private set; } = new();
+    public IndexedSet<Matrix4x4> Matrices { get; private set; } = new();
+
+    public void AddMeshes(IEnumerable<TriangleMesh3D> meshes)
+        => Meshes.AddRange(meshes);
 
     public int AddMesh(TriangleMesh3D mesh)
     {
@@ -25,9 +31,9 @@ public class BimGeometryBuilder
     public int AddMaterial(Material material)
         => Materials.Add(material);
 
-    public int AddElement(int objectId, int materialIndex, int meshIndex, int transformIndex)
+    public int AddElement(int materialIndex, int meshIndex, int transformIndex)
     {
-        var es = new ElementStruct(objectId, materialIndex, meshIndex, transformIndex);
+        var es = new ElementStruct(materialIndex, meshIndex, transformIndex);
         Elements.Add(es);
         return Elements.Count - 1;
     }
@@ -39,7 +45,6 @@ public class BimGeometryBuilder
     {
         var r = new BimGeometry();
 
-        r.ElementEntityIndex = Elements.Select(e => e.EntityIndex).ToArray();
         r.ElementMaterialIndex = Elements.Select(e => e.MaterialIndex).ToArray();
         r.ElementMeshIndex = Elements.Select(e => e.MeshIndex).ToArray();
         r.ElementTransformIndex = Elements.Select(e => e.TransformIndex).ToArray();

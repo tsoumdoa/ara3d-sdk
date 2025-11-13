@@ -230,7 +230,6 @@ public static class ParquetUtils
         }
         {
             var pb = new ParquetBuilder("Element");
-            pb.Add(bg.ElementEntityIndex, nameof(bg.ElementEntityIndex));
             pb.Add(bg.ElementMaterialIndex, nameof(bg.ElementMaterialIndex));
             pb.Add(bg.ElementMeshIndex, nameof(bg.ElementMeshIndex));
             pb.Add(bg.ElementTransformIndex, nameof(bg.ElementTransformIndex));

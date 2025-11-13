@@ -13,7 +13,6 @@ public class FilterCategory : IModelModifier
         var dataSet = model3D.DataSet;
         var table = dataSet.Tables[0];
         var col = table.GetColumn("Category");
-        throw new NotImplementedException();
-        //return model3D.Filter(es => es.MeshIndex >= 0 && es.TransformIndex < col.Count && col[es.TransformIndex] is string s && KeepCategory(s));
+        return model3D.Where((node, i) => node.MeshIndex >= 0 && col[i] is string s && KeepCategory(s));
     }
 }

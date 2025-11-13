@@ -87,6 +87,8 @@ public static class DataTableExtensions
         var r = new System.Data.DataTable(table.Name);
         foreach (var c in table.Columns)
             r.Columns.Add(c.GetName(), c.GetDataType());
+        foreach (var row in table.Rows)
+            r.Rows.Add(row.Values.ToArray()); 
         return r;
     }
 

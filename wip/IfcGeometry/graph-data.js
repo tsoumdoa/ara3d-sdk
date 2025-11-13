@@ -1,415 +1,415 @@
 window.data = {
   "nodes": {
     "IFCORGANIZATION": {
-      "color": "#b83f0a",
+      "color": "#0c6cb6",
       "count": 2
     },
     "IFCAPPLICATION": {
-      "color": "#4b813b",
+      "color": "#3f544f",
       "count": 1
     },
     "IFCCARTESIANPOINT": {
-      "color": "#7a08d5",
+      "color": "#9347fe",
       "count": 1050157
     },
     "IFCDIRECTION": {
-      "color": "#056841",
+      "color": "#2f7d5b",
       "count": 423
     },
     "IFCAXIS2PLACEMENT3D": {
-      "color": "#4363fa",
+      "color": "#a74435",
       "count": 9232
     },
     "IFCPERSON": {
-      "color": "#79221d",
+      "color": "#73507f",
       "count": 1
     },
     "IFCPERSONANDORGANIZATION": {
-      "color": "#a90463",
+      "color": "#ac5100",
       "count": 1
     },
     "IFCOWNERHISTORY": {
-      "color": "#9e2f6d",
+      "color": "#ba4f4c",
       "count": 1
     },
     "IFCSIUNIT": {
-      "color": "#097551",
+      "color": "#534b2a",
       "count": 19
     },
     "IFCDIMENSIONALEXPONENTS": {
-      "color": "#866f42",
+      "color": "#174794",
       "count": 1
     },
     "IFCMEASUREWITHUNIT": {
-      "color": "#613e4d",
+      "color": "#5258ef",
       "count": 1
     },
     "IFCCONVERSIONBASEDUNIT": {
-      "color": "#493ca9",
+      "color": "#044cb3",
       "count": 1
     },
     "IFCDERIVEDUNITELEMENT": {
-      "color": "#6144e7",
+      "color": "#cd0903",
       "count": 25
     },
     "IFCDERIVEDUNIT": {
-      "color": "#331771",
+      "color": "#245693",
       "count": 9
     },
     "IFCUNITASSIGNMENT": {
-      "color": "#712141",
+      "color": "#0e63ad",
       "count": 1
     },
     "IFCGEOMETRICREPRESENTATIONCONTEXT": {
-      "color": "#3f37d4",
+      "color": "#77555d",
       "count": 1
     },
     "IFCGEOMETRICREPRESENTATIONSUBCONTEXT": {
-      "color": "#a70244",
+      "color": "#1617a8",
       "count": 4
     },
     "IFCPROJECT": {
-      "color": "#1c327d",
+      "color": "#705037",
       "count": 1
     },
     "IFCLOCALPLACEMENT": {
-      "color": "#2152e6",
+      "color": "#d000ae",
       "count": 3876
     },
     "IFCSITE": {
-      "color": "#3e676f",
+      "color": "#0e0cfd",
       "count": 1
     },
     "IFCPROPERTYSINGLEVALUE": {
-      "color": "#c626c6",
+      "color": "#7040da",
       "count": 28654
     },
     "IFCPROPERTYSET": {
-      "color": "#5147d1",
+      "color": "#1e6bbc",
       "count": 20221
     },
     "IFCRELDEFINESBYPROPERTIES": {
-      "color": "#1941bb",
+      "color": "#ad1e63",
       "count": 18619
     },
     "IFCPOLYLINE": {
-      "color": "#822cdd",
+      "color": "#bd3904",
       "count": 2471
     },
     "IFCSHAPEREPRESENTATION": {
-      "color": "#9533c8",
+      "color": "#42806f",
       "count": 9151
     },
     "IFCAXIS2PLACEMENT2D": {
-      "color": "#7302c0",
+      "color": "#0a0ef2",
       "count": 3000
     },
     "IFCRECTANGLEPROFILEDEF": {
-      "color": "#830e40",
+      "color": "#5f3825",
       "count": 2698
     },
     "IFCEXTRUDEDAREASOLID": {
-      "color": "#280f0c",
+      "color": "#c21d7a",
       "count": 3189
     },
     "IFCCOLOURRGB": {
-      "color": "#870256",
+      "color": "#217218",
       "count": 60
     },
     "IFCSURFACESTYLERENDERING": {
-      "color": "#7e48db",
+      "color": "#0f531a",
       "count": 60
     },
     "IFCSURFACESTYLE": {
-      "color": "#be257c",
+      "color": "#2b3a23",
       "count": 60
     },
     "IFCPRESENTATIONSTYLEASSIGNMENT": {
-      "color": "#2649e1",
+      "color": "#6911d9",
       "count": 110
     },
     "IFCSTYLEDITEM": {
-      "color": "#c706d2",
+      "color": "#095c2f",
       "count": 4755
     },
     "IFCBOUNDINGBOX": {
-      "color": "#1d1cac",
+      "color": "#890870",
       "count": 3131
     },
     "IFCPRODUCTDEFINITIONSHAPE": {
-      "color": "#2e087b",
+      "color": "#d22e7b",
       "count": 3829
     },
     "IFCWALLSTANDARDCASE": {
-      "color": "#8135e1",
+      "color": "#3a54bc",
       "count": 1607
     },
     "IFCMATERIAL": {
-      "color": "#8f6333",
+      "color": "#924fca",
       "count": 60
     },
     "IFCSTYLEDREPRESENTATION": {
-      "color": "#6613ad",
+      "color": "#620b3d",
       "count": 59
     },
     "IFCMATERIALDEFINITIONREPRESENTATION": {
-      "color": "#e6250e",
+      "color": "#2d04b2",
       "count": 59
     },
     "IFCMATERIALLAYER": {
-      "color": "#2550fb",
+      "color": "#307aaa",
       "count": 37
     },
     "IFCMATERIALLAYERSET": {
-      "color": "#8d4e4c",
+      "color": "#1e714e",
       "count": 29
     },
     "IFCMATERIALLAYERSETUSAGE": {
-      "color": "#bb1c0d",
+      "color": "#914734",
       "count": 1741
     },
     "IFCWALLTYPE": {
-      "color": "#401678",
+      "color": "#636478",
       "count": 17
     },
     "IFCCLASSIFICATION": {
-      "color": "#3d7f14",
+      "color": "#a33eb3",
       "count": 1
     },
     "IFCCLASSIFICATIONREFERENCE": {
-      "color": "#312a2f",
+      "color": "#125515",
       "count": 35
     },
     "IFCRELASSOCIATESCLASSIFICATION": {
-      "color": "#a14edc",
+      "color": "#55798e",
       "count": 35
     },
     "IFCRELFILLSELEMENT": {
-      "color": "#8a2a68",
+      "color": "#517f51",
       "count": 637
     },
     "IFCOPENINGELEMENT": {
-      "color": "#c1520e",
+      "color": "#8b6499",
       "count": 678
     },
     "IFCRELVOIDSELEMENT": {
-      "color": "#2e14be",
+      "color": "#1621aa",
       "count": 678
     },
     "IFCPLANE": {
-      "color": "#513feb",
+      "color": "#3804ef",
       "count": 43
     },
     "IFCPOLYGONALBOUNDEDHALFSPACE": {
-      "color": "#af16d3",
+      "color": "#6b4149",
       "count": 33
     },
     "IFCBOOLEANCLIPPINGRESULT": {
-      "color": "#c44687",
+      "color": "#044773",
       "count": 43
     },
     "IFCPOLYLOOP": {
-      "color": "#8124e2",
+      "color": "#1b1020",
       "count": 1583016
     },
     "IFCFACEOUTERBOUND": {
-      "color": "#131c07",
+      "color": "#6f2cd5",
       "count": 1582891
     },
     "IFCFACE": {
-      "color": "#5c325c",
+      "color": "#220731",
       "count": 1582891
     },
     "IFCFACEBOUND": {
-      "color": "#42738a",
+      "color": "#395bc8",
       "count": 125
     },
     "IFCCLOSEDSHELL": {
-      "color": "#d41e3a",
+      "color": "#5d7165",
       "count": 2321
     },
     "IFCFACETEDBREP": {
-      "color": "#951a71",
+      "color": "#156d12",
       "count": 2321
     },
     "IFCREPRESENTATIONMAP": {
-      "color": "#611ed7",
+      "color": "#782268",
       "count": 481
     },
     "IFCDOORLININGPROPERTIES": {
-      "color": "#247321",
+      "color": "#6704ba",
       "count": 123
     },
     "IFCDOORPANELPROPERTIES": {
-      "color": "#3d10e7",
+      "color": "#6901a0",
       "count": 123
     },
     "IFCDOORSTYLE": {
-      "color": "#6c273c",
+      "color": "#516fbd",
       "count": 123
     },
     "IFCCARTESIANTRANSFORMATIONOPERATOR3D": {
-      "color": "#2e2dc1",
+      "color": "#a22835",
       "count": 1
     },
     "IFCMAPPEDITEM": {
-      "color": "#db1775",
+      "color": "#59220e",
       "count": 1387
     },
     "IFCDOOR": {
-      "color": "#402516",
+      "color": "#0000d0",
       "count": 675
     },
     "IFCMATERIALLIST": {
-      "color": "#23062d",
+      "color": "#500fb0",
       "count": 932
     },
     "IFCBUILDINGELEMENTPROXYTYPE": {
-      "color": "#16292d",
+      "color": "#3c7c4d",
       "count": 64
     },
     "IFCBUILDINGELEMENTPROXY": {
-      "color": "#19644b",
+      "color": "#1d59b3",
       "count": 130
     },
     "IFCARBITRARYCLOSEDPROFILEDEF": {
-      "color": "#307773",
+      "color": "#2c7281",
       "count": 434
     },
     "IFCARBITRARYPROFILEDEFWITHVOIDS": {
-      "color": "#ca3839",
+      "color": "#b02794",
       "count": 54
     },
     "IFCSLAB": {
-      "color": "#7151fd",
+      "color": "#0e7664",
       "count": 35
     },
     "IFCSLABTYPE": {
-      "color": "#4f3b47",
+      "color": "#215d90",
       "count": 35
     },
     "IFCHALFSPACESOLID": {
-      "color": "#2d78b4",
+      "color": "#521faa",
       "count": 10
     },
     "IFCGROUP": {
-      "color": "#5f5cc1",
+      "color": "#414447",
       "count": 29
     },
     "IFCWINDOWLININGPROPERTIES": {
-      "color": "#a82fcb",
+      "color": "#cc2f27",
       "count": 10
     },
     "IFCWINDOWSTYLE": {
-      "color": "#0a03ed",
+      "color": "#4f16f1",
       "count": 10
     },
     "IFCWINDOW": {
-      "color": "#130daa",
+      "color": "#6324e7",
       "count": 31
     },
     "IFCFURNITURETYPE": {
-      "color": "#9f0845",
+      "color": "#d33f2e",
       "count": 4
     },
     "IFCFURNISHINGELEMENT": {
-      "color": "#da2f11",
+      "color": "#2570ed",
       "count": 16
     },
     "IFCCOMPOSITECURVESEGMENT": {
-      "color": "#dd1098",
+      "color": "#48781c",
       "count": 525
     },
     "IFCCIRCLE": {
-      "color": "#8a6c7f",
+      "color": "#c13c50",
       "count": 299
     },
     "IFCTRIMMEDCURVE": {
-      "color": "#161b8d",
+      "color": "#282a98",
       "count": 299
     },
     "IFCCOMPOSITECURVE": {
-      "color": "#3f1744",
+      "color": "#5c6751",
       "count": 110
     },
     "IFCSTAIR": {
-      "color": "#79118b",
+      "color": "#b13074",
       "count": 2
     },
     "IFCSTAIRFLIGHT": {
-      "color": "#7f0fb8",
+      "color": "#2e2ac7",
       "count": 2
     },
     "IFCSTAIRFLIGHTTYPE": {
-      "color": "#6f4750",
+      "color": "#202ee2",
       "count": 2
     },
     "IFCCURTAINWALL": {
-      "color": "#090f24",
+      "color": "#90673a",
       "count": 144
     },
     "IFCCURTAINWALLTYPE": {
-      "color": "#62296c",
+      "color": "#2023e9",
       "count": 9
     },
     "IFCMEMBERTYPE": {
-      "color": "#6d14de",
+      "color": "#44032a",
       "count": 256
     },
     "IFCMEMBER": {
-      "color": "#b336a4",
+      "color": "#191b95",
       "count": 503
     },
     "IFCRELAGGREGATES": {
-      "color": "#1d21fd",
+      "color": "#a85b4d",
       "count": 44
     },
     "IFCPLATETYPE": {
-      "color": "#c35050",
+      "color": "#583e4b",
       "count": 28
     },
     "IFCPLATE": {
-      "color": "#330afd",
+      "color": "#457021",
       "count": 38
     },
     "IFCCIRCLEPROFILEDEF": {
-      "color": "#3c1a5d",
+      "color": "#7f7163",
       "count": 3
     },
     "IFCRAILING": {
-      "color": "#a35519",
+      "color": "#6d20d2",
       "count": 11
     },
     "IFCDISTRIBUTIONPORT": {
-      "color": "#d50eaf",
+      "color": "#906f06",
       "count": 3
     },
     "IFCRELCONNECTSPORTTOELEMENT": {
-      "color": "#0210af",
+      "color": "#3921b3",
       "count": 3
     },
     "IFCRELASSIGNSTOGROUP": {
-      "color": "#830dad",
+      "color": "#1a6fc2",
       "count": 29
     },
     "IFCRELCONTAINEDINSPATIALSTRUCTURE": {
-      "color": "#4a489a",
+      "color": "#004808",
       "count": 1
     },
     "IFCRELASSOCIATESMATERIAL": {
-      "color": "#476446",
+      "color": "#5e27c0",
       "count": 2712
     },
     "IFCRELDEFINESBYTYPE": {
-      "color": "#5176a6",
+      "color": "#af4723",
       "count": 546
     },
     "IFCRELCONNECTSPATHELEMENTS": {
-      "color": "#aa4231",
+      "color": "#cc13d1",
       "count": 1971
     },
     "IFCPRESENTATIONLAYERASSIGNMENT": {
-      "color": "#b40268",
+      "color": "#424d76",
       "count": 13
     }
   },

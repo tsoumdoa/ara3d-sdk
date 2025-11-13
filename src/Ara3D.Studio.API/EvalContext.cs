@@ -1,16 +1,13 @@
-﻿using Ara3D.Logging;
-
-namespace Ara3D.Studio.API;
+﻿namespace Ara3D.Studio.API;
 
 public class EvalContext
 {
-    public DateTime Started = DateTime.Now;
+    public IHostApplication Application { get; }
     public double AnimationTime { get; }
-    public ILogger Logger { get; }
 
-    public EvalContext(double animationTime, ILogger logger)
+    public EvalContext(IHostApplication application, double animationTime)
     {
+        Application = application;
         AnimationTime = animationTime;
-        Logger = logger;
     }
 }

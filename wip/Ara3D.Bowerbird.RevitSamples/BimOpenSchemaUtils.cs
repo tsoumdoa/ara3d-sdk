@@ -53,9 +53,10 @@ namespace Ara3D.Bowerbird.RevitSamples
 
                         var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
 
+                        // TODO: this needs to be tracked in a separate builder. 
                         var entityIndex = rbdb.GetEntityIndex(doc, g.ElementId);
 
-                        builder.AddElement((int)entityIndex, matIndex, meshIndex, transformIndex);
+                        builder.AddElement(matIndex, meshIndex, transformIndex);
                     }
                 }
             }

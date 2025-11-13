@@ -1,4 +1,3 @@
-using Ara3D.BimOpenGeometry;
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
 using Ara3D.Logging;

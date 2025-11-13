@@ -1,14 +1,11 @@
-﻿using System.Diagnostics;
-using Ara3D.Collections;
+﻿using Ara3D.Collections;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
 
 namespace Ara3D.Models;
 
 /// <summary>
-/// A model is a collection of elements, meshes, transforms, materials, and meta-data.
-/// Elements are the parts of a model. They may share references to meshes, materials, and transforms.
-/// If multiple elements share a reference to a transform, then they are intended to move together.
+/// A model is a collection of meshes, instances, and meta-data.
 /// </summary>
 public class Model3D : ITransformable3D<Model3D>
 {

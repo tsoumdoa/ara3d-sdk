@@ -8,4 +8,7 @@ public interface IHostApplication
     IEnumerable<Model3D> GetModels();
     ILogger Logger { get; }
     void Invalidate(object obj);
+    
+    // HACK: for a demo.
+    public event EventHandler<string> OnCategoryChanged;
 }
