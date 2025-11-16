@@ -6,6 +6,9 @@ namespace Ara3D.Models;
 
 /// <summary>
 /// A model is a collection of meshes, instances, and meta-data.
+/// A mesh is a triangular mesh with vertices and indices. 
+/// Instances are: transform, mesh index, material data, and an entity index. 
+/// Meta-data is accessed via entity index. 
 /// </summary>
 public class Model3D : ITransformable3D<Model3D>
 {

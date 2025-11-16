@@ -1,4 +1,4 @@
-﻿namespace Ara3D.BimOpenGeometry;
+﻿namespace Ara3D.BimOpenSchema;
 
 /// <summary>
 /// A columnar representation of the 3D representation (geometry and appearance) for large Building Information Models (BIM).
@@ -22,12 +22,19 @@
 /// </summary>
 public class BimGeometry
 {
+
     //==
     // Element Table
     //
+    // Represent a distinct geometric part. 
     // An element consists of a mesh, material, transform associated with a specific entity 
     // An entity may have multiple elements.
     // Meshes, materials, and transforms may all be shared to reduce repetition 
+    // An element corresponds roughly to an "InstanceStructs" in the Ara3D.Models
+
+    // Index of the entity associated with this element
+    // Use this to link the geometry element 
+    public int[] ElementEntityIndex { get; set; } = [];
 
     // Index of the material associated with this element
     public int[] ElementMaterialIndex { get; set; } = [];

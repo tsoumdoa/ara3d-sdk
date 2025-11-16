@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.UI;
+using System.Text;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
@@ -18,6 +19,8 @@ public class CommandForegroundExportBos : NamedCommand
     {
         var uiapp = arg as UIApplication;
         var doc = uiapp?.ActiveUIDocument?.Document;
-        doc?.ExportBimOpenSchema(GetExportSettings());
+        var sb = new StringBuilder();
+        doc?.ExportBimOpenSchema(GetExportSettings(), sb);
+        TextDisplayForm.DisplayText(sb.ToString());
     }
 }

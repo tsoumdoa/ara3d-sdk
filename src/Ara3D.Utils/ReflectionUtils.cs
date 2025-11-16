@@ -315,5 +315,12 @@ namespace Ara3D.Utils
             }
             throw new Exception($"No method, field or property named {name} found in {type.Name}.");
         }
+
+        public static object GetDefaultValue(this Type t) 
+            => !t.IsValueType 
+                    ? null 
+                    : Nullable.GetUnderlyingType(t) != null 
+                        ? null 
+                        : Activator.CreateInstance(t);
     }
 }

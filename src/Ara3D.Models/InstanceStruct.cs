@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Ara3D.Geometry;
@@ -6,6 +7,12 @@ using Ara3D.Utils;
 
 namespace Ara3D.Models;
 
+/// <summary>
+/// An instance references a mesh by index, and contains the global transform
+/// matrix (a 3 x 4 matrix) and material data (color, metallic, roughness) 
+/// It fits into 64 bytes, for efficient copies and manipulation.
+/// It is passed as-is to the renderer.
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public unsafe struct InstanceStruct
 {
@@ -24,10 +31,16 @@ public unsafe struct InstanceStruct
     public Vector4 Column0;
     public Vector4 Column1;
     public Vector4 Column2;
+
+    // Index of the mesh 
     public int MeshIndex; //  4 bytes
-    // NOTE: this is used by the rendering manager ... multiple scenes can be rendered at a time. 
-    public int SceneIndex;  //  4 bytes
-    public uint PackedColor; // 4 bytes
+    
+    // Used for looking up which entity this instance is associated with.
+    // Multiple instances may refer to the same entity: as they represent 
+    // different parts of a whole. 
+    public int EntityIndex;  //  4 bytes
+
+    public uint PackedColor; // 4 bytes: R, G, B, A
     public uint MetallicRoughness; // (byte 0 == Metallic, byte 1 == Roughness, bytes 3-4 unused)
 
     // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -208,4 +221,22 @@ public unsafe struct InstanceStruct
         r.Matrix4x4 *= matrix;
         return r;
     }
+
+    //---------------
+    // 
+
+    public bool Equals(InstanceStruct other) =>
+        other.EntityIndex == EntityIndex &&
+        other.MeshIndex == MeshIndex &&
+        other.Material.Equals(Material) &&
+        other.Matrix4x4.Equals(Matrix4x4);
+
+    public override int GetHashCode()
+        => HashCode.Combine(EntityIndex, Material, MeshIndex, Matrix4x4);
+   
+    public override bool Equals(object? obj)
+        => obj is InstanceStruct other && Equals(other);
+
+    public override string ToString()
+        => $"Mesh={MeshIndex},Entity={EntityIndex},Material={Material}";
 }

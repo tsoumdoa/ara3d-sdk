@@ -3,7 +3,6 @@ using Ara3D.Utils;
 using Parquet;
 using Parquet.Schema;
 using System.IO.Compression;
-using Ara3D.BimOpenGeometry;
 using DataColumn = Parquet.Data.DataColumn;
 
 namespace Ara3D.BimOpenSchema.IO;

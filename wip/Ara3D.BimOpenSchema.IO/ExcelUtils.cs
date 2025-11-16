@@ -68,7 +68,7 @@ namespace Ara3D.BimOpenSchema.IO
                 ws.FirstCell().InsertTable(table.GetDataRecords(), true);
             }
 
-            wb.SaveAs(filePath);   // Atomic save; will overwrite if the file exists
+            wb.SaveAs(filePath);   
         }
 
         // Excel sheet names: ≤31 chars, no : \ / ? * [ ]

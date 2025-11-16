@@ -12,13 +12,17 @@
 
 		<!-- Menu bar -->
 		<Menu DockPanel.Dock="Top">
-			<!-- “Open …” command -->
-			<MenuItem Header="_Open…" Click="Open_Click"/>
-
-			<!-- Checkable “Raw” toggle -->
+			<MenuItem Header="_File">
+				<MenuItem Header="_Open…" Click="Open_Click">
+				</MenuItem>
+				<MenuItem Header="_Export Parquet…" Click="ExportParquet_Click">
+				</MenuItem>
+				<MenuItem Header="_Export Excel…" Click="ExportExcel_Click">
+				</MenuItem>
+			</MenuItem>
 			<MenuItem x:Name="RawMenuItem" Header="_Raw"
 			          IsCheckable="True"
-			          IsChecked="True"
+			          IsChecked="False"
 			          Click="Raw_Click"/>
 		</Menu>
 

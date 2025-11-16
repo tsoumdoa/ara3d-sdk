@@ -14,8 +14,7 @@
     <PackageReference Include="System.IO.Pipes" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup> 
-    <ProjectReference Include="..\..\src\Ara3D.BimOpenGeometry\Ara3D.BimOpenGeometry.csproj" />
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Ara3D.BimOpenSchema\Ara3D.BimOpenSchema.csproj" />
     <ProjectReference Include="..\..\src\Ara3D.IO.PLY\Ara3D.IO.PLY.csproj" />
     <ProjectReference Include="..\Ara3D.BimOpenSchema.IO\Ara3D.BimOpenSchema.IO.csproj" />

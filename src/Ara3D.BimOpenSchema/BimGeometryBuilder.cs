@@ -1,19 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Ara3D.Geometry;
 using Ara3D.Models;
 using Ara3D.Utils;
 
-namespace Ara3D.BimOpenGeometry;
+namespace Ara3D.BimOpenSchema;
+
+public record ElementStruct(
+    int EntityIndex, 
+    int MaterialIndex,
+    int MeshIndex,
+    int TransformIndex);
 
 /// <summary>
 /// This class is provided to make it easier to build a BIM geometry object incrementally. 
 /// </summary>
 public class BimGeometryBuilder
 {
-    public record ElementStruct(int MaterialIndex, int MeshIndex, int TransformIndex);
-
     public List<ElementStruct> Elements { get; private set; } = new();
     public List<TriangleMesh3D> Meshes { get; private set; } = new();
     public IndexedSet<Material> Materials { get; private set; } = new();
@@ -31,9 +34,9 @@ public class BimGeometryBuilder
     public int AddMaterial(Material material)
         => Materials.Add(material);
 
-    public int AddElement(int materialIndex, int meshIndex, int transformIndex)
+    public int AddElement(int entityIndex, int materialIndex, int meshIndex, int transformIndex)
     {
-        var es = new ElementStruct(materialIndex, meshIndex, transformIndex);
+        var es = new ElementStruct(entityIndex, materialIndex, meshIndex, transformIndex);
         Elements.Add(es);
         return Elements.Count - 1;
     }
@@ -45,10 +48,20 @@ public class BimGeometryBuilder
     {
         var r = new BimGeometry();
 
-        r.ElementMaterialIndex = Elements.Select(e => e.MaterialIndex).ToArray();
-        r.ElementMeshIndex = Elements.Select(e => e.MeshIndex).ToArray();
-        r.ElementTransformIndex = Elements.Select(e => e.TransformIndex).ToArray();
+        r.ElementEntityIndex = new int[Elements.Count];
+        r.ElementMaterialIndex = new int[Elements.Count];
+        r.ElementMeshIndex = new int[Elements.Count];
+        r.ElementTransformIndex = new int[Elements.Count];
 
+        for (var i = 0; i < Elements.Count; i++)
+        {
+            var e = Elements[i];
+            r.ElementEntityIndex[i] = e.EntityIndex;
+            r.ElementMaterialIndex[i] = e.MaterialIndex;
+            r.ElementMeshIndex[i] = e.MeshIndex;
+            r.ElementTransformIndex[i] = e.TransformIndex;
+        }
+        
         var vertX = new List<float>();
         var vertY = new List<float>();
         var vertZ = new List<float>();
@@ -56,6 +69,7 @@ public class BimGeometryBuilder
 
         r.MeshVertexOffset = new int[Meshes.Count];
         r.MeshIndexOffset = new int[Meshes.Count];
+
         for (var i=0; i < Meshes.Count; i++)
         {
             var m = Meshes[i];
@@ -64,11 +78,18 @@ public class BimGeometryBuilder
             foreach (var vert in m.Points)
             {
                 vertX.Add(vert.X);
-                vertY.Add(vert.X);
-                vertZ.Add(vert.X);
+                vertY.Add(vert.Y);
+                vertZ.Add(vert.Z);
             }
-            indices.AddRange(m.CornerIndices().Select(i => i.Value));
+
+            foreach (var face in m.FaceIndices)
+            {
+                indices.Add(face.A);
+                indices.Add(face.B);
+                indices.Add(face.C);
+            }
         }
+        
         r.VertexX = vertX.ToArray();
         r.VertexY = vertY.ToArray();
         r.VertexZ = vertZ.ToArray();
@@ -93,7 +114,6 @@ public class BimGeometryBuilder
             r.MaterialRoughness[i] = m.Roughness.ToByteFromNormalized();
             r.MaterialMetallic[i] = m.Metallic.ToByteFromNormalized();
         }
-
 
         var transforms = Matrices.OrderedMembers().ToList();
         var n = transforms.Count;

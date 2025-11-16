@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Ara3D.Utils;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
-using Ara3D.BimOpenGeometry;
+using System.Text;
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
-using Ara3D.Geometry;
 using Autodesk.Revit.DB;
 using Parquet;
 using Document = Autodesk.Revit.DB.Document;
@@ -54,9 +53,9 @@ namespace Ara3D.Bowerbird.RevitSamples
                         var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
 
                         // TODO: this needs to be tracked in a separate builder. 
-                        var entityIndex = rbdb.GetEntityIndex(doc, g.ElementId);
+                        var entityIndex = rbdb.GetEntityIndex(localDoc, g.ElementId);
 
-                        builder.AddElement(matIndex, meshIndex, transformIndex);
+                        builder.AddElement((int)entityIndex, matIndex, meshIndex, transformIndex);
                     }
                 }
             }
@@ -78,8 +77,11 @@ namespace Ara3D.Bowerbird.RevitSamples
             return ToMaterial(pbrMatInfo);
         }
 
-        public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings)
+        public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings, StringBuilder sb)
         {
+            var sw = Stopwatch.StartNew();
+
+            sb.AppendLine($"Exporting BOS");
             var bimDataBuilder = new RevitBimDataBuilder(currentDoc, settings.IncludeLinks);
             var bimData = bimDataBuilder.bdb.Data;
             var dataSet = bimData.ToDataSet();
@@ -87,24 +89,31 @@ namespace Ara3D.Bowerbird.RevitSamples
             var inputFile = new FilePath(currentDoc.PathName);
             var fp = inputFile.ChangeDirectoryAndExt(settings.Folder, ".parquet.zip");
 
+            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating FileStream");
             var fs = new FileStream(fp, FileMode.Create, FileAccess.Write, FileShare.None);
+
+            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Zip Archive");
             using var zip = new ZipArchive(fs, ZipArchiveMode.Create, leaveOpen: false);
 
             var parquetCompressionMethod = CompressionMethod.Brotli;
             var parquetCompressionLevel = CompressionLevel.Optimal;
             var zipCompressionLevel = CompressionLevel.Fastest;
 
-            Task.Run(() => dataSet.WriteParquetToZipAsync(zip,
-                    parquetCompressionMethod,
+            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing Parquet");
+            dataSet.WriteParquetToZip(zip,
+            parquetCompressionMethod,
                     parquetCompressionLevel,
-                    zipCompressionLevel))
-                .GetAwaiter().GetResult();
+                    zipCompressionLevel);
 
             if (settings.IncludeGeometry)
             {
+                sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating BIM Geometry");
                 var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks);
+                sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing BIM geometry");
                 bimGeometry.WriteParquetToZip(zip, parquetCompressionMethod, parquetCompressionLevel, zipCompressionLevel);
             }
+
+            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Finished");
         }
     }
 }

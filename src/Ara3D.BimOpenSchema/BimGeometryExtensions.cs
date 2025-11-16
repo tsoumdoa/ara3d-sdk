@@ -1,10 +1,12 @@
-﻿using Ara3D.Collections;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Ara3D.Collections;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Models;
 using Ara3D.Utils;
 
-namespace Ara3D.BimOpenGeometry;
+namespace Ara3D.BimOpenSchema;
 
 public static class BimGeometryExtensions
 {
@@ -42,9 +44,11 @@ public static class BimGeometryExtensions
         var r = new List<Integer3>();
 
         var indexOffset = self.MeshIndexOffset[meshIndex];
+        
         var nextIndexOffset = meshIndex < self.GetNumMeshes() - 1
             ? self.MeshIndexOffset[meshIndex + 1]
-            : self.MeshIndexOffset.Length;
+            : self.IndexBuffer.Length;
+
         var indexCount = nextIndexOffset - indexOffset;
 
         for (var i = 0; i < indexCount; i += 3)
@@ -111,7 +115,7 @@ public static class BimGeometryExtensions
 
     public static Model3D ToModel3D(this BimGeometry self)
     {
-        var meshes = self.GetNumMeshes().MapRange(i => self.GetMesh(i)).ToArray();
+        var meshes = self.GetNumMeshes().MapRange(i => self.GetMesh(i)).ToList();
         var instances = self.GetNumElements().MapRange(i => self.GetInstanceStruct(i)).ToList();
         return new Model3D(meshes, instances);
     }
@@ -154,6 +158,7 @@ public static class BimGeometryExtensions
             .AddColumn(self, self.IndexBuffer, nameof(self.IndexBuffer));
 
         r.AddTable("Element")
+            .AddColumn(self, self.ElementEntityIndex, nameof(self.ElementEntityIndex))
             .AddColumn(self, self.ElementMaterialIndex, nameof(self.ElementMaterialIndex))
             .AddColumn(self, self.ElementMeshIndex, nameof(self.ElementMeshIndex))
             .AddColumn(self, self.ElementTransformIndex, nameof(self.ElementTransformIndex));
@@ -173,108 +178,12 @@ public static class BimGeometryExtensions
 
         foreach (var inst in self.Instances)
         {
+            var materialIndex = bgb.AddMaterial(inst.Material);
+            var transformIndex = bgb.AddTransform(inst.Matrix4x4);
+            bgb.AddElement(inst.EntityIndex, materialIndex, inst.MeshIndex, transformIndex);
         }
 
         return bgb.BuildModel();
-
-        /*
-        var r = new BimGeometry();
-
-        var indices = new List<int>();
-        var pointX = new List<float>();
-        var pointY = new List<float>();
-        var pointZ = new List<float>();
-
-        r.MeshIndexOffset = new int[self.Meshes.Count];
-        r.MeshVertexOffset = new int[self.Meshes.Count];
-
-        for (var i=0; i < self.Meshes.Count; i++)
-        {
-            var mesh = self.Meshes[i];
-            r.MeshIndexOffset[i] = indices.Count;
-            r.MeshVertexOffset[i] = pointX.Count;
-            foreach (var f in mesh.FaceIndices)
-            {
-                indices.Add(f.A);
-                indices.Add(f.B);
-                indices.Add(f.C);
-            }
-
-            foreach (var p in mesh.Points)
-            {
-                pointX.Add(p.X);
-                pointY.Add(p.Y);
-                pointZ.Add(p.Z);
-            }
-        }
-
-        r.IndexBuffer = indices.ToArray();
-        r.VertexX = pointX.ToArray();
-        r.VertexY = pointY.ToArray();
-        r.VertexZ = pointZ.ToArray();
-
-        var numElements = self.ElementStructs.Count;
-        r.ElementEntityIndex = new int[numElements];
-        r.ElementMaterialIndex = new int[numElements];
-        r.ElementMeshIndex = new int[numElements];
-        r.ElementTransformIndex = new int[numElements];
-        for (var i = 0; i < numElements; i++)
-        {
-            var es = self.ElementStructs[i];
-            r.ElementEntityIndex[i] = es.EntityIndex;
-            r.ElementMaterialIndex[i] = es.MaterialIndex;
-            r.ElementMeshIndex[i] = es.MeshIndex;
-            r.ElementTransformIndex[i] = es.TransformIndex;
-        }
-
-        var numMaterials = self.Materials.Count;
-        r.MaterialRed = new byte[numMaterials];
-        r.MaterialGreen = new byte[numMaterials];
-        r.MaterialBlue = new byte[numMaterials];
-        r.MaterialAlpha = new byte[numMaterials];
-        r.MaterialMetallic = new byte[numMaterials];
-        r.MaterialRoughness = new byte[numMaterials];
-        for (var i = 0; i < numMaterials; i++)
-        {
-            var mat = self.Materials[i];
-            r.MaterialRed[i] = mat.Red.ToByteFromNormalized();
-            r.MaterialGreen[i] = mat.Green.ToByteFromNormalized();
-            r.MaterialBlue[i] = mat.Blue.ToByteFromNormalized();
-            r.MaterialAlpha[i] = mat.Alpha.ToByteFromNormalized();
-            r.MaterialMetallic[i] = mat.Metallic.ToByteFromNormalized();
-            r.MaterialRoughness[i] = mat.Roughness.ToByteFromNormalized();
-        }
-
-        var numTransforms = self.Transforms.Count;
-        r.TransformTX = new float[numTransforms];
-        r.TransformTY = new float[numTransforms];
-        r.TransformTZ = new float[numTransforms];
-        r.TransformQX = new float[numTransforms];
-        r.TransformQY = new float[numTransforms];
-        r.TransformQZ = new float[numTransforms];
-        r.TransformQW = new float[numTransforms];
-        r.TransformSX = new float[numTransforms];
-        r.TransformSY = new float[numTransforms];
-        r.TransformSZ = new float[numTransforms];
-        for (var i = 0; i < numTransforms; i++)
-        {
-            var tm = self.Transforms[i];
-            var (t, q, s, _) = tm.Decompose;
-
-            r.TransformTX[i] = t.X;
-            r.TransformTY[i] = t.Y;
-            r.TransformTZ[i] = t.Z;
-            r.TransformQX[i] = q.X;
-            r.TransformQY[i] = q.Y;
-            r.TransformQZ[i] = q.Z;
-            r.TransformQW[i] = q.W;
-            r.TransformSX[i] = s.X;
-            r.TransformSY[i] = s.Y;
-            r.TransformSZ[i] = s.Z;
-        }
-
-        return r;
-        */
     }
 
     public static T[] ReadColumn<T>(this IDataSet set, string tableName, string columnName)

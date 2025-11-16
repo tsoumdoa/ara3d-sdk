@@ -37,6 +37,7 @@ public class BimData
     public List<string> Strings { get; set; } = [];
     public List<Point> Points { get; set; } = [];
     public List<EntityRelation> Relations { get; set; } = [];
+    public List<GeometricInstance> GeometricInstances { get; set; } = [];
 }
 
 //==
@@ -60,26 +61,30 @@ public enum RelationIndex : long { }
 /// </summary>
 public record Entity(
     // ElementID in Revit, and Step Line # in IFC
+    // Will be unique when combined with a DocumentIndex (e.g., "${LocalId}-{Document}" would be a unique string identifier within the database). 
+    // But multiple documents can share the same entity  
     long LocalId,
 
     // UniqueID in Revit, and GlobalID in IFC (not stored in string table, because it is never duplicated)
     string GlobalId, 
 
-    // The index of the document this entity was found int
+    // The index of the document this entity is part of 
     DocumentIndex Document,
 
     // The name of the entity 
     StringIndex Name,
 
     // The category of the entity
-    StringIndex Category);
+    StringIndex Category
+    );
 
 /// <summary>
 /// Corresponds with a specific Revit or IFC file 
 /// </summary>
 public record Document(
     StringIndex Title,
-    StringIndex Path);
+    StringIndex Path
+    );
 
 /// <summary>
 /// Represents 3D location data.
@@ -87,7 +92,8 @@ public record Document(
 public record Point(
     double X,
     double Y,
-    double Z);
+    double Z
+    );
 
 /// <summary>
 /// Important for grouping the different kinds of parameter data ...
@@ -124,7 +130,8 @@ public record ParameterDescriptor(
 public record ParameterInt(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    int Value);
+    int Value
+    );
 
 /// <summary>
 /// A parameter value representing text
@@ -132,7 +139,8 @@ public record ParameterInt(
 public record ParameterString(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    StringIndex Value);
+    StringIndex Value
+    );
 
 /// <summary>
 /// A 64-bit precision floating point (decimal) numeric parameter value
@@ -140,7 +148,8 @@ public record ParameterString(
 public record ParameterDouble(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    double Value);
+    double Value
+    );
 
 /// <summary>
 /// A parameter value which references another entity 
@@ -148,7 +157,8 @@ public record ParameterDouble(
 public record ParameterEntity(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    EntityIndex Value);
+    EntityIndex Value
+    );
 
 /// <summary>
 /// A 32-bit integer parameter value
@@ -156,7 +166,8 @@ public record ParameterEntity(
 public record ParameterPoint(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    PointIndex Value);
+    PointIndex Value
+    );
 
 //==
 // Relations data
@@ -167,7 +178,8 @@ public record ParameterPoint(
 public record EntityRelation(
     EntityIndex EntityA,
     EntityIndex EntityB,
-    RelationType RelationType);
+    RelationType RelationType
+    );
 
 /// <summary>
 /// The various kinds of relations, aimed at covering both the Revit API and IFC
@@ -177,7 +189,7 @@ public enum RelationType
     // For parts of a whole. Represents composition.
     PartOf = 0,
 
-    // For elements of a group of set. Represents aggregations. 
+    // For elements of a group or set or layer. Represents aggregations. 
     ElementOf = 1,
 
     // Represents spatial relationships. Like part of a level, or a room.  
@@ -204,3 +216,12 @@ public enum RelationType
     // MEP networks and connection manager
     HasConnector = 8,
 }
+
+/// <summary>
+/// If geometry is present, every geometric instance  is related to exactly one entity.
+/// An entity may have multiple geometric instances.
+/// A geometric instance, is a bundle of material, transform, and reference to a mesh. 
+/// </summary>
+public record GeometricInstance(
+    EntityIndex Entity
+    );

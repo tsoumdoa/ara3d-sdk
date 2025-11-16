@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Ara3D.Geometry;
 
 namespace Ara3D.BimOpenSchema
 {
@@ -9,6 +11,8 @@ namespace Ara3D.BimOpenSchema
         public long LocalId { get; init; }
         public string Name { get; init; }
         public string Category { get; init; }
+        public string GlobalId { get; init; }
+        public int DocumentIndex { get; init; }
         public Dictionary<string, object> ParameterValues { get; } = new();
         public List<RelationModel> OutgoingRelations { get; } = new();
         public List<RelationModel> IncomingRelations { get; } = new();
@@ -42,7 +46,7 @@ namespace Ara3D.BimOpenSchema
         }
 
         public override string ToString()
-            => $"{Descriptor.Name} ({Descriptor.Type}) = {Value}";
+            => $"{Descriptor.Name} ({Descriptor.ParameterType}) = {Value}";
     }
 
     public class DocumentModel
@@ -57,7 +61,29 @@ namespace Ara3D.BimOpenSchema
         public string Name { get; init; }
         public string Units { get; init; }
         public string Group { get; init; }
-        public ParameterType Type { get; init; }
+        public ParameterType ParameterType { get; init; }
+
+        public Type DotNetType
+        {
+            get
+            {
+                switch (ParameterType)
+                {
+                    case ParameterType.Int:
+                        return typeof(int);
+                    case ParameterType.Double:
+                        return typeof(double);
+                    case ParameterType.Entity:
+                        return typeof(int);
+                    case ParameterType.String:
+                        return typeof(string);
+                    case ParameterType.Point:
+                        return typeof(Point);
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
     }
 
     public class BimDataModel
@@ -110,7 +136,9 @@ namespace Ara3D.BimOpenSchema
         {
             LocalId = e.LocalId,
             Index = ei,
+            DocumentIndex = (int)e.Document,
             Name = Data.Get(e.Name),
+            GlobalId = e.GlobalId,
             Category = Data.Get(e.Category),
         };
 
@@ -120,7 +148,7 @@ namespace Ara3D.BimOpenSchema
             Name = Data.Get(desc.Name),
             Units = Data.Get(desc.Units),
             Group = Data.Get(desc.Group),
-            Type = desc.Type
+            ParameterType = desc.Type
         };
 
         public EntityModel Get(EntityIndex ei) => Entities[(int)ei];
