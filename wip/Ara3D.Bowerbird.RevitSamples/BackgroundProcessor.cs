@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.DB.Events;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Xml.Linq;
 
 namespace Ara3D.Bowerbird.RevitSamples
 {

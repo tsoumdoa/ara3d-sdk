@@ -9,11 +9,12 @@ namespace Ara3D.Bowerbird.RevitSamples;
 
 public class RevitBimDataBuilder
 {
-    public RevitBimDataBuilder(Document rootDocument, bool includeLinks) 
+    public RevitBimDataBuilder(Document rootDocument, bool includeLinks, bool processDoc = true) 
     {
         IncludeLinks = includeLinks;
         CreateCommonDescriptors();
-        ProcessDocument(rootDocument);
+        if (processDoc)
+            ProcessDocument(rootDocument);
     }
 
     public class StructuralLayer
@@ -25,7 +26,7 @@ public class RevitBimDataBuilder
         public bool IsCore;
     }
 
-    public BimDataBuilder bdb = new();
+    public BimDataBuilder Builder = new();
     public bool IncludeLinks;
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
@@ -139,7 +140,7 @@ public class RevitBimDataBuilder
 
     private void AddDesc(ref DescriptorIndex desc, string name, ParameterType pt)
     {
-        desc = bdb.AddDescriptor(name, "", "RevitAPI", pt);
+        desc = Builder.AddDescriptor(name, "", "RevitAPI", pt);
     }
 
     public void CreateCommonDescriptors()
@@ -249,37 +250,37 @@ public class RevitBimDataBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, string val)
     {
-        var d = bdb.Data.Get(di);
+        var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.String) throw new Exception($"Expected string not {d.Type}");
-        bdb.AddParameter(ei, val, di);
+        Builder.AddParameter(ei, val, di);
     }
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, EntityIndex val)
     {
-        var d = bdb.Data.Get(di);
+        var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Entity) throw new Exception($"Expected entity not {d.Type}");
-        bdb.AddParameter(ei, val, di);
+        Builder.AddParameter(ei, val, di);
     }
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, PointIndex val)
     {
-        var d = bdb.Data.Get(di);
+        var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Point) throw new Exception($"Expected point not {d.Type}");
-        bdb.AddParameter(ei, val, di);
+        Builder.AddParameter(ei, val, di);
     }
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, int val)
     {
-        var d = bdb.Data.Get(di);
+        var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
-        bdb.AddParameter(ei, val, di);
+        Builder.AddParameter(ei, val, di);
     }
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, double val)
     {
-        var d = bdb.Data.Get(di);
+        var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Double) throw new Exception($"Expected double not {d.Type}");
-        bdb.AddParameter(ei, val, di);
+        Builder.AddParameter(ei, val, di);
     }
 
     public void AddTypeAsParameter(EntityIndex ei, object o)
@@ -292,7 +293,7 @@ public class RevitBimDataBuilder
         if (!ProcessedCategories.TryGetValue(category.Id.Value, out var result))
             return result;
 
-        var r = bdb.AddEntity(category.Id.Value, category.Id.ToString(), CurrentDocumentIndex, category.Name,
+        var r = Builder.AddEntity(category.Id.Value, category.Id.ToString(), CurrentDocumentIndex, category.Name,
             category.BuiltInCategory.ToString());
 
         AddParameter(r, _apiTypeDescriptor, category.GetType().Name);
@@ -302,7 +303,7 @@ public class RevitBimDataBuilder
         foreach (Category subCategory in category.SubCategories)
         {
             var subCatId = ProcessCategory(subCategory);
-            bdb.AddRelation(subCatId, r, RelationType.ChildOf);
+            Builder.AddRelation(subCatId, r, RelationType.ChildOf);
         }
 
         return r;
@@ -316,7 +317,7 @@ public class RevitBimDataBuilder
         foreach (var layer in layers)
         {
             var index = layer.LayerIndex;
-            var layerEi = bdb.AddEntity(
+            var layerEi = Builder.AddEntity(
                 0, 
                 $"{host.UniqueId}${index}", 
                 CurrentDocumentIndex, 
@@ -333,11 +334,11 @@ public class RevitBimDataBuilder
             {
                 var matIndex = ProcessElement(matId);
                 AddParameter(layerEi, _layerMaterialId, matIndex);
-                bdb.AddRelation(layerEi, matIndex, RelationType.HasMaterial);
+                Builder.AddRelation(layerEi, matIndex, RelationType.HasMaterial);
             }
 
             AddTypeAsParameter(layerEi, layer);
-            bdb.AddRelation(ei, layerEi, RelationType.HasLayer);
+            Builder.AddRelation(ei, layerEi, RelationType.HasLayer);
         }
     }
 
@@ -367,7 +368,7 @@ public class RevitBimDataBuilder
         if (typeId != ElementId.InvalidElementId)
         {
             var type = ProcessElement(typeId);
-            bdb.AddRelation(ei, type, RelationType.InstanceOf);
+            Builder.AddRelation(ei, type, RelationType.InstanceOf);
         }
 
         var toRoom = f.ToRoom;
@@ -383,7 +384,7 @@ public class RevitBimDataBuilder
         {
             var hostIndex = ProcessElement(host);
             AddParameter(ei, _familyInstanceHost, hostIndex);
-            bdb.AddRelation(ei, hostIndex, RelationType.HostedBy);
+            Builder.AddRelation(ei, hostIndex, RelationType.HostedBy);
         }
 
         var space = f.Space;
@@ -391,7 +392,7 @@ public class RevitBimDataBuilder
         {
             var spaceIndex = ProcessElement(space);
             AddParameter(ei, _familyInstanceSpace, spaceIndex);
-            bdb.AddRelation(ei, spaceIndex, RelationType.ContainedIn);
+            Builder.AddRelation(ei, spaceIndex, RelationType.ContainedIn);
         }
 
         var room = f.Room;
@@ -399,7 +400,7 @@ public class RevitBimDataBuilder
         {
             var roomIndex = ProcessElement(room);
             AddParameter(ei, _familyInstanceSpace, roomIndex);
-            bdb.AddRelation(ei, roomIndex, RelationType.ContainedIn);
+            Builder.AddRelation(ei, roomIndex, RelationType.ContainedIn);
         }
 
         var matId = f.StructuralMaterialId;
@@ -407,7 +408,7 @@ public class RevitBimDataBuilder
         {
             var matIndex = ProcessElement(matId);
             AddParameter(ei, _familyInstanceStructuralMaterialId, matIndex);
-            bdb.AddRelation(ei, matIndex, RelationType.HasMaterial);
+            Builder.AddRelation(ei, matIndex, RelationType.HasMaterial);
         }
 
         AddParameter(ei, _familyInstanceStructuralUsage, f.StructuralUsage.ToString());
@@ -437,7 +438,7 @@ public class RevitBimDataBuilder
         foreach (var id in matIds)
         {
             var matId = ProcessElement(id);
-            bdb.AddRelation(ei, matId, RelationType.HasMaterial);
+            Builder.AddRelation(ei, matId, RelationType.HasMaterial);
         }
     }
 
@@ -463,13 +464,13 @@ public class RevitBimDataBuilder
             switch (p.StorageType)
             {
                 case StorageType.Integer:
-                    AddParameter(entityIndex, bdb.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Int), p.AsInteger());
+                    AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Int), p.AsInteger());
                     break;
                 case StorageType.Double:
-                    AddParameter(entityIndex, bdb.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Double), p.AsDouble());
+                    AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Double), p.AsDouble());
                     break;
                 case StorageType.String:
-                    AddParameter(entityIndex, bdb.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.String), p.AsString());
+                    AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.String), p.AsString());
                     break;
                 case StorageType.ElementId:
                     {
@@ -482,12 +483,12 @@ public class RevitBimDataBuilder
 
                         // We recursively process the element 
                         var valIndex = ProcessElement(e);
-                        AddParameter(entityIndex, bdb.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Entity), valIndex);
+                        AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Entity), valIndex);
                     }
                     break;
                 case StorageType.None:
                 default:
-                    AddParameter(entityIndex, bdb.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.String), p.AsValueString());
+                    AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.String), p.AsValueString());
                     break;
             }
         }
@@ -534,14 +535,14 @@ public class RevitBimDataBuilder
         var category = e.Category;
         var catName = (category != null && category.IsValid) ? category.Name : "";
 
-        var entityIndex = bdb.AddEntity(e.Id.Value, e.UniqueId, di, e.Name, catName);
+        var entityIndex = Builder.AddEntity(e.Id.Value, e.UniqueId, di, e.Name, catName);
         ProcessedEntities.Add((di, e.Id.Value), entityIndex);
 
         if (category != null && category.IsValid)
         {
             var catIndex = ProcessCategory(category);
             AddParameter(entityIndex, _elementCategory, catIndex);
-            bdb.AddRelation(entityIndex, catIndex, RelationType.ContainedIn);
+            Builder.AddRelation(entityIndex, catIndex, RelationType.ContainedIn);
         }
 
         ProcessParameters(entityIndex, e);
@@ -550,8 +551,8 @@ public class RevitBimDataBuilder
         var bounds = GetBoundingBoxMinMax(e);
         if (bounds.HasValue)
         {
-            var min = AddPoint(bdb, bounds.Value.min);
-            var max = AddPoint(bdb, bounds.Value.max);
+            var min = AddPoint(Builder, bounds.Value.min);
+            var max = AddPoint(Builder, bounds.Value.max);
             AddParameter(entityIndex, _elementBoundsMin, min);
             AddParameter(entityIndex, _elementBoundsMax, max);
         }
@@ -561,7 +562,7 @@ public class RevitBimDataBuilder
         {
             var levelIndex = ProcessElement(levelId);
             AddParameter(entityIndex, _elementLevel, levelIndex);
-            bdb.AddRelation(entityIndex, levelIndex, RelationType.ContainedIn);
+            Builder.AddRelation(entityIndex, levelIndex, RelationType.ContainedIn);
         }
 
         var assemblyInstanceId = e.AssemblyInstanceId;
@@ -569,7 +570,7 @@ public class RevitBimDataBuilder
         {
             var assemblyIndex = ProcessElement(assemblyInstanceId);
             AddParameter(entityIndex, _elementAssemblyInstance, assemblyIndex);
-            bdb.AddRelation(entityIndex, assemblyIndex, RelationType.PartOf);
+            Builder.AddRelation(entityIndex, assemblyIndex, RelationType.PartOf);
         }
         
         var location = e.Location;
@@ -577,15 +578,15 @@ public class RevitBimDataBuilder
         {
             if (location is LocationPoint lp)
             {
-                AddParameter(entityIndex, _elementLocation, AddPoint(bdb, lp.Point));
+                AddParameter(entityIndex, _elementLocation, AddPoint(Builder, lp.Point));
             }
 
             if (location is LocationCurve lc)
             {
                 if (TryGetLocationEndpoints(lc, out var startPoint, out var endPoint))
                 {
-                    AddParameter(entityIndex, _elementLocationStartPoint, AddPoint(bdb, startPoint));
-                    AddParameter(entityIndex, _elementLocationEndPoint, AddPoint(bdb, endPoint));
+                    AddParameter(entityIndex, _elementLocationStartPoint, AddPoint(Builder, startPoint));
+                    AddParameter(entityIndex, _elementLocationEndPoint, AddPoint(Builder, endPoint));
                 }
             }
         }
@@ -606,7 +607,7 @@ public class RevitBimDataBuilder
         if (designOption != null && designOption.IsValidObject)
         {
             var doIndex = ProcessElement(designOption);
-            bdb.AddRelation(entityIndex, doIndex, RelationType.ElementOf);
+            Builder.AddRelation(entityIndex, doIndex, RelationType.ElementOf);
             AddParameter(entityIndex, _elementDesignOption, doIndex);
         }
 
@@ -614,7 +615,7 @@ public class RevitBimDataBuilder
         if (groupId != ElementId.InvalidElementId)
         {
             var group = ProcessElement(groupId);
-            bdb.AddRelation(entityIndex, group, RelationType.ElementOf);
+            Builder.AddRelation(entityIndex, group, RelationType.ElementOf);
         }
 
         if (e.WorksetId != null)
@@ -650,10 +651,10 @@ public class RevitBimDataBuilder
             return;
 
         CurrentDocument = d;
-        CurrentDocumentIndex = bdb.AddDocument(d.Title, d.PathName);
+        CurrentDocumentIndex = Builder.AddDocument(d.Title, d.PathName);
 
         // NOTE: this creates a psedo-entity for the document, which is used so that we can associate parameters and meta-data with it. 
-        var ei = bdb.AddEntity(ProcessedDocuments.Count, CurrentDocument.CreationGUID.ToString(), CurrentDocumentIndex, d.Title, "__DOCUMENT__");
+        var ei = Builder.AddEntity(ProcessedDocuments.Count, CurrentDocument.CreationGUID.ToString(), CurrentDocumentIndex, d.Title, "__DOCUMENT__");
         ProcessedDocuments.Add(key, CurrentDocumentIndex);
 
         var siteLocation = CurrentDocument.SiteLocation;

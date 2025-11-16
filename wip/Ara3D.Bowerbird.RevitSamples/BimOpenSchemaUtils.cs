@@ -77,29 +77,29 @@ namespace Ara3D.Bowerbird.RevitSamples
             return ToMaterial(pbrMatInfo);
         }
 
-        public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings, StringBuilder sb)
+        public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings, StringBuilder sb = null)
         {
             var sw = Stopwatch.StartNew();
 
-            sb.AppendLine($"Exporting BOS");
+            sb?.AppendLine($"Exporting BOS");
             var bimDataBuilder = new RevitBimDataBuilder(currentDoc, settings.IncludeLinks);
-            var bimData = bimDataBuilder.bdb.Data;
+            var bimData = bimDataBuilder.Builder.Data;
             var dataSet = bimData.ToDataSet();
 
             var inputFile = new FilePath(currentDoc.PathName);
             var fp = inputFile.ChangeDirectoryAndExt(settings.Folder, ".parquet.zip");
 
-            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating FileStream");
+            sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating FileStream");
             var fs = new FileStream(fp, FileMode.Create, FileAccess.Write, FileShare.None);
 
-            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Zip Archive");
+            sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Zip Archive");
             using var zip = new ZipArchive(fs, ZipArchiveMode.Create, leaveOpen: false);
 
             var parquetCompressionMethod = CompressionMethod.Brotli;
             var parquetCompressionLevel = CompressionLevel.Optimal;
             var zipCompressionLevel = CompressionLevel.Fastest;
 
-            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing Parquet");
+            sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing Parquet");
             dataSet.WriteParquetToZip(zip,
             parquetCompressionMethod,
                     parquetCompressionLevel,
@@ -107,13 +107,13 @@ namespace Ara3D.Bowerbird.RevitSamples
 
             if (settings.IncludeGeometry)
             {
-                sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating BIM Geometry");
+                sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating BIM Geometry");
                 var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks);
-                sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing BIM geometry");
+                sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing BIM geometry");
                 bimGeometry.WriteParquetToZip(zip, parquetCompressionMethod, parquetCompressionLevel, zipCompressionLevel);
             }
 
-            sb.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Finished");
+            sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Finished");
         }
     }
 }

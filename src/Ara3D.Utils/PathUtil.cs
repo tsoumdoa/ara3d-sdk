@@ -367,7 +367,7 @@ namespace Ara3D.Utils
         /// https://stackoverflow.com/questions/10898338/c-sharp-string-replace-to-remove-illegal-characters?noredirect=1&lq=1
         /// </summary>
         public static string ToValidFileName(this string s)
-            => InvalidFileNameRegex.Replace(s, m => "_");
+            => s.IsNullOrWhiteSpace() ? "_" : InvalidFileNameRegex.Replace(s, m => "_");
 
         /// <summary>
         /// Returns true if the string has any invalid file name chars
@@ -669,7 +669,7 @@ namespace Ara3D.Utils
             => Path.Combine(parts.Prepend(path.Value).ToArray());
 
         public static DirectoryPath RelativeFolder(this FilePath path, params string[] parts)
-            => Path.Combine(parts.Prepend(path.Value).ToArray());
+            => path.GetDirectory().RelativeFolder(parts);
 
         public static FilePath RelativeFile(this DirectoryPath path, params string[] parts)
             => Path.Combine(parts.Prepend(path.Value).ToArray());

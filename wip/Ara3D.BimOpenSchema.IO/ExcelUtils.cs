@@ -54,7 +54,7 @@ namespace Ara3D.BimOpenSchema.IO
             if (set.Tables.Count == 0) throw new ArgumentException("DataSet contains no tables.", nameof(set));
             if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(filePath));
 
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(filePath))!);
+            filePath.GetDirectory().Create();
 
             using var wb = new XLWorkbook();
             var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

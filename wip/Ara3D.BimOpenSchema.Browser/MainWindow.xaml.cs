@@ -60,16 +60,13 @@ namespace Ara3D.BimOpenSchema.Browser
                 return;
             }
 
-            SaveExcelFileDialog ??= new SaveFileDialog()
-            {
-                DefaultExt = ".xlsx",
-                Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*"
-            };
+            var inputFile = new FilePath(OpenFileDialog.FileName);
+            var folder = inputFile.RelativeFolder(inputFile.GetFileNameWithoutExtension());
 
-            if (SaveExcelFileDialog.ShowDialog() == true)
+            foreach (var t in Tables)
             {
-                var fp = new FilePath(SaveExcelFileDialog.FileName);
-                Tables.ToDataSet().WriteToExcel(fp);
+                var fp = folder.RelativeFile(t.Name.ToValidFileName() + ".xlsx");
+                t.WriteToExcel(fp);
             }
         }
 

@@ -17,7 +17,7 @@
 				</MenuItem>
 				<MenuItem Header="_Export Parquet…" Click="ExportParquet_Click">
 				</MenuItem>
-				<MenuItem Header="_Export Excel…" Click="ExportExcel_Click">
+				<MenuItem Header="_Export Excel" Click="ExportExcel_Click">
 				</MenuItem>
 			</MenuItem>
 			<MenuItem x:Name="RawMenuItem" Header="_Raw"

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using Ara3D.Bowerbird.RevitSamples;
@@ -120,7 +121,8 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             try
             {
                 var timer = Stopwatch.StartNew();
-                currentDoc.ExportBimOpenSchema(settings);
+                var sb = new StringBuilder();
+                currentDoc.ExportBimOpenSchema(settings, sb);
                 if (MessageBox.Show($"Completed export process in {timer.Elapsed.TotalSeconds:F1} seconds.\nOpen output folder?", "Congratulations!",
                         MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
