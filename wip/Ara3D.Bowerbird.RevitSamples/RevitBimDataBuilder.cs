@@ -7,6 +7,13 @@ using Document = Autodesk.Revit.DB.Document;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
+public record DocumentKey
+(
+    string Title,
+    string FileName
+);
+
+
 public class RevitBimDataBuilder
 {
     public RevitBimDataBuilder(Document rootDocument, bool includeLinks, bool processDoc = true) 
@@ -32,12 +39,14 @@ public class RevitBimDataBuilder
     public DocumentIndex CurrentDocumentIndex;
 
     public Dictionary<(DocumentIndex, long), EntityIndex> ProcessedEntities = new();
-    public Dictionary<(string, string), DocumentIndex> ProcessedDocuments = new();
+    public Dictionary<DocumentKey, DocumentIndex> ProcessedDocuments = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
 
     public EntityIndex GetEntityIndex(Document doc, long entityId)
+        => GetEntityIndex(GetDocumentKey(doc), entityId);
+
+    public EntityIndex GetEntityIndex(DocumentKey key, long entityId)
     {
-        var key = GetDocumentKey(doc);
         var docIndex = ProcessedDocuments[key];
         var entIndex = ProcessedEntities[(docIndex, entityId)];
         return entIndex;
@@ -641,8 +650,15 @@ public class RevitBimDataBuilder
         return entityIndex;
     }
 
-    public static (string, string) GetDocumentKey(Document d)
-        => (d.Title, d.PathName);
+    public static DocumentKey GetDocumentKey(Document d)
+    {
+        if (d == null)
+            throw new Exception("Unexpected null document");
+        if (d.IsDetached)
+            // NOTE: the title and path will be empty if detached. Not sure what we can do as a backup plan.  
+            throw new Exception("Cannot process detached documents");
+        return new(d.Title, System.IO.Path.GetFileNameWithoutExtension(d.PathName)?.ToLowerInvariant() ?? "");
+    }
 
     public void ProcessDocument(Document d)
     {
@@ -653,7 +669,7 @@ public class RevitBimDataBuilder
         CurrentDocument = d;
         CurrentDocumentIndex = Builder.AddDocument(d.Title, d.PathName);
 
-        // NOTE: this creates a psedo-entity for the document, which is used so that we can associate parameters and meta-data with it. 
+        // NOTE: this creates a pseudo-entity for the document, which is used so that we can associate parameters and meta-data with it. 
         var ei = Builder.AddEntity(ProcessedDocuments.Count, CurrentDocument.CreationGUID.ToString(), CurrentDocumentIndex, d.Title, "__DOCUMENT__");
         ProcessedDocuments.Add(key, CurrentDocumentIndex);
 
@@ -661,6 +677,8 @@ public class RevitBimDataBuilder
             
         AddParameter(ei, _documentPath, CurrentDocument.PathName);
         AddParameter(ei, _documentTitle, CurrentDocument.Title);
+
+        // TODO: what about "IsDetached"?
 
         if (CurrentDocument.IsWorkshared)
             AddParameter(ei, _documentWorksharingGuid, CurrentDocument.WorksharingCentralGUID.ToString());

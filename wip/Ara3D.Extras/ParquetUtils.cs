@@ -211,8 +211,8 @@ public static class ParquetUtils
             pb.Add(bg.MaterialGreen, nameof(bg.MaterialGreen));
             pb.Add(bg.MaterialBlue, nameof(bg.MaterialBlue));
             pb.Add(bg.MaterialAlpha, nameof(bg.MaterialAlpha));
-            pb.Add(bg.MaterialMetallic, nameof(bg.MaterialRoughness));
-            pb.Add(bg.MaterialRoughness, nameof(bg.MaterialMetallic));
+            pb.Add(bg.MaterialMetallic, nameof(bg.MaterialMetallic));
+            pb.Add(bg.MaterialRoughness, nameof(bg.MaterialRoughness));
             r.Add(pb);
         }
         {

@@ -22,7 +22,7 @@ namespace Ara3D.Bowerbird.RevitSamples
         public static BoundingBoxXYZ ToRevit(this Bounds3D self) => new BoundingBoxXYZ() { Min = self.Min.ToRevit(), Max = self.Max.ToRevit() };
         public static BoundingBoxUV ToRevit(this Bounds2D self) => new BoundingBoxUV() { Min = self.Min.ToRevit(), Max = self.Max.ToRevit() };
 
-        public static Geometry.Plane ToAra3D(this ClipPlane self) => (self.Normal.ToAra3D(), (float)self.Origin.DistanceTo(self.Normal));
+        //public static Geometry.Plane ToAra3D(this ClipPlane self) => (self.Normal.ToAra3D(), (float)self.Origin.DistanceTo(self.Normal));
         public static Bounds3D ToAra3D(this BoundingBoxXYZ self) => new Bounds3D(self.Min.ToAra3D(), self.Max.ToAra3D());
         public static Bounds2D ToAra3D(this BoundingBoxUV self) => new Bounds2D(self.Min.ToAra3D(), self.Max.ToAra3D());
 

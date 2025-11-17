@@ -1,13 +1,9 @@
 ﻿using Ara3D.Utils;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -81,8 +77,7 @@ public class CommandBackgroundExportEverything : NamedCommand
     }
 
     private void BosFormOnOnReset(object sender, EventArgs e)
-    {
-    }
+    { }
 
     private void ProcessorOnHeartbeat(object sender, EventArgs e)
     {

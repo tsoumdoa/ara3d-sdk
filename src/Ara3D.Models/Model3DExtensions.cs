@@ -80,13 +80,18 @@ public static class Model3DExtensions
         return points;
     }
 
+    public static IReadOnlyList<Bounds3D> GetMeshBounds(this Model3D self)
+        => self.Meshes.Map(m => m.Bounds).ToArray();
+
     public static Bounds3D GetBounds(this Model3D self)
     {
-        var r = new Bounds3D();
+        var r = Bounds3D.Empty;
         var meshBounds = self.Meshes.Map(m => m.Bounds).ToArray();
         foreach (var node in self.Instances)
         {
-            if (node.MeshIndex < 0) continue;
+            var meshIndex = node.MeshIndex;
+            if (meshIndex < 0) continue;
+            if (self.Meshes[meshIndex].FaceIndices.Count == 0) continue;
             var rawBounds = meshBounds[node.MeshIndex];
             var mat = node.Matrix4x4;
             var lclBounds = rawBounds.Transform(mat);

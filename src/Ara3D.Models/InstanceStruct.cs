@@ -139,6 +139,24 @@ public unsafe struct InstanceStruct
         }
     }
 
+    public Vector3 Translation
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(Column0.W, Column1.W, Column2.W);
+    }
+
+    public Vector3 Scale
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Matrix4x4.Decompose().X2;
+    }
+
+    public Quaternion Rotation
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Matrix4x4.Decompose().X1;
+    }
+
     public Material Material
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

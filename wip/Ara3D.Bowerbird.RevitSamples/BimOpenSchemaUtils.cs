@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Text;
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
+using Ara3D.Collections;
 using Autodesk.Revit.DB;
 using Parquet;
 using Document = Autodesk.Revit.DB.Document;
@@ -22,59 +23,30 @@ namespace Ara3D.Bowerbird.RevitSamples
             var meshGatherer = new MeshGatherer(rbdb);
             var options = MeshGatherer.DefaultGeometryOptions();
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
+            
             var builder = new BimGeometryBuilder();
-
-            var meshLookup = new Dictionary<Mesh, int>();
-            foreach (var mesh in meshGatherer.GetMeshes())
+            builder.Meshes.AddRange(meshGatherer.MeshList.Select(m => m.ToAra3D()));
+            
+            foreach (var g in meshGatherer.Geometries)
             {
-                if (meshLookup.ContainsKey(mesh))
+                if (g == null)
                     continue;
 
-                meshLookup[mesh] = builder.AddMesh(mesh.ToAra3D());
-            }
-            
-            foreach (var kv in meshGatherer.ElementGeometries)
-            {
-                var localDoc = kv.Key;
-                foreach (var g in kv.Value)
+                var defaultMatIndex = builder.AddMaterial(g.DefaultMaterial ?? Material.Default);
+                foreach (var part in g.Parts)
                 {
-                    if (g == null)
-                        continue;
-                    var defaultMatIndex = builder.AddMaterial(ToMaterial(localDoc, g.DefaultMaterialId));
-                    foreach (var part in g.Parts)
-                    {
-                        if (part?.Mesh == null)
-                            continue;
-                        var meshIndex = meshLookup[part.Mesh];
-                        var matIndex = part.MaterialId == ElementId.InvalidElementId 
-                            ? defaultMatIndex 
-                            : builder.AddMaterial(ToMaterial(localDoc, part.MaterialId));
+                    var matIndex = part.Material == null 
+                        ? defaultMatIndex 
+                        : builder.AddMaterial(part.Material.Value);
 
-                        var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
+                    var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
+                    var entityIndex = rbdb.GetEntityIndex(g.SourceDocumentKey, g.ElementIdValue);
 
-                        // TODO: this needs to be tracked in a separate builder. 
-                        var entityIndex = rbdb.GetEntityIndex(localDoc, g.ElementId);
-
-                        builder.AddElement((int)entityIndex, matIndex, meshIndex, transformIndex);
-                    }
+                    builder.AddElement((int)entityIndex, matIndex, part.MeshIndex, transformIndex);
                 }
             }
 
             return builder.BuildModel();
-        }
-
-        public static Material ToMaterial(PbrMaterialInfo pbr)
-            => pbr == null
-                ? Material.Default
-                : new Material(pbr.BaseColor ?? pbr.ShadingColor, (float)(pbr.Metallic ?? 0),
-                    (float)(pbr.Roughness ?? 0));
-
-        public static Material ToMaterial(this Document doc, ElementId materialId)
-        {
-            if (materialId == ElementId.InvalidElementId)
-                return Material.Default;
-            var pbrMatInfo = doc.GetPbrInfo(materialId.Value);
-            return ToMaterial(pbrMatInfo);
         }
 
         public static void ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings, StringBuilder sb = null)
