@@ -214,7 +214,25 @@ public enum RelationType
     ConnectsTo = 8,
 
     // MEP networks and connection manager
-    HasConnector = 8,
+    HasConnector = 9,
+    
+    // For space <-> boundary relationships. 
+    BoundedBy = 10,
+
+    // Can traverse from one space to another (e.g., portal)
+    TraverseTo = 11, 
+
+    // Relationship between openings (e.g., doorways, window frame) and hosts  
+    Voids = 12,
+
+    // When an object like a door or window fills a void 
+    Fills = 13,
+
+    // For finishes on walls/floors/ceilings
+    Covers = 14,
+
+    // For MEP systems (e.g., HVAC) providing service to a zone
+    Serves = 15,
 }
 
 /// <summary>

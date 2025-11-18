@@ -15,6 +15,10 @@ public sealed record GeometryPart
     Material? Material
 );
 
+/// <summary>
+/// A geometry is a set of geometric parts associated with an element and a document.
+/// It has a default material.  
+/// </summary>
 public sealed record Geometry
 (
     DocumentKey SourceDocumentKey,
@@ -32,6 +36,9 @@ public readonly record struct GeometrySymbolKey
     string SymbolId
 );
 
+/// <summary>
+/// Collects all meshes
+/// </summary>
 public class MeshGatherer
 {
     public RevitBimDataBuilder RevitBimDataBuilder;
@@ -67,8 +74,6 @@ public class MeshGatherer
 
         try
         {
-            options ??= DefaultGeometryOptions();
-
             var elems = new FilteredElementCollector(doc)
                 .WhereElementIsNotElementType()
                 .ToElements();
@@ -76,7 +81,7 @@ public class MeshGatherer
             foreach (var e in elems)
             {
                 if (e?.Id == null) continue;
-                Geometries.Add(ComputeGeometry2(e, parent, options));
+                Geometries.Add(ComputeGeometry(e, parent, options));
             }
 
             if (recurseLinks)
@@ -101,52 +106,7 @@ public class MeshGatherer
         }
     }
 
-    public IEnumerable<GeometryPart> GetOrComputeCachedGeometryParts(GeometryInstance gi, Options options)
-    {
-        using var symbolId = gi.GetSymbolGeometryId();
-
-        if (symbolId == null)
-        {
-            // When things have been cut or modified, the symbolId will return null
-            // and the symbol geometry is not applicable so We use GetInstanceGeometry()
-            // Geometry is in the coordinate system of the model.
-            // https://help.autodesk.com/view/RVT/2024/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Geometry_GeometryObject_Class_GeometryInstances_html
-            // The GeometryInstance also stored a transformation from the symbol coordinate space to the instance coordinates. This transform is accessible as the Transform property. It is also the transformation used when extracting a the copy of the geometry via GetInstanceGeometry().
-            // This means: we just return the InstanceGeometry
-            return ComputeGeometryParts(gi.GetInstanceGeometry(), Transform.Identity, options);
-        }
-
-        var stringId = symbolId.AsUniqueIdentifier();
-        var key = new GeometrySymbolKey(GetDocumentKey(gi.GetDocument()), stringId);
-
-        // Check if we have to fill out the cache for this string id 
-        if (!_symbolCache.ContainsKey(key))
-        {
-            // Retrieve the geometry in local space of the symbol
-            var geometryElement = gi.GetSymbolGeometry();
-
-            // Get all geometric parts 
-            var parts = ComputeGeometryParts(geometryElement, Transform.Identity, options);
-            _symbolCache.Add(key, parts);
-        }
-
-        // Return the cached symbols, transformed appropriately 
-        return _symbolCache[key].Select(part => ApplyInstanceTransform(part, gi.Transform));
-    }
-
-    public static GeometryPart ApplyInstanceTransform(GeometryPart part, Transform instanceTransform)
-        => part with { Transform = instanceTransform.Multiply(part.Transform) };
-
     public Geometry ComputeGeometry(Element e, Transform transform, Options options)
-    {
-        var docKey = GetDocumentKey(e.Document);
-        var material = ResolveFallbackMaterial(e);
-        var parts = ComputeGeometryParts(e, transform, options);
-        if (parts.Count == 0) return null;
-        return new Geometry(docKey, e.Id.Value, material, parts);
-    }
-
-    public Geometry ComputeGeometry2(Element e, Transform transform, Options options)
     {
         var docKey = GetDocumentKey(e.Document);
         var material = ResolveFallbackMaterial(e);
@@ -156,67 +116,6 @@ public class MeshGatherer
         TraverseElementGeometry(geometryElement, transform, parts);
         if (parts.Count == 0) return null;
         return new Geometry(docKey, e.Id.Value, material, parts);
-    }
-
-    public IReadOnlyList<GeometryPart> ComputeGeometryParts(Element e, Transform transform, Options options)
-    {
-        return ComputeGeometryParts(e.get_Geometry(options), transform, options);
-    }
-
-    public void AccumulateGeometryParts(GeometryObject go, Transform transform, List<GeometryPart> list,
-        Options options)
-    {
-        switch (go)
-        {
-            case Solid s when s.Faces.Size > 0:
-                list.AddRange(ToGeometryParts(s, transform));
-                break;
-
-            case Mesh m when m.Vertices.Count > 0:
-                list.Add(new GeometryPart(transform, AddMesh(m), GetMaterial(m)));
-                break;
-
-            case GeometryInstance gi:
-                var parts = GetOrComputeCachedGeometryParts(gi, options);
-                list.AddRange(parts.Select(p => p with { Transform = transform.Multiply(p.Transform) }));
-                break;
-
-            case Curve c:
-                // ignore non-surface geometry
-                break;
-
-            case PolyLine pl:
-                // ignore wireframe
-                break;
-
-            case Point p:
-                // ignore points    
-                break;
-
-            case Face f:
-                // Very rare to get a stray Face here, but handle it
-                var gp = ToGeometryPart(f, transform);
-                if (gp != null)
-                    list.Add(gp);
-                break;
-
-            default:
-                // Other types (e.g., Line, Arc, etc.) are not tessellated here
-                break;
-        }
-    }
-
-    /// <summary>
-    /// A geometry element contains a collection of geometric primitives. 
-    /// </summary>
-    public IReadOnlyList<GeometryPart> ComputeGeometryParts(GeometryElement ge, Transform transform, Options options)
-    {
-        var list = new List<GeometryPart>();
-        if (ge == null)
-            return list;
-        foreach (var go in ge)
-            AccumulateGeometryParts(go, transform, list, options);
-        return list;
     }
 
     public int AddMesh(Mesh mesh)
@@ -236,14 +135,6 @@ public class MeshGatherer
 
     public IEnumerable<GeometryPart> ToGeometryParts(Solid s, Transform tf)
         => s.Faces.OfType<Face>().Select(f => ToGeometryPart(f, tf)).Where(gp => gp != null);
-
-    public static Options DefaultGeometryOptions()
-        => new()
-        {
-            DetailLevel = ViewDetailLevel.Medium,
-            ComputeReferences = false,
-            IncludeNonVisibleObjects = false,
-        };
 
     //==
     // Material code
@@ -285,9 +176,7 @@ public class MeshGatherer
             if (id != ElementId.InvalidElementId)
                 return id;
         }
-
-        // QUESTION: is there anything else that is appropriate as a fallback?
-
+        
         // Use the category material as a fallback 
         var mat = e.Category?.Material;
         return mat != null
@@ -295,14 +184,12 @@ public class MeshGatherer
             : ElementId.InvalidElementId;
     }
 
-    //==
-
     /// <summary>
     /// Traverses geometry in model space and populates meshes + TransformedMesh instances.
     /// </summary>
     public void TraverseElementGeometry(
         GeometryElement geom,
-        Transform currentToModel,
+        Transform transform,
         List<GeometryPart> parts)
     {
         if (geom == null)
@@ -312,20 +199,21 @@ public class MeshGatherer
         {
             switch (obj)
             {
-                case GeometryInstance gi:
-                    HandleGeometryInstance(gi, currentToModel, parts);
-                    break;
-
-                case Solid solid when solid.Faces.Size > 0:
-                    AddSolidMeshes(solid, currentToModel, parts);
+                case Solid solid:
+                    AddSolidMeshes(solid, transform, parts);
                     break;
 
                 case Mesh mesh:
-                    AddMeshInstance(mesh, currentToModel, parts);
+                    AddMeshInstance(mesh, transform, parts);
+                    break;
+
+                case GeometryInstance gi:
+                    ProcessInstanceNoCaching(gi, transform, parts);
+                    //ProcessInstanceWithCaching(gi, transform, parts);
                     break;
 
                 case GeometryElement subGeom:
-                    TraverseElementGeometry(subGeom, currentToModel, parts);
+                    TraverseElementGeometry(subGeom, transform, parts);
                     break;
 
                 default:
@@ -335,22 +223,71 @@ public class MeshGatherer
         }
     }
 
-    public void HandleGeometryInstance(
-        GeometryInstance gi, Transform currentToModel, List<GeometryPart> parts)
+    public void ProcessInstanceNoCaching(GeometryInstance gi, Transform transform, List<GeometryPart> parts)
+    {
+        TraverseElementGeometry(gi.GetInstanceGeometry(), transform, parts);
+    }
+
+    public void ProcessInstanceWithCaching(GeometryInstance gi, Transform transform, List<GeometryPart> parts)
     {
         var templates = GetOrBuildSymbolTemplates(gi);
+
+        // Symbol templates are in symbol space. 
+        var instToWorldTransform = transform.Multiply(gi.Transform);
         foreach (var tmpl in templates)
         {
-            parts.Add(tmpl with { Transform = currentToModel.Multiply(tmpl.Transform) });
+            parts.Add(tmpl with { Transform = instToWorldTransform.Multiply(tmpl.Transform) });
+        }
+    }
+
+    public void BuildSymbolTemplates(
+        GeometryElement geom,
+        Transform transform,
+        List<GeometryPart> templates)
+    {
+        foreach (var obj in geom)
+        {
+            switch (obj)
+            {
+                case Solid solid:
+                    AddSolidMeshes(solid, transform, templates);
+                    break;
+
+                case Mesh mesh:
+                    AddMeshInstance(mesh, transform, templates);
+                    break;
+
+                case GeometryInstance nestedGi:
+                {
+                    // When encountering a geometry instance as part of a symbol template,
+                    // we get it as instance geometry 
+                    var nestedGeom = nestedGi.GetSymbolGeometry();
+                    if (nestedGeom == null)
+                        break;
+
+                    // When retrieving instance geometry we do not need to further transform it,
+                    // It is already in the coordinate space of the owner (I believe)
+                    BuildSymbolTemplates(nestedGeom, transform.Multiply(nestedGi.Transform), templates);
+                    break;
+                }
+
+                case GeometryElement subGeom:
+                    BuildSymbolTemplates(subGeom, transform, templates);
+                    break;
+
+                default:
+                    // Ignore curves, points, etc.
+                    break;
+            }
         }
     }
 
     /// <summary>
-    /// Returns (and caches) the template meshes for a symbol geometry.
+    /// Returns the template meshes for a symbol geometry, and caches it if this is the first time. 
     /// Each template stores:
     /// - MeshIndex into the global meshes list
     /// - ToSymbol: transform from mesh-local coordinates to the symbol root coordinates
-    /// 
+    /// - Material of the object. 
     /// This runs at most once per unique SymbolGeometryId.
     /// </summary>
     private IReadOnlyList<GeometryPart> GetOrBuildSymbolTemplates(GeometryInstance gi)
@@ -363,84 +300,28 @@ public class MeshGatherer
         var symbolIdStr = symbolId?.AsUniqueIdentifier();
 
         if (string.IsNullOrEmpty(symbolIdStr))
-        {
-            // Fallback: if for any reason we can't get a stable id,
-            // treat this instance as non-dedupable and just use
-            // symbol geometry directly (no caching).
-            var templatesNoCache = new List<GeometryPart>();
-            var symGeom = gi.GetInstanceGeometry();
-            if (symGeom != null)
-            {
-                BuildSymbolTemplates(
-                    symGeom,
-                    Transform.Identity,
-                    templatesNoCache);
-            }
-
-            return templatesNoCache;
-        }
+            // Rare case
+            return [];
 
         var key = new GeometrySymbolKey(CurrentDocumentKey, symbolIdStr);
         if (_symbolCache.TryGetValue(key, out var existing))
             return existing;
 
         var templates = new List<GeometryPart>();
-        var symbolGeom = gi.GetInstanceGeometry();
+        var symbolGeom = gi.GetSymbolGeometry();
         if (symbolGeom != null)
         {
-            // Build templates with transforms expressed in symbol-root coordinates.
-            BuildSymbolTemplates(
-                symbolGeom,
-                Transform.Identity, // toSymbol: geometry-local -> symbol-root
-                templates);
+            BuildSymbolTemplates(symbolGeom, Transform.Identity, templates);
         }
 
         _symbolCache[key] = templates;
         return templates;
     }
 
-    public void BuildSymbolTemplates(
-        GeometryElement geom,
-        Transform transform,
-        List<GeometryPart> templates)
-    {
-        foreach (var obj in geom)
-        {
-            switch (obj)
-            {
-                case Solid solid when solid.Faces.Size > 0:
-                    AddSolidMeshes(solid, transform, templates);
-                    break;
-
-                case Mesh mesh:
-                    AddMeshInstance(mesh, transform, templates);
-                    break;
-
-                case GeometryInstance nestedGi:
-                    {
-                        var nestedGeom = nestedGi.GetSymbolGeometry();
-                        if (nestedGeom == null)
-                            break;
-
-                        var nestedTransform = transform.Multiply(nestedGi.Transform);
-                        BuildSymbolTemplates(nestedGeom, nestedTransform, templates);
-                        break;
-                    }
-
-                case GeometryElement subGeom:
-                    BuildSymbolTemplates(
-                        subGeom,
-                        transform,
-                        templates);
-                    break;
-
-                default:
-                    // Ignore curves, points, etc.
-                    break;
-            }
-        }
-    }
-
+    /// <summary>
+    /// Can be used to store a symbol template part (transform is relative to symbol space)
+    /// Or to store a model part (transform is to world space)
+    /// </summary>
     public void AddSolidMeshes(
         Solid solid,
         Transform transform,
@@ -448,29 +329,39 @@ public class MeshGatherer
     {
         foreach (Face face in solid.Faces)
         {
-            if (face == null) 
-                continue;
+            try
+            {
+                if (face == null)
+                    continue;
 
-            var faceMesh = face.Triangulate();
-            if (faceMesh == null || faceMesh.NumTriangles == 0)
-                continue;
+                var faceMesh = face.Triangulate();
+                if (faceMesh == null || faceMesh.NumTriangles == 0)
+                    continue;
 
-            var index = AddMesh(faceMesh);
-            parts.Add(new GeometryPart(transform, index, GetMaterial(face)));
+                var index = AddMesh(faceMesh);
+                parts.Add(new GeometryPart(transform, index, GetMaterial(face)));
+            }
+            catch
+            {
+                // We eat Exception on purpose
+            }
         }
     }
 
-
+    /// <summary>
+    /// Can be used to store a symbol template part (transform is relative to symbol space)
+    /// Or to store a model part (transform is to world space)
+    /// </summary>
     private void AddMeshInstance(
         Mesh mesh,
-        Transform currentToModel,
+        Transform transform,
         List<GeometryPart> parts)
     {
         if (mesh == null || mesh.NumTriangles == 0)
             return;
 
         var index = AddMesh(mesh);
-        parts.Add(new GeometryPart(currentToModel, index, GetMaterial(mesh)));
+        parts.Add(new GeometryPart(transform, index, GetMaterial(mesh)));
     }
 }
 

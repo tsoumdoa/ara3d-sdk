@@ -21,7 +21,15 @@ namespace Ara3D.Bowerbird.RevitSamples
         public static BimGeometry ToBimGeometry(this Document doc, RevitBimDataBuilder rbdb, bool recurseLinks)
         {
             var meshGatherer = new MeshGatherer(rbdb);
-            var options = MeshGatherer.DefaultGeometryOptions();
+            var options = new Options()
+                {
+                    // Because we are using a View, the view defines the detail level
+                    //DetailLevel = ViewDetailLevel.Fine,
+                    ComputeReferences = false,
+                    IncludeNonVisibleObjects = false,
+                    View = doc.GetDefault3DView(),
+                }; 
+
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
             
             var builder = new BimGeometryBuilder();
