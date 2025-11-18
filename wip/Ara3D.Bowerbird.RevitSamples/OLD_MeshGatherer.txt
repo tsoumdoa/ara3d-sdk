@@ -76,7 +76,7 @@ public class MeshGatherer
             foreach (var e in elems)
             {
                 if (e?.Id == null) continue;
-                Geometries.Add(ComputeGeometry2(e, parent, options));
+                Geometries.Add(ComputeGeometry(e, parent, options));
             }
 
             if (recurseLinks)
@@ -146,18 +146,6 @@ public class MeshGatherer
         return new Geometry(docKey, e.Id.Value, material, parts);
     }
 
-    public Geometry ComputeGeometry2(Element e, Transform transform, Options options)
-    {
-        var docKey = GetDocumentKey(e.Document);
-        var material = ResolveFallbackMaterial(e);
-        var geometryElement = e.get_Geometry(options);
-        if (geometryElement == null) return null;
-        var parts = new List<GeometryPart>();
-        TraverseElementGeometry(geometryElement, transform, parts);
-        if (parts.Count == 0) return null;
-        return new Geometry(docKey, e.Id.Value, material, parts);
-    }
-
     public IReadOnlyList<GeometryPart> ComputeGeometryParts(Element e, Transform transform, Options options)
     {
         return ComputeGeometryParts(e.get_Geometry(options), transform, options);
@@ -190,7 +178,7 @@ public class MeshGatherer
                 break;
 
             case Point p:
-                // ignore points    
+                // ignore points
                 break;
 
             case Face f:
@@ -298,54 +286,6 @@ public class MeshGatherer
     //==
 
     /// <summary>
-    /// Traverses geometry in model space and populates meshes + TransformedMesh instances.
-    /// </summary>
-    public void TraverseElementGeometry(
-        GeometryElement geom,
-        Transform currentToModel,
-        List<GeometryPart> parts)
-    {
-        if (geom == null)
-            return;
-
-        foreach (var obj in geom)
-        {
-            switch (obj)
-            {
-                case GeometryInstance gi:
-                    HandleGeometryInstance(gi, currentToModel, parts);
-                    break;
-
-                case Solid solid when solid.Faces.Size > 0:
-                    AddSolidMeshes(solid, currentToModel, parts);
-                    break;
-
-                case Mesh mesh:
-                    AddMeshInstance(mesh, currentToModel, parts);
-                    break;
-
-                case GeometryElement subGeom:
-                    TraverseElementGeometry(subGeom, currentToModel, parts);
-                    break;
-
-                default:
-                    // Ignore curves, points, etc. Extend as needed.
-                    break;
-            }
-        }
-    }
-
-    public void HandleGeometryInstance(
-        GeometryInstance gi, Transform currentToModel, List<GeometryPart> parts)
-    {
-        var templates = GetOrBuildSymbolTemplates(gi);
-        foreach (var tmpl in templates)
-        {
-            parts.Add(tmpl with { Transform = currentToModel.Multiply(tmpl.Transform) });
-        }
-    }
-
-    /// <summary>
     /// Returns (and caches) the template meshes for a symbol geometry.
     /// Each template stores:
     /// - MeshIndex into the global meshes list
@@ -368,7 +308,7 @@ public class MeshGatherer
             // treat this instance as non-dedupable and just use
             // symbol geometry directly (no caching).
             var templatesNoCache = new List<GeometryPart>();
-            var symGeom = gi.GetInstanceGeometry();
+            var symGeom = gi.GetSymbolGeometry();
             if (symGeom != null)
             {
                 BuildSymbolTemplates(
@@ -385,7 +325,7 @@ public class MeshGatherer
             return existing;
 
         var templates = new List<GeometryPart>();
-        var symbolGeom = gi.GetInstanceGeometry();
+        var symbolGeom = gi.GetSymbolGeometry();
         if (symbolGeom != null)
         {
             // Build templates with transforms expressed in symbol-root coordinates.
@@ -399,9 +339,14 @@ public class MeshGatherer
         return templates;
     }
 
+    /// <summary>
+    /// Recursively traverses symbol geometry and fills 'templates' with TemplateMesh entries.
+    ///  - 'toSymbol' is the accumulated transform from the current geometry context
+    ///   to the symbol's root coordinates (NOT to model coordinates).
+    /// </summary>
     public void BuildSymbolTemplates(
         GeometryElement geom,
-        Transform transform,
+        Transform toSymbol,
         List<GeometryPart> templates)
     {
         foreach (var obj in geom)
@@ -409,11 +354,17 @@ public class MeshGatherer
             switch (obj)
             {
                 case Solid solid when solid.Faces.Size > 0:
-                    AddSolidMeshes(solid, transform, templates);
+                    AddSymbolSolidMeshesToTemplates(
+                        solid,
+                        toSymbol,
+                        templates);
                     break;
 
                 case Mesh mesh:
-                    AddMeshInstance(mesh, transform, templates);
+                    AddSymbolMeshToTemplates(
+                        mesh,
+                        toSymbol,
+                        templates);
                     break;
 
                 case GeometryInstance nestedGi:
@@ -422,15 +373,19 @@ public class MeshGatherer
                         if (nestedGeom == null)
                             break;
 
-                        var nestedTransform = transform.Multiply(nestedGi.Transform);
-                        BuildSymbolTemplates(nestedGeom, nestedTransform, templates);
+                        // nestedToSymbol: geometry-local -> symbol-root
+                        var nestedToSymbol = toSymbol.Multiply(nestedGi.Transform);
+                        BuildSymbolTemplates(
+                            nestedGeom,
+                            nestedToSymbol,
+                            templates);
                         break;
                     }
 
                 case GeometryElement subGeom:
                     BuildSymbolTemplates(
                         subGeom,
-                        transform,
+                        toSymbol,
                         templates);
                     break;
 
@@ -441,36 +396,32 @@ public class MeshGatherer
         }
     }
 
-    public void AddSolidMeshes(
+    private void AddSymbolSolidMeshesToTemplates(
         Solid solid,
-        Transform transform,
-        List<GeometryPart> parts)
+        Transform toSymbol,
+        List<GeometryPart> templates)
     {
         foreach (Face face in solid.Faces)
         {
             if (face == null) 
                 continue;
-
             var faceMesh = face.Triangulate();
             if (faceMesh == null || faceMesh.NumTriangles == 0)
                 continue;
-
-            var index = AddMesh(faceMesh);
-            parts.Add(new GeometryPart(transform, index, GetMaterial(face)));
+            var meshIndex = AddMesh(faceMesh);
+            templates.Add(new GeometryPart(toSymbol, meshIndex, GetMaterial(face)));
         }
     }
 
-
-    private void AddMeshInstance(
+    private void AddSymbolMeshToTemplates(
         Mesh mesh,
-        Transform currentToModel,
-        List<GeometryPart> parts)
+        Transform toSymbol,
+        List<GeometryPart> templates)
     {
         if (mesh == null || mesh.NumTriangles == 0)
             return;
-
         var index = AddMesh(mesh);
-        parts.Add(new GeometryPart(currentToModel, index, GetMaterial(mesh)));
+        templates.Add(new GeometryPart(toSymbol, index, GetMaterial(mesh)));
     }
 }
 

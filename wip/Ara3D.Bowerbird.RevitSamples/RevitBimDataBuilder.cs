@@ -7,12 +7,11 @@ using Document = Autodesk.Revit.DB.Document;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
-public record DocumentKey
+public readonly record struct DocumentKey
 (
     string Title,
     string FileName
 );
-
 
 public class RevitBimDataBuilder
 {
