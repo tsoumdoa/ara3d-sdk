@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Linq;
+using Ara3D.Utils;
 using Material = Ara3D.Models.Material;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -48,6 +49,7 @@ public class MeshGatherer
     public static DocumentKey GetDocumentKey(Document d)
         => RevitBimDataBuilder.GetDocumentKey(d);
 
+
     public void CollectMeshes(Document doc, Options options, bool recurseLinks, Transform parent)
     {
         var newDocumentKey = GetDocumentKey(doc);
@@ -70,8 +72,7 @@ public class MeshGatherer
             foreach (var e in elems)
             {
                 if (e?.Id == null) continue;
-                var g = ComputeGeometry(e, parent, options);
-                Geometries.Add(g);
+                Geometries.Add(ComputeGeometry(e, parent, options));
             }
 
             if (recurseLinks)
@@ -210,6 +211,50 @@ public class MeshGatherer
             }
         }
     }
+
+    public HashSet<ElementKey> GetVisibleSet(View hostView)
+    {
+        var hostDoc = hostView.Document;
+        var viewId = hostView.Id;
+        var hostDocKey = GetDocumentKey(hostDoc);
+        var visibleSet = new HashSet<ElementKey>();
+
+        var hostCollector = new FilteredElementCollector(hostDoc, viewId)
+            .WhereElementIsNotElementType()
+            .ToElementIds();
+
+        foreach (var elementId in hostCollector)
+        {
+            var key = new ElementKey(hostDocKey, elementId.Value);
+            visibleSet.Add(key);
+        }
+
+        var linkInstances = new FilteredElementCollector(hostDoc)
+            .OfClass(typeof(RevitLinkInstance))
+            .Cast<RevitLinkInstance>()
+            .ToList();
+
+        foreach (var rli in linkInstances)
+        {
+            var linkDoc = rli.GetLinkDocument();
+            if (linkDoc == null) continue;
+
+            var linkDocKey = GetDocumentKey(linkDoc);
+
+            var visibleLinkedElementIds = new FilteredElementCollector(hostDoc, viewId, rli.Id)
+                .WhereElementIsNotElementType()
+                .ToElementIds();
+
+            foreach (var elementId in visibleLinkedElementIds)
+            {
+                var key = new ElementKey(linkDocKey, elementId.Value);
+                visibleSet.Add(key);
+            }
+        }
+
+        return visibleSet;
+    }
+
 
     public int AddMesh(Mesh mesh)
     {

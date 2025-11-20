@@ -22,13 +22,11 @@ namespace Ara3D.Bowerbird.RevitSamples
         {
             var meshGatherer = new MeshGatherer(rbdb);
             var options = new Options()
-                {
-                    // Because we are using a View, the view defines the detail level
-                    //DetailLevel = ViewDetailLevel.Fine,
-                    ComputeReferences = true,
-                    IncludeNonVisibleObjects = false,
-                    View = doc.GetDefault3DView(),
-                }; 
+            {
+                ComputeReferences = true,
+                DetailLevel = ViewDetailLevel.Fine,
+                IncludeNonVisibleObjects = true,
+            };
 
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
             

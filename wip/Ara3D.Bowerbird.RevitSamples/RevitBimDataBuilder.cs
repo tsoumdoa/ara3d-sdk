@@ -13,6 +13,11 @@ public readonly record struct DocumentKey
     string FileName
 );
 
+public readonly record struct ElementKey(
+    DocumentKey DocKey, 
+    long ElementId
+);
+
 public class RevitBimDataBuilder
 {
     public RevitBimDataBuilder(Document rootDocument, bool includeLinks, bool processDoc = true) 
