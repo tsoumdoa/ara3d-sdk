@@ -25,7 +25,7 @@ namespace Ara3D.Bowerbird.RevitSamples
                 {
                     // Because we are using a View, the view defines the detail level
                     //DetailLevel = ViewDetailLevel.Fine,
-                    ComputeReferences = false,
+                    ComputeReferences = true,
                     IncludeNonVisibleObjects = false,
                     View = doc.GetDefault3DView(),
                 }; 

@@ -111,7 +111,7 @@ public static class BimGeometryExtensions
         => Matrix4x4.CreateFromQuaternion(self.GetRotation(i));
 
     public static Matrix4x4 GetTransformMatrix(this BimGeometry self, int i)
-        => self.GetTranslationMatrix(i) * self.GetRotationMatrix(i) * self.GetScaleMatrix(i);
+        => self.GetScaleMatrix(i) * self.GetRotationMatrix(i) * self.GetTranslationMatrix(i);
 
     public static Model3D ToModel3D(this BimGeometry self)
     {
