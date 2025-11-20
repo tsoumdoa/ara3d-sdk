@@ -89,6 +89,7 @@ namespace Ara3D.Bowerbird.RevitSamples
             {
                 sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating BIM Geometry");
                 var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks);
+                
                 sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Writing BIM geometry");
                 bimGeometry.WriteParquetToZip(zip, parquetCompressionMethod, parquetCompressionLevel, zipCompressionLevel);
             }

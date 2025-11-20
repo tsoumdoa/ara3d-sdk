@@ -70,7 +70,8 @@ public class MeshGatherer
             foreach (var e in elems)
             {
                 if (e?.Id == null) continue;
-                Geometries.Add(ComputeGeometry(e, parent, options));
+                var g = ComputeGeometry(e, parent, options);
+                Geometries.Add(g);
             }
 
             if (recurseLinks)
@@ -161,9 +162,6 @@ public class MeshGatherer
         return $"{CurrentDocumentKey.FileName}_{CurrentDocumentKey.Title}_{symbolElementId.Value}";
     }
 
-    public static List<GeometryPart> TransformParts(IReadOnlyList<GeometryPart> parts, Transform t)
-        => parts.Select(gp => gp with { Transform = t.Multiply(t) }).ToList();
-
     private IReadOnlyList<GeometryPart> GetOrBuildSymbolTemplates(GeometryInstance gi, Transform worldFromParent)
     {
         if (gi == null) return [];
@@ -171,28 +169,16 @@ public class MeshGatherer
         var symbolId = gi.GetSymbolGeometryId();
         var key = GetSymbolCacheKey(symbolId);
         if (string.IsNullOrEmpty(key))
-        {
-            // TODO: handle this properly 
             return [];
-        }
 
         if (_symbolCache.TryGetValue(key, out var existing))
             return existing;
 
         var templates = new List<GeometryPart>();
 
-        /*
-        // TEMP: 
-        var symbolGeom = gi.GetInstanceGeometry();
-        BuildSymbolTemplates(symbolGeom, gi.Transform.Inverse, templates);
-        */
-
-        var templateToWorld = worldFromParent.Multiply(gi.Transform.Inverse);
-        var symbolGeom = gi.GetInstanceGeometry(templateToWorld);
+        var symbolGeom = gi.GetSymbolGeometry();
         BuildSymbolTemplates(symbolGeom, Transform.Identity, templates);
-
         _symbolCache[key] = templates;
-        
         return templates;
     }
 
@@ -212,17 +198,15 @@ public class MeshGatherer
                     AddMeshInstance(mesh, transform, templates);
                     break;
 
-                /*
                 case GeometryInstance nestedGi:
                     BuildSymbolTemplates(
-                        nestedGi.GetInstanceGeometry(), 
+                        nestedGi.GetSymbolGeometry(), 
                         transform.Multiply(nestedGi.Transform), templates);
                     break;
 
                 case GeometryElement subGeom:
                     BuildSymbolTemplates(subGeom, transform, templates);
                     break;
-                */
             }
         }
     }

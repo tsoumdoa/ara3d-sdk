@@ -18,7 +18,11 @@ public static class MaterialExtensions
 
         // 2. Always-available legacy shading colour
         var legacyOpacity = 1f - mat.Transparency / 100f;
-        var legacyColor = new Color(mat.Color.Red / 255f, mat.Color.Green / 255f, mat.Color.Blue / 255f, legacyOpacity);
+        var legacyColor = new Color(
+            mat.Color.Red / 255f, 
+            mat.Color.Green / 255f, 
+            mat.Color.Blue / 255f, 
+            legacyOpacity);
 
         // 3. Try to reach the rendering (appearance) asset
         var assetEl = doc.GetElement(mat.AppearanceAssetId) as AppearanceAssetElement;
@@ -38,7 +42,6 @@ public static class MaterialExtensions
         {
             var prop = asset[i];
 
-            // Colours -----------------------------------------------------------------
             if (prop is AssetPropertyDoubleArray4d col)
             {
                 var c = ToDrawingColor(col);
@@ -53,8 +56,6 @@ public static class MaterialExtensions
                         emissive = c; break;
                 }
             }
-
-            // Scalar parameters --------------------------------------------------------
             else if (prop is AssetPropertyDouble d)
             {
                 switch (prop.Name)
@@ -74,7 +75,9 @@ public static class MaterialExtensions
             }
         }
 
-        var alpha = opacity.HasValue ? (float)opacity.Value : legacyOpacity;
+        var alpha = opacity.HasValue 
+            ? (float)opacity.Value 
+            : legacyOpacity;
         if (baseCol != null)
             baseCol = baseCol.Value.WithA(alpha);
 
@@ -82,10 +85,8 @@ public static class MaterialExtensions
         return new PbrMaterialInfo(mat.Name, legacyColor, baseCol, metallic, roughness, emissive);
     }
 
-    // Helper – converts a Revit colour array (R,G,B,A, each 0-1) to System.Drawing.Color
     private static Color ToDrawingColor(AssetPropertyDoubleArray4d col)
     {
-        // AssetPropertyDoubleArray4d always stores 4 doubles
         var dbls = col.GetValueAsDoubles();
         var r = (float)dbls[0];
         var g = (float)dbls[1];
@@ -93,7 +94,6 @@ public static class MaterialExtensions
         var a = (float)dbls[3];
         return new Color(r, g, b, a);
     }
-
 
     public static Models.Material? ToAra3DMaterial(this PbrMaterialInfo pbr)
         => pbr == null
