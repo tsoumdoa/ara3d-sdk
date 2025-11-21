@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using Ara3D.Utils;
 using System.IO;
@@ -18,6 +19,21 @@ namespace Ara3D.Bowerbird.RevitSamples
 {
     public static class BimOpenSchemaUtils
     {
+        public static bool IsVis(Geometry g)
+        {
+            var demoPhase = g.Element.DemolishedPhaseId;
+            if (demoPhase != ElementId.InvalidElementId)
+                return false;
+            var cat = g.Element.Category;
+            if (cat == null)
+                return false;
+            if (cat.CategoryType != CategoryType.Model)
+                return false;
+            if (g.Element is SpatialElement)
+                return false;
+            return true;
+        }
+
         public static BimGeometry ToBimGeometry(this Document doc, RevitBimDataBuilder rbdb, bool recurseLinks)
         {
             var meshGatherer = new MeshGatherer(rbdb);
@@ -25,15 +41,16 @@ namespace Ara3D.Bowerbird.RevitSamples
             {
                 ComputeReferences = true,
                 DetailLevel = ViewDetailLevel.Fine,
-                IncludeNonVisibleObjects = true,
             };
 
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
-            
+
+
             var builder = new BimGeometryBuilder();
             builder.Meshes.AddRange(meshGatherer.MeshList.Select(m => m.ToAra3D()));
-            
-            foreach (var g in meshGatherer.Geometries)
+
+            var geometries = meshGatherer.Geometries.Where(IsVis).ToList();
+            foreach (var g in geometries)
             {
                 if (g == null)
                     continue;
@@ -46,7 +63,7 @@ namespace Ara3D.Bowerbird.RevitSamples
                         : builder.AddMaterial(part.Material.Value);
 
                     var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
-                    var entityIndex = rbdb.GetEntityIndex(g.SourceDocumentKey, g.ElementIdValue);
+                    var entityIndex = rbdb.GetEntityIndex(g.ElementKey);
 
                     builder.AddElement((int)entityIndex, matIndex, part.MeshIndex, transformIndex);
                 }

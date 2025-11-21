@@ -17,7 +17,7 @@ public static class MaterialExtensions
         if (mat is null) return null;
 
         // 2. Always-available legacy shading colour
-        var legacyOpacity = 1f - mat.Transparency / 100f;
+        var legacyOpacity = 1f - mat.Transparency;
         var legacyColor = new Color(
             mat.Color.Red / 255f, 
             mat.Color.Green / 255f, 

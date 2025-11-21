@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Ara3D.BimOpenSchema;
+﻿using Ara3D.BimOpenSchema;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using System;
+using System.Collections.Generic;
 using Document = Autodesk.Revit.DB.Document;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -41,8 +42,9 @@ public class RevitBimDataBuilder
     public bool IncludeLinks;
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
+    public DocumentKey CurrentDocumentKey;
 
-    public Dictionary<(DocumentIndex, long), EntityIndex> ProcessedEntities = new();
+    public Dictionary<ElementKey, EntityIndex> ProcessedEntities = new();
     public Dictionary<DocumentKey, DocumentIndex> ProcessedDocuments = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
 
@@ -50,14 +52,10 @@ public class RevitBimDataBuilder
         => GetEntityIndex(GetDocumentKey(doc), entityId);
 
     public EntityIndex GetEntityIndex(DocumentKey key, long entityId)
-    {
-        var docIndex = ProcessedDocuments[key];
-        var entIndex = ProcessedEntities[(docIndex, entityId)];
-        return entIndex;
-    }
+        => ProcessedEntities[GetElementKey(key, entityId)];
 
-    public bool TryGetEntity(DocumentIndex di, ElementId id, out EntityIndex index)
-        => ProcessedEntities.TryGetValue((di, id.Value), out index);
+    public EntityIndex GetEntityIndex(ElementKey key)
+        => ProcessedEntities[key];
 
     public static (XYZ min, XYZ max)? GetBoundingBoxMinMax(Element element, View view = null)
     {
@@ -506,17 +504,11 @@ public class RevitBimDataBuilder
             }
         }
     }
-
-    public (DocumentIndex, long) GetKey(ElementId id)
-        => (CurrentDocumentIndex, id.Value);
-
+    
     public EntityIndex ProcessElement(ElementId id)
     {
         if (id == null || id == ElementId.InvalidElementId)
             throw new Exception("Invalid element");
-        var key = GetKey(id);
-        if (ProcessedEntities.TryGetValue(key, out var entityIndex))
-            return entityIndex;
         var element = CurrentDocument.GetElement(id);
         return ProcessElement(element);
     }
@@ -535,21 +527,21 @@ public class RevitBimDataBuilder
         endPoint = curve.GetEndPoint(1);
         return true;
     }
-    
+
     public EntityIndex ProcessElement(Element e)
     {
         if (e == null || !e.IsValidObject)
             throw new Exception("Invalid element");
 
-        var di = CurrentDocumentIndex; 
-        if (TryGetEntity(di, e.Id, out var index))
-            return index;
-
+        var key = GetElementKey(CurrentDocumentKey, e.Id.Value);
+        if (ProcessedEntities.TryGetValue(key, out var found))
+            return found;
+    
         var category = e.Category;
         var catName = (category != null && category.IsValid) ? category.Name : "";
 
-        var entityIndex = Builder.AddEntity(e.Id.Value, e.UniqueId, di, e.Name, catName);
-        ProcessedEntities.Add((di, e.Id.Value), entityIndex);
+        var entityIndex = Builder.AddEntity(e.Id.Value, e.UniqueId, CurrentDocumentIndex, e.Name, catName);
+        ProcessedEntities.Add(key, entityIndex);
 
         if (category != null && category.IsValid)
         {
@@ -654,6 +646,15 @@ public class RevitBimDataBuilder
         return entityIndex;
     }
 
+    public static ElementKey GetElementKey(DocumentKey docKey, long id)
+        => new(docKey, id);
+
+    public static ElementKey GetElementKey(DocumentKey docKey, ElementId id)
+        => GetElementKey(docKey, id.Value);
+
+    public static ElementKey GetElementKey(Document d, ElementId id)
+        => GetElementKey(GetDocumentKey(d), id);
+
     public static DocumentKey GetDocumentKey(Document d)
     {
         if (d == null)
@@ -672,6 +673,7 @@ public class RevitBimDataBuilder
 
         CurrentDocument = d;
         CurrentDocumentIndex = Builder.AddDocument(d.Title, d.PathName);
+        CurrentDocumentKey = GetDocumentKey(CurrentDocument);
 
         // NOTE: this creates a pseudo-entity for the document, which is used so that we can associate parameters and meta-data with it. 
         var ei = Builder.AddEntity(ProcessedDocuments.Count, CurrentDocument.CreationGUID.ToString(), CurrentDocumentIndex, d.Title, "__DOCUMENT__");

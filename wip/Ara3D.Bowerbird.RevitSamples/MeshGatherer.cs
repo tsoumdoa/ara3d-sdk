@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Linq;
-using Ara3D.Utils;
 using Material = Ara3D.Models.Material;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -22,8 +21,8 @@ public sealed record GeometryPart
 /// </summary>
 public sealed record Geometry
 (
-    DocumentKey SourceDocumentKey,
-    long ElementIdValue,
+    Element Element,
+    ElementKey ElementKey,
     Material? DefaultMaterial,
     IReadOnlyList<GeometryPart> Parts
 );
@@ -38,7 +37,7 @@ public class MeshGatherer
     public DocumentKey CurrentDocumentKey { get; private set; }
     public HashSet<DocumentKey> ProcessedDocuments { get; } = [];
     public List<Mesh> MeshList { get; } = [];
-    public List<Geometry> Geometries { get; } = [];
+    public List<Geometry> Geometries { get; private set; } = [];
     private readonly Dictionary<string, IReadOnlyList<GeometryPart>> _symbolCache = new();
 
     public MeshGatherer(RevitBimDataBuilder builder)
@@ -48,7 +47,6 @@ public class MeshGatherer
 
     public static DocumentKey GetDocumentKey(Document d)
         => RevitBimDataBuilder.GetDocumentKey(d);
-
 
     public void CollectMeshes(Document doc, Options options, bool recurseLinks, Transform parent)
     {
@@ -72,7 +70,9 @@ public class MeshGatherer
             foreach (var e in elems)
             {
                 if (e?.Id == null) continue;
-                Geometries.Add(ComputeGeometry(e, parent, options));
+                var g = ComputeGeometry(e, parent, options);
+                if (g != null)
+                    Geometries.Add(g);
             }
 
             if (recurseLinks)
@@ -99,14 +99,21 @@ public class MeshGatherer
 
     public Geometry ComputeGeometry(Element e, Transform transform, Options options)
     {
-        var docKey = GetDocumentKey(e.Document);
-        var material = e.ResolveFallbackMaterial();
-        var geometryElement = e.get_Geometry(options);
-        if (geometryElement == null) return null;
-        var parts = new List<GeometryPart>();
-        TraverseElementGeometry(geometryElement, transform, parts);
-        if (parts.Count == 0) return null;
-        return new Geometry(docKey, e.Id.Value, material, parts);
+        try
+        {
+            var elementKey = new ElementKey(CurrentDocumentKey, e.Id.Value);
+            var material = e.ResolveFallbackMaterial();
+            var geometryElement = e.get_Geometry(options);
+            if (geometryElement == null) return null;
+            var parts = new List<GeometryPart>();
+            TraverseElementGeometry(geometryElement, transform, parts);
+            if (parts.Count == 0) return null;
+            return new Geometry(e, elementKey, material, parts);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public void TraverseElementGeometry(
@@ -211,50 +218,6 @@ public class MeshGatherer
             }
         }
     }
-
-    public HashSet<ElementKey> GetVisibleSet(View hostView)
-    {
-        var hostDoc = hostView.Document;
-        var viewId = hostView.Id;
-        var hostDocKey = GetDocumentKey(hostDoc);
-        var visibleSet = new HashSet<ElementKey>();
-
-        var hostCollector = new FilteredElementCollector(hostDoc, viewId)
-            .WhereElementIsNotElementType()
-            .ToElementIds();
-
-        foreach (var elementId in hostCollector)
-        {
-            var key = new ElementKey(hostDocKey, elementId.Value);
-            visibleSet.Add(key);
-        }
-
-        var linkInstances = new FilteredElementCollector(hostDoc)
-            .OfClass(typeof(RevitLinkInstance))
-            .Cast<RevitLinkInstance>()
-            .ToList();
-
-        foreach (var rli in linkInstances)
-        {
-            var linkDoc = rli.GetLinkDocument();
-            if (linkDoc == null) continue;
-
-            var linkDocKey = GetDocumentKey(linkDoc);
-
-            var visibleLinkedElementIds = new FilteredElementCollector(hostDoc, viewId, rli.Id)
-                .WhereElementIsNotElementType()
-                .ToElementIds();
-
-            foreach (var elementId in visibleLinkedElementIds)
-            {
-                var key = new ElementKey(linkDocKey, elementId.Value);
-                visibleSet.Add(key);
-            }
-        }
-
-        return visibleSet;
-    }
-
 
     public int AddMesh(Mesh mesh)
     {
