@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Controls;
 using Material = Ara3D.Models.Material;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -129,11 +131,13 @@ public class MeshGatherer
             switch (obj)
             {
                 case Solid solid:
-                    AddSolidMeshes(solid, transform, parts);
+                    if (ShouldKeep(CurrentDocument, solid))
+                        AddSolidMeshes(solid, transform, parts);
                     break;
 
                 case Mesh mesh:
-                    AddMeshInstance(mesh, transform, parts);
+                    if (ShouldKeep(CurrentDocument, mesh))
+                        AddMeshInstance(mesh, transform, parts);
                     break;
 
                 case GeometryInstance gi:
@@ -199,11 +203,13 @@ public class MeshGatherer
             switch (obj)
             {
                 case Solid solid:
-                    AddSolidMeshes(solid, transform, templates);
+                    if (ShouldKeep(CurrentDocument, solid))
+                        AddSolidMeshes(solid, transform, templates);
                     break;
 
                 case Mesh mesh:
-                    AddMeshInstance(mesh, transform, templates);
+                    if (ShouldKeep(CurrentDocument, mesh))
+                        AddMeshInstance(mesh, transform, templates);
                     break;
 
                 case GeometryInstance nestedGi:
@@ -254,5 +260,27 @@ public class MeshGatherer
 
     private void AddMeshInstance(Mesh mesh, Transform transform, List<GeometryPart> parts)
         => AddGeometryPart(mesh, transform, parts, CurrentDocument.GetAra3DMaterial(mesh));
+
+    public static bool ShouldKeep(Document doc, GeometryObject obj)
+    {
+        var styleId = obj.GraphicsStyleId;
+        if (styleId == ElementId.InvalidElementId)
+            return true;
+
+        var style = doc.GetElement(styleId) as GraphicsStyle;
+        if (style == null)
+            return true;
+
+        var cat = style.GraphicsStyleCategory;
+        if (cat == null)
+            return true;
+
+        // Explicitly skip light source subcategories
+        var catName = cat.Name ?? string.Empty;
+        if (catName.Equals("Light Source", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return true;
+    }
 }
 
