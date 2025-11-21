@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Visual;
+using System;
 using Color = Ara3D.Geometry.Color;
 using Material = Autodesk.Revit.DB.Material;
 
@@ -7,82 +8,143 @@ namespace Ara3D.Bowerbird.RevitSamples;
 
 public static class MaterialExtensions
 {
-    /// <summary>
-    /// Retrieves the basic PBR data from a material ID.
-    /// </summary>
     public static PbrMaterialInfo? GetPbrInfo(this Document doc, long materialId)
     {
         // 1. Look up the Material
-        var mat = doc.GetElement(new ElementId((int)materialId)) as Material;
+        var mat = doc.GetElement(new ElementId(materialId)) as Material;
         if (mat is null) return null;
 
-        // 2. Always-available legacy shading colour
-        var legacyOpacity = 1f - mat.Transparency;
-        var legacyColor = new Color(
-            mat.Color.Red / 255f, 
-            mat.Color.Green / 255f, 
-            mat.Color.Blue / 255f, 
-            legacyOpacity);
+        // 2. Graphics transparency (0..100), convert to opacity (0..1)
+        //    0   => fully opaque
+        //    100 => fully transparent
+        var opacityGraphics = 1.0 - mat.Transparency / 100.0;
 
-        // 3. Try to reach the rendering (appearance) asset
+        // 3. Graphics shading colour (will be used as fallback / shading color)
+        var shadingColor = new Color(
+            mat.Color.Red / 255f,
+            mat.Color.Green / 255f,
+            mat.Color.Blue / 255f,
+            1f); // alpha applied later
+
+        // 4. Try to reach the rendering (appearance) asset
         var assetEl = doc.GetElement(mat.AppearanceAssetId) as AppearanceAssetElement;
         if (assetEl is null)
-            return new PbrMaterialInfo(mat.Name, legacyColor, null, null, null, null);
+        {
+            // No appearance asset: fall back entirely to graphics
+            var legacy = shadingColor.WithA((float)opacityGraphics);
+            return new PbrMaterialInfo(mat.Name, legacy, null, null, null, null);
+        }
 
         var asset = assetEl.GetRenderingAsset();
 
-        // 4. Map the parameters we care about
+        // 5. Parameters we care about
         Color? baseCol = null;
         Color? emissive = null;
         double? metallic = null;
         double? roughness = null;
-        double? opacity = null;
 
-        for (var i=0; i < asset.Size; i++)
+        // Transparency/opacity and related
+        double? opacityPbr = null;    // e.g. generic_opacity / UnifiedOpacity
+        double? transparency = null;  // e.g. generic_transparency (0..1, 1=fully transparent)
+        double? glossiness = null;    // e.g. generic_glossiness (0..1, 1=very glossy -> low roughness)
+
+        // 6. Walk top-level asset properties
+        for (var i = 0; i < asset.Size; i++)
         {
             var prop = asset[i];
 
-            if (prop is AssetPropertyDoubleArray4d col)
+            switch (prop)
             {
-                var c = ToDrawingColor(col);
-                switch (prop.Name)
-                {
-                    case "generic_diffuse":
-                    case "UnifiedDiffuse":
-                        baseCol = c; break;
+                case AssetPropertyDoubleArray4d col:
+                    {
+                        var c = ToDrawingColor(col);
+                        switch (prop.Name)
+                        {
+                            // Base / diffuse colour
+                            case "generic_diffuse":
+                            case "UnifiedDiffuse":
+                            case "BaseColor":
+                                baseCol = c;
+                                break;
 
-                    case "generic_emission":
-                    case "UnifiedEmission":
-                        emissive = c; break;
-                }
-            }
-            else if (prop is AssetPropertyDouble d)
-            {
-                switch (prop.Name)
-                {
-                    case "generic_metallic":
-                    case "UnifiedMetallic":
-                        metallic = d.Value; break;
+                            // Emissive colour
+                            case "generic_emission":
+                            case "UnifiedEmission":
+                                emissive = c;
+                                break;
+                        }
+                        break;
+                    }
 
-                    case "generic_roughness":
-                    case "UnifiedRoughness":
-                        roughness = d.Value; break;
+                case AssetPropertyDouble d:
+                    {
+                        switch (prop.Name)
+                        {
+                            // Metalness
+                            case "generic_metallic":
+                            case "UnifiedMetallic":
+                                metallic = d.Value;
+                                break;
 
-                    case "generic_opacity":
-                    case "UnifiedOpacity":
-                        opacity = d.Value; break;
-                }
+                            // Roughness
+                            case "generic_roughness":
+                            case "UnifiedRoughness":
+                                roughness = d.Value;
+                                break;
+
+                            // Explicit opacity factor (0..1 opaque)
+                            case "generic_opacity":
+                            case "UnifiedOpacity":
+                                opacityPbr = d.Value;
+                                break;
+
+                            // Legacy transparency (0..1, where 1 = fully transparent)
+                            case "generic_transparency":
+                                transparency = d.Value;
+                                break;
+
+                            // Legacy glossiness (0..1, where 1 = very glossy -> low roughness)
+                            case "generic_glossiness":
+                                glossiness = d.Value;
+                                break;
+                        }
+                        break;
+                    }
             }
         }
 
-        var alpha = opacity.HasValue 
-            ? (float)opacity.Value 
-            : legacyOpacity;
-        if (baseCol != null)
+        // 7. Derive roughness from glossiness if needed (simple heuristic)
+        if (!roughness.HasValue && glossiness.HasValue)
+            roughness = 1.0 - glossiness.Value;
+
+        // 8. Combine graphics opacity with appearance opacity/transparency
+        double opacityAsset = 1.0;
+
+        // generic_transparency: 0 = opaque, 1 = fully transparent
+        if (transparency.HasValue)
+            opacityAsset *= (1.0 - transparency.Value);
+
+        // generic_opacity / UnifiedOpacity: already opaque in [0..1]
+        if (opacityPbr.HasValue)
+            opacityAsset *= opacityPbr.Value;
+
+        // Final alpha 0..1
+        var alpha = (float)(opacityGraphics * opacityAsset);
+        if (alpha < 0f) alpha = 0f;
+        else if (alpha > 1f) alpha = 1f;
+
+        // Apply alpha to colours
+        shadingColor = shadingColor.WithA(alpha);
+        if (baseCol.HasValue)
             baseCol = baseCol.Value.WithA(alpha);
 
-        legacyColor = legacyColor.WithA(alpha);
-        return new PbrMaterialInfo(mat.Name, legacyColor, baseCol, metallic, roughness, emissive);
+        return new PbrMaterialInfo(
+            mat.Name,
+            shadingColor,   // "shading" colour (graphics)
+            baseCol,        // appearance base colour (if any)
+            metallic,
+            roughness,
+            emissive);
     }
 
     private static Color ToDrawingColor(AssetPropertyDoubleArray4d col)
@@ -98,7 +160,9 @@ public static class MaterialExtensions
     public static Models.Material? ToAra3DMaterial(this PbrMaterialInfo pbr)
         => pbr == null
             ? null
-            : new Models.Material(pbr.BaseColor ?? pbr.ShadingColor, (float)(pbr.Metallic ?? 0),
+            : new Models.Material(
+                pbr.BaseColor ?? pbr.ShadingColor, 
+                (float)(pbr.Metallic ?? 0),
                 (float)(pbr.Roughness ?? 0));
 
     public static Models.Material? ToAra3DMaterial(this Document doc, ElementId? materialId)
