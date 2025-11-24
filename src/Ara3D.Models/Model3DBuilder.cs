@@ -7,10 +7,9 @@ public class Model3DBuilder
 {
     public List<TriangleMesh3D> Meshes { get; } = [];
     public List<InstanceStruct> Instances { get; } = [];
-    public DataSetBuilder DataSet { get; } = new();
     
     public Model3D Build()
-        => new(Meshes, Instances, DataSet);
+        => new(Meshes, Instances);
 
     public void AddInstance(int meshIndex, Matrix4x4 matrix)
         => AddInstance(meshIndex, matrix, Material.Default);

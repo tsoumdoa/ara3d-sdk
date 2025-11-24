@@ -81,7 +81,7 @@ public class BimGeometry
     
     //==
     // Transform Table.
-    // Transform Matrix = Translation Matrix * Rotation Matrix * Scaling Matrix
+    // Transform Matrix = Scaling Matrix * Rotation Matrix * Translation Matrix
     // Note: mirrored objects occur when the product of the scale component is negative 
 
     // Translation

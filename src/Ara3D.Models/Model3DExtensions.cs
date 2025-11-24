@@ -137,13 +137,4 @@ public static class Model3DExtensions
 
     public static Material FirstOrDefaultMaterial(this Model3D self)
         => self.Instances.Count > 0 ? self.Instances[0].Material : Material.Default;
-
-    public static Model3D AddColumnsToTable(this Model3D self, string tableName, IReadOnlyList<IDataColumn> columns)
-        => self.WithDataSet(self.DataSet.AddColumnsToTable(tableName, columns));
-
-    public static Model3D MergeTable(this Model3D self, IDataTable table)
-        => self.WithDataSet(self.DataSet.AddColumnsToTable(table.Name, table.Columns));
-
-    public static System.Data.DataTable GetSystemDataTable(this Model3D self, string name)
-        => self?.DataSet?.GetTable(name)?.ToSystemDataTable();
 }

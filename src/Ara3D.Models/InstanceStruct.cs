@@ -131,7 +131,7 @@ public unsafe struct InstanceStruct
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set
+        set 
         {
             Column0 = (value.M11, value.M21, value.M31, value.M41);
             Column1 = (value.M12, value.M22, value.M32, value.M42);

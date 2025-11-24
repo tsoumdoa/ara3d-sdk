@@ -20,10 +20,16 @@ public class AiCategoryFilter : IModelModifier
             _app.OnCategoryChanged += CategoryChanged;
         }
 
+        /*
         var dataSet = model.DataSet;
         var table = dataSet.Tables[0];
         var col = table.GetColumn("Category");
         return model.Where((node, i) => node.MeshIndex >= 0 
             && col[i]?.Equals(Category) == true);
+        */
+
+        // TODO: 
+        throw new NotImplementedException();
+        return model;
     }
 }

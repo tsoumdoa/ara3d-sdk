@@ -9,7 +9,7 @@ namespace Ara3D.Memory
     /// This is a simple "grow-only" list for unmanaged types that uses aligned memory.
     /// It can only contain up to int.MaxValue items (approx. 2 billion), but can handle larger amounts of data. 
     /// </summary>
-    public unsafe class UnmanagedList<T> : IDisposable, IBuffer<T>        
+    public unsafe class UnmanagedList<T> : IMemoryOwner<T>        
         where T : unmanaged
     {
         public int Count { get; private set; }

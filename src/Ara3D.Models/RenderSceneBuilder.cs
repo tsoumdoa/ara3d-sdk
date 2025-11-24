@@ -4,19 +4,13 @@ using Ara3D.Memory;
 
 namespace Ara3D.Models;
 
-public class RenderSceneBuilder : IDisposable, IRenderScene
+public class RenderSceneBuilder : IDisposable
 {
-    public UnmanagedList<float> VertexList = new();
-    public UnmanagedList<uint> IndexList = new();
-    public UnmanagedList<MeshSliceStruct> MeshList = new();
-    public UnmanagedList<InstanceStruct> InstanceList = new();
-    public UnmanagedList<InstanceGroupStruct> InstanceGroupList = new();
-
-    public IBuffer<float> Vertices => VertexList;
-    public IBuffer<uint> Indices => IndexList;
-    public IBuffer<MeshSliceStruct> Meshes => MeshList;
-    public IBuffer<InstanceStruct> Instances => InstanceList;
-    public IBuffer<InstanceGroupStruct> InstanceGroups => InstanceGroupList;
+    public UnmanagedList<float>? VertexList = new();
+    public UnmanagedList<uint>? IndexList = new();
+    public UnmanagedList<MeshSliceStruct>? MeshList = new();
+    public UnmanagedList<InstanceStruct>? InstanceList = new();
+    public UnmanagedList<InstanceGroupStruct>? InstanceGroupList = new();
 
     public int AddMesh(TriangleMesh3D mesh)
     {
@@ -77,7 +71,7 @@ public class RenderSceneBuilder : IDisposable, IRenderScene
             if (group == null || group.Count == 0)
                 continue;
 
-            var instanceOffset = Instances.Count;
+            var instanceOffset = InstanceList.Count;
             foreach (var instance in group)
             {
                 InstanceList.Add(instance);
@@ -111,5 +105,21 @@ public class RenderSceneBuilder : IDisposable, IRenderScene
         VertexList.Clear();
         InstanceList.Clear();
         InstanceGroupList.Clear();
+    }
+
+    public RenderScene Build()
+    {
+        var rs = new RenderScene(
+            VertexList,
+            IndexList,
+            MeshList,
+            InstanceList,
+            InstanceGroupList);
+        VertexList = null;
+        IndexList = null;
+        MeshList = null;
+        InstanceList = null;
+        InstanceGroupList = null;
+        return rs;
     }
 }

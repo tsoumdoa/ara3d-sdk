@@ -15,28 +15,28 @@ public static class ModelExtensions
     public static InstanceStruct TransformMaterial(this InstanceStruct self, Func<Material, Material> f)
         => self.WithMaterial(f(self.Material));
 
-    public static IRenderScene TransformInstances(this IRenderScene scene, Func<InstanceStruct, InstanceStruct> f)
+    public static RenderScene TransformInstances(this RenderScene scene, Func<InstanceStruct, InstanceStruct> f)
     {
         scene.Instances.Transform(f);
         return scene;
     }
 
-    public static IRenderScene TransformMaterials(this IRenderScene scene, Func<Material, Material> f)
+    public static RenderScene TransformMaterials(this RenderScene scene, Func<Material, Material> f)
         => scene.TransformInstances(inst => inst.TransformMaterial(f));
 
-    public static IRenderScene TransformVertices(this IRenderScene scene, Func<Point3D, Point3D> f)
+    public static RenderScene TransformVertices(this RenderScene scene, Func<Point3D, Point3D> f)
     {
         scene.Vertices.CastMemory<Point3D>().Transform(f);
         return scene;
     }
 
-    public static IRenderScene TransformVertices(this IRenderScene scene, Func<Vector3, Vector3> f)
+    public static RenderScene TransformVertices(this RenderScene scene, Func<Vector3, Vector3> f)
     {
         scene.Vertices.CastMemory<Vector3>().Transform(f);
         return scene;
     }
 
-    public static void AddMeshes(this IRenderScene scene, IReadOnlyList<TriangleMesh3D> meshes)
+    public static void AddMeshes(this RenderScene scene, IReadOnlyList<TriangleMesh3D> meshes)
     {
         var slices = new MeshSliceStruct[scene.Meshes.Count + meshes.Count];
 

@@ -2,7 +2,7 @@
 
 public static class StructExtensions
 {
-    public static List<InstancedMeshStruct> InstancedMeshes(this IRenderScene self)
+    public static List<InstancedMeshStruct> InstancedMeshes(this RenderScene self)
     {
         var r = new List<InstancedMeshStruct>();
         for (var i=0; i < self.InstanceGroups.Count; i++)
@@ -23,7 +23,7 @@ public static class StructExtensions
     public static long NumTriangles(this MeshSliceStruct self)
         => self.IndexCount / 3;
 
-    public static long NumTriangles(this IRenderScene self)
+    public static long NumTriangles(this RenderScene self)
         => self.InstancedMeshes().Sum(x => x.Mesh.NumTriangles());
 
 }

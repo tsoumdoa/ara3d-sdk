@@ -37,7 +37,7 @@ public class BimData
     public List<string> Strings { get; set; } = [];
     public List<Point> Points { get; set; } = [];
     public List<EntityRelation> Relations { get; set; } = [];
-    public List<GeometricInstance> GeometricInstances { get; set; } = [];
+    public BimGeometry Geometry { get; set; }
 }
 
 //==
@@ -234,12 +234,3 @@ public enum RelationType
     // For MEP systems (e.g., HVAC) providing service to a zone
     Serves = 15,
 }
-
-/// <summary>
-/// If geometry is present, every geometric instance  is related to exactly one entity.
-/// An entity may have multiple geometric instances.
-/// A geometric instance, is a bundle of material, transform, and reference to a mesh. 
-/// </summary>
-public record GeometricInstance(
-    EntityIndex Entity
-    );

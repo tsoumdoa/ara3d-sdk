@@ -18,7 +18,7 @@ public static class RenderSceneSerializer
         nameof(RenderScene.InstanceGroups),
     };
 
-    public static unsafe void Save(IRenderScene renderScene, FilePath filePath)
+    public static unsafe void Save(RenderScene renderScene, FilePath filePath)
     {
         var sizes = new[]
         {
@@ -65,7 +65,7 @@ public static class RenderSceneSerializer
         BFast.Write((string)filePath, BufferNames, sizes.Select(sz => (long)sz), OnBuffer);
     }
 
-    public static unsafe IRenderScene Load(FilePath fp)
+    public static unsafe RenderScene Load(FilePath fp)
     {
         AlignedMemory<float> vertices = null;
         AlignedMemory<uint> indices = null;
