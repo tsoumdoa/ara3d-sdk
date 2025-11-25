@@ -49,6 +49,8 @@ public class Model3D
     public void UpdateScene(RenderScene scene)
     {
         // TODO: 
+        // When this works, I should probably remove "RenderSceneBuilder"
+        // OR ... RenderSceneBuilder would replace this. 
         throw new NotImplementedException();
     }
 

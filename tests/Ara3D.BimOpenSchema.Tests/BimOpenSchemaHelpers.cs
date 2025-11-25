@@ -5,8 +5,8 @@ public static class BIMOpenSchemaHelpers
     // Informal and incomplete mapping of IFC Relationships to relation types for documentation purposes 
     public static Dictionary<string, RelationType> IfcRelationToRelationType
         = new() {
-            { "IfcRelAggregates", RelationType.ElementOf },
-            { "IfcRelAssignsToGroup", RelationType.ElementOf },
+            { "IfcRelAggregates", RelationType.MemberOf },
+            { "IfcRelAssignsToGroup", RelationType.MemberOf },
             { "IfcRelDecomposes", RelationType.PartOf },
             { "IfcRelNests", RelationType.ChildOf },
             { "IfcRelContainedInSpatialStructure", RelationType.ContainedIn },

@@ -1,9 +1,11 @@
 ﻿using Ara3D.BimOpenSchema;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using Autodesk.Revit.DB.Mechanical;
 using Document = Autodesk.Revit.DB.Document;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -43,7 +45,6 @@ public class RevitBimDataBuilder
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
     public DocumentKey CurrentDocumentKey;
-
     public Dictionary<ElementKey, EntityIndex> ProcessedEntities = new();
     public Dictionary<DocumentKey, DocumentIndex> ProcessedDocuments = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
@@ -82,13 +83,15 @@ public class RevitBimDataBuilder
     private DescriptorIndex _elementCreatedPhase;
     private DescriptorIndex _elementDemolishedPhase;
     private DescriptorIndex _elementCategory;
+    private DescriptorIndex _elementOwnerView;
+    private DescriptorIndex _elementIsViewSpecific;
 
     private DescriptorIndex _familyInstanceToRoomDesc;
     private DescriptorIndex _familyInstanceFromRoomDesc;
     private DescriptorIndex _familyInstanceRoom;
     private DescriptorIndex _familyInstanceSpace;
     private DescriptorIndex _familyInstanceHost;
-    private DescriptorIndex _familyInstanceSymbol;
+    private DescriptorIndex _familyInstanceFamilyType;
     private DescriptorIndex _familyInstanceStructuralUsage;
     private DescriptorIndex _familyInstanceStructuralMaterialType;
     private DescriptorIndex _familyInstanceStructuralMaterialId;
@@ -134,6 +137,10 @@ public class RevitBimDataBuilder
     private DescriptorIndex _documentPlaceName;
     private DescriptorIndex _documentWeatherStationName;
     private DescriptorIndex _documentTimeZone;
+    private DescriptorIndex _documentLastSaveTime;
+    private DescriptorIndex _documentSaveCount;
+    private DescriptorIndex _documentIsDetached;
+    private DescriptorIndex _documentIsLinked;
 
     private DescriptorIndex _projectName;
     private DescriptorIndex _projectNumber;
@@ -156,87 +163,94 @@ public class RevitBimDataBuilder
 
     public void CreateCommonDescriptors()
     {
-        AddDesc(ref _apiTypeDescriptor, "rvt:Object:TypeName", ParameterType.String);
+        AddDesc(ref _apiTypeDescriptor, CommonRevitParameters.ObjectTypeName, ParameterType.String);
 
-        AddDesc(ref _elementLevel, "rvt:Element:Level", ParameterType.Entity);
-        AddDesc(ref _elementLocation, "rvt:Element:Location.Point", ParameterType.Point);
-        AddDesc(ref _elementLocationStartPoint, "rvt:Element:Location.StartPoint", ParameterType.Point);
-        AddDesc(ref _elementLocationEndPoint, "rvt:Element:Location.EndPoint", ParameterType.Point);
-        AddDesc(ref _elementBoundsMin, "rvt:Element:Bounds.Min", ParameterType.Point);
-        AddDesc(ref _elementBoundsMax, "rvt:Element:Bounds.Max", ParameterType.Point);
-        AddDesc(ref _elementAssemblyInstance, "rvt:Element:AssemblyInstance", ParameterType.Entity);
-        AddDesc(ref _elementDesignOption, "rvt:Element:DesignOption", ParameterType.Entity);
-        AddDesc(ref _elementGroup, "rvt:Element:Group", ParameterType.Entity);
-        AddDesc(ref _elementWorkset, "rvt:Element:Workset", ParameterType.Int);
-        AddDesc(ref _elementCreatedPhase, "rvt:Element:CreatedPhase", ParameterType.Entity);
-        AddDesc(ref _elementDemolishedPhase, "rvt:Element:DemolishedPhase", ParameterType.Entity);
-        AddDesc(ref _elementCategory, "rvt:Element:Category", ParameterType.Entity);
+        AddDesc(ref _elementLevel, CommonRevitParameters.ElementLevel, ParameterType.Entity);
+        AddDesc(ref _elementLocation, CommonRevitParameters.ElementLocationPoint, ParameterType.Point);
+        AddDesc(ref _elementLocationStartPoint, CommonRevitParameters.ElementLocationStartPoint, ParameterType.Point);
+        AddDesc(ref _elementLocationEndPoint, CommonRevitParameters.ElementLocationEndPoint, ParameterType.Point);
+        AddDesc(ref _elementBoundsMin, CommonRevitParameters.ElementBoundsMin, ParameterType.Point);
+        AddDesc(ref _elementBoundsMax, CommonRevitParameters.ElementBoundsMax, ParameterType.Point);
+        AddDesc(ref _elementAssemblyInstance, CommonRevitParameters.ElementAssemblyInstance, ParameterType.Entity);
+        AddDesc(ref _elementDesignOption, CommonRevitParameters.ElementDesignOption, ParameterType.Entity);
+        AddDesc(ref _elementGroup, CommonRevitParameters.ElementGroup, ParameterType.Entity);
+        AddDesc(ref _elementWorkset, CommonRevitParameters.ElementWorkset, ParameterType.Int);
+        AddDesc(ref _elementCreatedPhase, CommonRevitParameters.ElementCreatedPhase, ParameterType.Entity);
+        AddDesc(ref _elementDemolishedPhase, CommonRevitParameters.ElementDemolishedPhase, ParameterType.Entity);
+        AddDesc(ref _elementCategory, CommonRevitParameters.ElementCategory, ParameterType.Entity);
+        AddDesc(ref _elementIsViewSpecific, CommonRevitParameters.ElementIsViewSpecific, ParameterType.Int);
+        AddDesc(ref _elementOwnerView, CommonRevitParameters.ElementOwnerView, ParameterType.Entity);
 
-        AddDesc(ref _familyInstanceToRoomDesc, "rvt:FamilyInstance:ToRoom", ParameterType.Entity);
-        AddDesc(ref _familyInstanceFromRoomDesc, "rvt:FamilyInstance:FromRoom", ParameterType.Entity);
-        AddDesc(ref _familyInstanceHost, "rvt:FamilyInstance:Host", ParameterType.Entity);
-        AddDesc(ref _familyInstanceSpace, "rvt:FamilyInstance:Space", ParameterType.Entity);
-        AddDesc(ref _familyInstanceRoom, "rvt:FamilyInstance:Room", ParameterType.Entity);
-        AddDesc(ref _familyInstanceSymbol, "rvt:FamilyInstance:Symbol", ParameterType.Entity);
-        AddDesc(ref _familyInstanceStructuralUsage, "rvt:FamilyInstance:StructuralUsage", ParameterType.String);
-        AddDesc(ref _familyInstanceStructuralMaterialType, "rvt:FamilyInstance:StructuralMaterialType", ParameterType.String);
-        AddDesc(ref _familyInstanceStructuralMaterialId, "rvt:FamilyInstance:StructuralMaterialId", ParameterType.Entity);
-        AddDesc(ref _familyInstanceStructuralType, "rvt:FamilyInstance:StructuralType", ParameterType.String);
+        AddDesc(ref _familyInstanceToRoomDesc, CommonRevitParameters.FIToRoom, ParameterType.Entity);
+        AddDesc(ref _familyInstanceFromRoomDesc, CommonRevitParameters.FIFromRoom, ParameterType.Entity);
+        AddDesc(ref _familyInstanceHost, CommonRevitParameters.FIHost, ParameterType.Entity);
+        AddDesc(ref _familyInstanceSpace, CommonRevitParameters.FISpace, ParameterType.Entity);
+        AddDesc(ref _familyInstanceRoom, CommonRevitParameters.FIRoom, ParameterType.Entity);
+        AddDesc(ref _familyInstanceFamilyType, CommonRevitParameters.FIFamilyType, ParameterType.Entity);
+        AddDesc(ref _familyInstanceStructuralUsage, CommonRevitParameters.FIStructuralUsage, ParameterType.String);
+        AddDesc(ref _familyInstanceStructuralMaterialType, CommonRevitParameters.FIStructuralMaterialType, ParameterType.String);
+        AddDesc(ref _familyInstanceStructuralMaterialId, CommonRevitParameters.FIStructuralMaterialId, ParameterType.Entity);
+        AddDesc(ref _familyInstanceStructuralType, CommonRevitParameters.FIStructuralType, ParameterType.String);
 
-        AddDesc(ref _familyStructuralCodeName, "rvt:Family:StructuralCodeName", ParameterType.String);
-        AddDesc(ref _familyStructuralMaterialType, "rvt:Family:StructuralMaterialType", ParameterType.String);
+        AddDesc(ref _familyStructuralCodeName, CommonRevitParameters.FamilyStructuralCodeName, ParameterType.String);
+        AddDesc(ref _familyStructuralMaterialType, CommonRevitParameters.FamilyStructuralMaterialType, ParameterType.String);
 
-        AddDesc(ref _roomNumber, "rvt:Room:Number", ParameterType.String);
-        AddDesc(ref _roomBaseOffset, "rvt:Room:BaseOffset", ParameterType.Double);
-        AddDesc(ref _roomLimitOffset, "rvt:Room:LimitOffset", ParameterType.Double);
-        AddDesc(ref _roomUnboundedHeight, "rvt:Room:UnboundedHeight", ParameterType.Double);
-        AddDesc(ref _roomVolume, "rvt:Room:Volume", ParameterType.Double);
-        AddDesc(ref _roomUpperLimit, "rvt:Room:UpperLimit", ParameterType.Entity);
+        AddDesc(ref _roomNumber, CommonRevitParameters.RoomNumber, ParameterType.String);
+        AddDesc(ref _roomBaseOffset, CommonRevitParameters.RoomBaseOffset, ParameterType.Double);
+        AddDesc(ref _roomLimitOffset, CommonRevitParameters.RoomLimitOffset, ParameterType.Double);
+        AddDesc(ref _roomUnboundedHeight, CommonRevitParameters.RoomUnboundedHeight, ParameterType.Double);
+        AddDesc(ref _roomVolume, CommonRevitParameters.RoomVolume, ParameterType.Double);
+        AddDesc(ref _roomUpperLimit, CommonRevitParameters.RoomUpperLimit, ParameterType.Entity);
 
-        AddDesc(ref _levelProjectElevation, "rvt:Level:ProjectElevation", ParameterType.Double);
-        AddDesc(ref _levelElevation, "rvt:Level:Elevation", ParameterType.Double);
+        AddDesc(ref _levelProjectElevation, CommonRevitParameters.LevelProjectElevation, ParameterType.Double);
+        AddDesc(ref _levelElevation, CommonRevitParameters.LevelElevation, ParameterType.Double);
 
-        AddDesc(ref _materialColorRed, "rvt:Material:Color.Red", ParameterType.Double);
-        AddDesc(ref _materialColorGreen, "rvt:Material:Color.Green", ParameterType.Double);
-        AddDesc(ref _materialColorBlue, "rvt:Material:Color.Blue", ParameterType.Double);
-        AddDesc(ref _materialShininess, "rvt:Material:Shininess", ParameterType.Double);
-        AddDesc(ref _materialSmoothness, "rvt:Material:Smoothness", ParameterType.Double);
-        AddDesc(ref _materialCategory, "rvt:Material:Category", ParameterType.String);
-        AddDesc(ref _materialClass, "rvt:Material:Class", ParameterType.String);
-        AddDesc(ref _materialTransparency, "rvt:Material:Transparency", ParameterType.Double);
+        AddDesc(ref _materialColorRed, CommonRevitParameters.MaterialColorRed, ParameterType.Double);
+        AddDesc(ref _materialColorGreen, CommonRevitParameters.MaterialColorGreen, ParameterType.Double);
+        AddDesc(ref _materialColorBlue, CommonRevitParameters.MaterialColorBlue, ParameterType.Double);
+        AddDesc(ref _materialShininess, CommonRevitParameters.MaterialShininess, ParameterType.Double);
+        AddDesc(ref _materialSmoothness, CommonRevitParameters.MaterialSmoothness, ParameterType.Double);
+        AddDesc(ref _materialCategory, CommonRevitParameters.MaterialCategory, ParameterType.String);
+        AddDesc(ref _materialClass, CommonRevitParameters.MaterialClass, ParameterType.String);
+        AddDesc(ref _materialTransparency, CommonRevitParameters.MaterialTransparency, ParameterType.Double);
 
-        AddDesc(ref _worksetKind, "rvt:Workset:Kind", ParameterType.String);
+        AddDesc(ref _worksetKind, CommonRevitParameters.WorksetKind, ParameterType.String);
 
-        AddDesc(ref _layerIndex, "rvt:Layer:Index", ParameterType.Int);
-        AddDesc(ref _layerFunction, "rvt:Layer:Function", ParameterType.String);
-        AddDesc(ref _layerWidth, "rvt:Layer:Width", ParameterType.Double);
-        AddDesc(ref _layerMaterialId, "rvt:Layer:MaterialId", ParameterType.Entity); 
-        AddDesc(ref _layerIsCore, "rvt:Layer:IsCore", ParameterType.Int);
+        AddDesc(ref _layerIndex, CommonRevitParameters.LayerIndex, ParameterType.Int);
+        AddDesc(ref _layerFunction, CommonRevitParameters.LayerFunction, ParameterType.String);
+        AddDesc(ref _layerWidth, CommonRevitParameters.LayerWidth, ParameterType.Double);
+        AddDesc(ref _layerMaterialId, CommonRevitParameters.LayerMaterialId, ParameterType.Entity);
+        AddDesc(ref _layerIsCore, CommonRevitParameters.LayerIsCore, ParameterType.Int);
 
-        AddDesc(ref _documentCreationGuid, "rvt:Document:CreationGuid", ParameterType.String);
-        AddDesc(ref _documentWorksharingGuid, "rvt:Document:WorksharingGuid", ParameterType.String);
-        AddDesc(ref _documentTitle, "rvt;Document:Title", ParameterType.String);
-        AddDesc(ref _documentPath, "rvt:Document:Path", ParameterType.String);
-        AddDesc(ref _documentElevation, "rvt:Document:Elevation", ParameterType.Double);
-        AddDesc(ref _documentLatitude, "rvt:Document:Latitude", ParameterType.Double);
-        AddDesc(ref _documentLongitude, "rvt:Document:Longitude", ParameterType.Double);
-        AddDesc(ref _documentPlaceName, "rvt:Document:PlaceName", ParameterType.String);
-        AddDesc(ref _documentWeatherStationName, "rvt:Document:WeatherStationName", ParameterType.String);
-        AddDesc(ref _documentTimeZone, "rvt:Document:TimeZone", ParameterType.Double);
+        AddDesc(ref _documentCreationGuid, CommonRevitParameters.DocumentCreationGuid, ParameterType.String);
+        AddDesc(ref _documentWorksharingGuid, CommonRevitParameters.DocumentWorksharingGuid, ParameterType.String);
+        AddDesc(ref _documentTitle, CommonRevitParameters.DocumentTitle, ParameterType.String);
+        AddDesc(ref _documentPath, CommonRevitParameters.DocumentPath, ParameterType.String);
+        AddDesc(ref _documentElevation, CommonRevitParameters.DocumentElevation, ParameterType.Double);
+        AddDesc(ref _documentLatitude, CommonRevitParameters.DocumentLatitude, ParameterType.Double);
+        AddDesc(ref _documentLongitude, CommonRevitParameters.DocumentLongitude, ParameterType.Double);
+        AddDesc(ref _documentPlaceName, CommonRevitParameters.DocumentPlaceName, ParameterType.String);
+        AddDesc(ref _documentWeatherStationName, CommonRevitParameters.DocumentWeatherStationName, ParameterType.String);
+        AddDesc(ref _documentTimeZone, CommonRevitParameters.DocumentTimeZone, ParameterType.String);
 
-        AddDesc(ref _projectName, "rvt:Document:Project:Name", ParameterType.String);
-        AddDesc(ref _projectNumber, "rvt:Document:Project:Number", ParameterType.String);
-        AddDesc(ref _projectStatus, "rvt:Document:Project:Status", ParameterType.String);
-        AddDesc(ref _projectAddress, "rvt:Document:Project:Address", ParameterType.String);
-        AddDesc(ref _projectClientName, "rvt:Document:Project:Client", ParameterType.String);
-        AddDesc(ref _projectIssueDate, "rvt:Document:Project:IssueDate", ParameterType.String);
-        AddDesc(ref _projectAuthor, "rvt:Document:Project:Author", ParameterType.String);
-        AddDesc(ref _projectBuildingName, "rvt:Document:Project:BuildingName", ParameterType.String);
-        AddDesc(ref _projectOrgDescription, "rvt:Document:Project:OrganizationDescription", ParameterType.String);
-        AddDesc(ref _projectOrgName, "rvt:Document:Project:OrganizationName", ParameterType.String);
+        AddDesc(ref _documentLastSaveTime, CommonRevitParameters.DocumentLastSaveTime, ParameterType.String);
+        AddDesc(ref _documentSaveCount, CommonRevitParameters.DocumentSaveCount, ParameterType.Int);
+        AddDesc(ref _documentIsDetached, CommonRevitParameters.DocumentIsDetached, ParameterType.Int);
+        AddDesc(ref _documentIsLinked, CommonRevitParameters.DocumentIsLinked, ParameterType.Int);
 
-        AddDesc(ref _categoryCategoryType, "rvt:Category:CategoryType", ParameterType.String);
-        AddDesc(ref _categoryBuiltInType, "rvt:Category:BuiltInType", ParameterType.String);
+        AddDesc(ref _projectName, CommonRevitParameters.ProjectName, ParameterType.String);
+        AddDesc(ref _projectNumber, CommonRevitParameters.ProjectNumber, ParameterType.String);
+        AddDesc(ref _projectStatus, CommonRevitParameters.ProjectStatus, ParameterType.String);
+        AddDesc(ref _projectAddress, CommonRevitParameters.ProjectAddress, ParameterType.String);
+        AddDesc(ref _projectClientName, CommonRevitParameters.ProjectClientName, ParameterType.String);
+        AddDesc(ref _projectIssueDate, CommonRevitParameters.ProjectIssueDate, ParameterType.String);
+        AddDesc(ref _projectAuthor, CommonRevitParameters.ProjectAuthor, ParameterType.String);
+        AddDesc(ref _projectBuildingName, CommonRevitParameters.ProjectBuildingName, ParameterType.String);
+        AddDesc(ref _projectOrgDescription, CommonRevitParameters.ProjectOrgDescription, ParameterType.String);
+        AddDesc(ref _projectOrgName, CommonRevitParameters.ProjectOrgName, ParameterType.String);
+
+        AddDesc(ref _categoryCategoryType, CommonRevitParameters.CategoryCategoryType, ParameterType.String);
+        AddDesc(ref _categoryBuiltInType, CommonRevitParameters.CategoryBuiltInType, ParameterType.String);
     }
 
     public List<StructuralLayer> GetLayers(HostObjAttributes host)
@@ -266,6 +280,14 @@ public class RevitBimDataBuilder
         Builder.AddParameter(ei, val, di);
     }
 
+    public void AddParameter(EntityIndex ei, DescriptorIndex di, DateTime val)
+    {
+        var d = Builder.Data.Get(di);
+        if (d.Type != ParameterType.String) throw new Exception($"Expected string not {d.Type}");
+        var str = val.ToString("o", CultureInfo.InvariantCulture);
+        Builder.AddParameter(ei, str, di);
+    }
+
     public void AddParameter(EntityIndex ei, DescriptorIndex di, EntityIndex val)
     {
         var d = Builder.Data.Get(di);
@@ -285,6 +307,13 @@ public class RevitBimDataBuilder
         var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
         Builder.AddParameter(ei, val, di);
+    }
+
+    public void AddParameter(EntityIndex ei, DescriptorIndex di, bool val)
+    {
+        var d = Builder.Data.Get(di);
+        if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
+        Builder.AddParameter(ei, val ? 1 : 0, di);
     }
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, double val)
@@ -355,7 +384,7 @@ public class RevitBimDataBuilder
 
     public void ProcessMaterial(EntityIndex ei, Material m)
     {
-        var color = m.Color;
+        var color = m.Color;            
         AddParameter(ei, _materialColorGreen, color.Red);
         AddParameter(ei, _materialColorGreen, color.Green);
         AddParameter(ei, _materialColorGreen, color.Blue);
@@ -379,6 +408,7 @@ public class RevitBimDataBuilder
         if (typeId != ElementId.InvalidElementId)
         {
             var type = ProcessElement(typeId);
+            AddParameter(ei, _familyInstanceFamilyType, type);
             Builder.AddRelation(ei, type, RelationType.InstanceOf);
         }
 
@@ -410,7 +440,7 @@ public class RevitBimDataBuilder
         if (room != null && room.IsValidObject)
         {
             var roomIndex = ProcessElement(room);
-            AddParameter(ei, _familyInstanceSpace, roomIndex);
+            AddParameter(ei, _familyInstanceRoom, roomIndex);
             Builder.AddRelation(ei, roomIndex, RelationType.ContainedIn);
         }
 
@@ -452,7 +482,7 @@ public class RevitBimDataBuilder
             Builder.AddRelation(ei, matId, RelationType.HasMaterial);
         }
     }
-
+    
     public static string GetUnitLabel(Parameter p)
     {
         var spec = p.Definition.GetDataType();
@@ -508,9 +538,17 @@ public class RevitBimDataBuilder
     public EntityIndex ProcessElement(ElementId id)
     {
         if (id == null || id == ElementId.InvalidElementId)
-            throw new Exception("Invalid element");
+            return (EntityIndex)(-1);
+
+        var key = GetElementKey(CurrentDocumentKey, id.Value);
+        if (ProcessedEntities.TryGetValue(key, out var found))
+            return found;
+
         var element = CurrentDocument.GetElement(id);
-        return ProcessElement(element);
+        if (element == null)
+            return (EntityIndex)(-1);
+
+        return ProcessNewElement(key, element);
     }
 
     public static bool TryGetLocationEndpoints(
@@ -528,20 +566,28 @@ public class RevitBimDataBuilder
         return true;
     }
 
-    public EntityIndex ProcessElement(Element e)
+    public EntityIndex ProcessElement(Element element)
     {
-        if (e == null || !e.IsValidObject)
-            throw new Exception("Invalid element");
+        if (element == null || !element.IsValidObject)
+            return (EntityIndex)(-1);
 
-        var key = GetElementKey(CurrentDocumentKey, e.Id.Value);
+        var key = GetElementKey(CurrentDocumentKey, element.Id.Value);
         if (ProcessedEntities.TryGetValue(key, out var found))
             return found;
-    
+
+        return ProcessNewElement(key, element);
+    }
+
+    public EntityIndex ProcessNewElement(ElementKey key, Element e)
+    {
         var category = e.Category;
         var catName = (category != null && category.IsValid) ? category.Name : "";
 
         var entityIndex = Builder.AddEntity(e.Id.Value, e.UniqueId, CurrentDocumentIndex, e.Name, catName);
         ProcessedEntities.Add(key, entityIndex);
+
+        var eType = e.GetType().Name;
+        AddParameter(entityIndex, _apiTypeDescriptor, eType);
 
         if (category != null && category.IsValid)
         {
@@ -612,7 +658,7 @@ public class RevitBimDataBuilder
         if (designOption != null && designOption.IsValidObject)
         {
             var doIndex = ProcessElement(designOption);
-            Builder.AddRelation(entityIndex, doIndex, RelationType.ElementOf);
+            Builder.AddRelation(entityIndex, doIndex, RelationType.MemberOf);
             AddParameter(entityIndex, _elementDesignOption, doIndex);
         }
 
@@ -620,12 +666,24 @@ public class RevitBimDataBuilder
         if (groupId != ElementId.InvalidElementId)
         {
             var group = ProcessElement(groupId);
-            Builder.AddRelation(entityIndex, group, RelationType.ElementOf);
+            Builder.AddRelation(entityIndex, group, RelationType.MemberOf);
+            AddParameter(entityIndex, _elementGroup, group);
         }
 
         if (e.WorksetId != null)
         {
             AddParameter(entityIndex, _elementWorkset, e.WorksetId.IntegerValue);
+        }
+
+        if (e.ViewSpecific)
+        {
+            AddParameter(entityIndex, _elementIsViewSpecific, 1);
+        }
+
+        if (e.OwnerViewId != ElementId.InvalidElementId)
+        {
+            var view = ProcessElement(e.OwnerViewId);
+            AddParameter(entityIndex, _elementOwnerView, view);
         }
 
         if (e is HostObjAttributes host)
@@ -642,6 +700,22 @@ public class RevitBimDataBuilder
 
         if (e is FamilyInstance familyInstance)
             ProcessFamilyInstance(entityIndex, familyInstance);
+
+        if (e is Material material)
+            ProcessMaterial(entityIndex, material);
+
+        // TODO: handle Mechanica; space
+        //if (e is Space space)
+           
+        // TODO: let's handle schedules. 
+
+        // TODO: consider adjacency, and fixtures. 
+
+        // TODO: look at connected systems as well. 
+        // TODO: phases
+        // TODO: views 
+        // TODO: fixtures
+        // TODO: bounding walls 
 
         return entityIndex;
     }
@@ -680,9 +754,24 @@ public class RevitBimDataBuilder
         ProcessedDocuments.Add(key, CurrentDocumentIndex);
 
         var siteLocation = CurrentDocument.SiteLocation;
-            
+
+        var fi = new FileInfo(d.PathName);
+        if (fi.Exists)
+        {
+            var saveDate = fi.LastWriteTimeUtc;
+            AddParameter(ei, _documentLastSaveTime, saveDate);
+            var fileInfo = BasicFileInfo.Extract(d.PathName);
+            var docVersion = fileInfo.GetDocumentVersion();
+            if (docVersion != null)
+            {
+                AddParameter(ei, _documentSaveCount, docVersion.NumberOfSaves);
+            }
+        }
+
         AddParameter(ei, _documentPath, CurrentDocument.PathName);
         AddParameter(ei, _documentTitle, CurrentDocument.Title);
+        AddParameter(ei, _documentIsDetached, CurrentDocument.IsDetached ? 1 : 0);
+        AddParameter(ei, _documentIsLinked, CurrentDocument.IsLinked ? 1 : 0);
 
         // TODO: what about "IsDetached"?
 

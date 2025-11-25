@@ -190,7 +190,7 @@ public enum RelationType
     PartOf = 0,
 
     // For elements of a group or set or layer. Represents aggregations. 
-    ElementOf = 1,
+    MemberOf = 1,
 
     // Represents spatial relationships. Like part of a level, or a room.  
     ContainedIn = 2,

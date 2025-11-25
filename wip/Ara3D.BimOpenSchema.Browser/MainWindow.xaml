@@ -20,10 +20,14 @@
 				<MenuItem Header="_Export Excel" Click="ExportExcel_Click">
 				</MenuItem>
 			</MenuItem>
-			<MenuItem x:Name="RawMenuItem" Header="_Raw"
-			          IsCheckable="True"
-			          IsChecked="False"
-			          Click="Raw_Click"/>
+			<MenuItem x:Name="GroupingMenuItem" Header="_Grouping">
+			</MenuItem>
+			<MenuItem x:Name="Option" Header="_Options">
+				<MenuItem x:Name="IncludeParamsMenuItem" Header="_Include Parameters"
+				    IsCheckable="True"
+					IsChecked="False"
+					Click="IncludeParamsMenuItem_OnClick"/>
+			</MenuItem>
 		</Menu>
 
 		<!-- Your existing content -->

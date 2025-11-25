@@ -1,7 +1,5 @@
-﻿using System.Windows.Data;
-using Ara3D.DataTable;
+﻿using Ara3D.DataTable;
 using Ara3D.Utils;
-using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Ara3D.BimOpenSchema.Browser;
 
@@ -56,30 +54,39 @@ public class DataTableFromEntities : IDataTable
         return r;
     }
 
-    public DataTableFromEntities(IReadOnlyList<EntityModel> entities, string name)
+    public DataTableFromEntities(IReadOnlyList<EntityModel> entities, string name, bool includeParameters)
     {
         Entities = entities;
         ColumnLookup.Clear();
         var nameColumn = AddColumn("Name", typeof(string));
-        var globalIdColumn = AddColumn("GlobalId", typeof(string));
+        //var globalIdColumn = AddColumn("GlobalId", typeof(string));
         var localIdColumn = AddColumn("LocalId", typeof(long));
-        var documentIndexColumn = AddColumn("DocumentIndex", typeof(int));
+        var documentColumn = AddColumn("Document", typeof(int));
+        var categoryColumn = AddColumn("Category", typeof(string));
+        var classNameColumn = AddColumn("ClassName", typeof(string));
+        var levelColumn = AddColumn("Level", typeof(string));
+        var groupColumn = AddColumn("Group", typeof(string));
+        var assemblyColumn = AddColumn("Assembly", typeof(string));
+        var roomColumn = AddColumn("Room", typeof(string));
 
         var nonParameterColumnCount = ColumnLookup.Count;
 
         // Create the parameter columns
         foreach (var e in Entities)
         {
-            foreach (var pm in e.Parameters)
+            if (includeParameters)
             {
-                // TODO: temporary. These type can't be converted to Parquet 
-                if (pm.Descriptor.ParameterType == ParameterType.Entity
-                    || pm.Descriptor.ParameterType == ParameterType.Point)
-                    continue;
+                foreach (var pm in e.Parameters)
+                {
+                    // TODO: temporary. These type can't be converted to Parquet 
+                    if (pm.Descriptor.ParameterType == ParameterType.Entity
+                        || pm.Descriptor.ParameterType == ParameterType.Point)
+                        continue;
 
-                var paramType = pm.Descriptor.DotNetType;
-                var paramName = pm.Descriptor.Name;
-                AddColumn(paramName, paramType);
+                    var paramType = pm.Descriptor.DotNetType;
+                    var paramName = pm.Descriptor.Name;
+                    AddColumn(paramName, paramType);
+                }
             }
         }
 
@@ -87,8 +94,14 @@ public class DataTableFromEntities : IDataTable
         {
             nameColumn.Values.Add(e.Name);
             localIdColumn.Values.Add(e.LocalId);
-            globalIdColumn.Values.Add(e.GlobalId);
-            documentIndexColumn.Values.Add(e.DocumentIndex);
+            //globalIdColumn.Values.Add(e.GlobalId);
+            documentColumn.Values.Add(e.DocumentTitle);
+            categoryColumn.Values.Add(e.Category);
+            classNameColumn.Values.Add(e.ClassName);
+            levelColumn.Values.Add(e.LevelName);
+            groupColumn.Values.Add(e.GroupName);
+            assemblyColumn.Values.Add(e.AssemblyName);
+            roomColumn.Values.Add(e.RoomName);
 
             // Add values or default values 
             foreach (var column in ColumnLookup.Values)
@@ -97,12 +110,12 @@ public class DataTableFromEntities : IDataTable
                 if (column.ColumnIndex < nonParameterColumnCount)
                     continue;
 
-                if (e.ParameterValues.TryGetValue(column.Name, out var val) 
+                if (e.ParameterValues.TryGetValue(column.Name, out var val)
                     && val.GetType() == column.Type)
                 {
                     column.Values.Add(val);
                 }
-                else 
+                else
                 {
                     column.Values.Add(column.DefaultValue);
                 }
