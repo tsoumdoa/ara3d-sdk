@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using Ara3D.Geometry;
 using Ara3D.Models;
 using Ara3D.Utils;
@@ -25,16 +23,14 @@ public class GltfBuilder
     public List<Integer3> Faces { get; } = new();
     public GltfData Data = new();
 
-    const string SCALAR_STR = "SCALAR";
-    const string FACE_STR = "FACE";
-    const string VEC3_STR = "VEC3";
-    const string POSITION_STR = "POSITION";
+    public const string SCALAR_STR = "SCALAR";
+    public const string FACE_STR = "FACE";
+    public const string VEC3_STR = "VEC3";
+    public const string POSITION_STR = "POSITION";
 
-    const int VERTEX_VIEW_INDEX = 0;
-    const int FACE_VIEW_INDEX = 1; 
-
-    public List<GltfMeshSlice> MeshSlices = new();
-
+    public const int VERTEX_VIEW_INDEX = 0;
+    public const int FACE_VIEW_INDEX = 1; 
+    
     public GltfMaterial ToGltfMaterial(InstanceStruct inst)
         => ToGltfMaterial(inst.Material);
 
@@ -43,7 +39,7 @@ public class GltfBuilder
         {
             pbrMetallicRoughness = new GltfPbr()
             {
-                baseColorFactor = [mat.Color.R, mat.Color.G, mat.Color.B],
+                baseColorFactor = [mat.Color.R, mat.Color.G, mat.Color.B, mat.Color.A],
                 metallicFactor = mat.Metallic,
                 roughnessFactor = mat.Roughness
             }
@@ -106,18 +102,18 @@ public class GltfBuilder
         return slice;
     }
 
-    public void AddModel(Model3D model)
+    public void SetModel(Model3D model)
     {
-        var matOffset = Data.materials.Count;
-        var slicesOffset = MeshSlices.Count;
-        var nodesOffset = Data.nodes.Count;
-        var accOffset = Data.accessors.Count;
+        Debug.Assert(Data.meshes.Count == 0);
+        Debug.Assert(Data.accessors.Count == 0);
+        Debug.Assert(Data.materials.Count == 0);
+        Debug.Assert(Data.accessors.Count == 0);
+        Debug.Assert(Data.nodes.Count == 0);
 
         var mats = model.Instances.Select(i => i.Material).ToIndexedSet();
         Data.materials.AddRange(mats.OrderedMembers().Select(ToGltfMaterial));
 
         var slices = model.Meshes.Select(CreateMeshSlice).ToList();
-        MeshSlices.AddRange(slices);
 
         foreach (var slice in slices)
         {
@@ -128,23 +124,19 @@ public class GltfBuilder
             Data.accessors.Add(indexAccessor);
         }
 
-        Debug.Assert(Data.accessors.Count == accOffset + slices.Count * 2);
-
         foreach (var instance in model.Instances)
         {
             var matIndex = mats.IndexOf(instance.Material);
             var transform = instance.Matrix4x4;
-            
-            var meshIndex = Data.meshes.Count;
-            
-            var vertexAccessorIndex = accOffset + meshIndex * 2;
-            var indexAccessorIndex = accOffset + meshIndex * 2 + 1;
+
+            var vertexAccessorIndex = instance.MeshIndex * 2 + VERTEX_VIEW_INDEX;
+            var indexAccessorIndex = instance.MeshIndex * 2 + FACE_VIEW_INDEX;
 
             var vertexAccessor = Data.accessors[vertexAccessorIndex];
             var indexAccessor = Data.accessors[indexAccessorIndex];
 
-            Debug.Assert(vertexAccessor.GltfComponentType == GltfComponentType.FLOAT);
-            Debug.Assert(indexAccessor.GltfComponentType == GltfComponentType.UNSIGNED_INT);
+            Debug.Assert(vertexAccessor.componentType == GltfComponentType.FLOAT);
+            Debug.Assert(indexAccessor.componentType == GltfComponentType.UNSIGNED_INT);
 
             Debug.Assert(vertexAccessor.count == slices[instance.MeshIndex].VertexCount);
             Debug.Assert(indexAccessor.count == slices[instance.MeshIndex].FaceCount * 3);
@@ -152,23 +144,22 @@ public class GltfBuilder
             var prim = new GltfMeshPrimitive(vertexAccessorIndex, indexAccessorIndex, matIndex);
             var mesh = new GltfMesh { primitives = [prim] };
 
+            var node = new GltfNode(transform, Data.meshes.Count);
+
             Data.meshes.Add(mesh);
-            var node = new GltfNode(transform, meshIndex);
             Data.nodes.Add(node);
         }
     }
 
-    public GltfData Build()
+    public GltfData Build(List<byte> bytes)
     {
-        var lastSlice = MeshSlices[^1];
-
-        var vertexByteSize = lastSlice.VertexCount * 3 * sizeof(float);
-        var indexByteSize = lastSlice.FaceCount * 3 * sizeof(int);
+        var vertexByteSize = Vertices.Count * 3 * sizeof(float);
+        var indexByteSize = Faces.Count * 3 * sizeof(int);
 
         var totalBufferSize = vertexByteSize + indexByteSize;
 
-        var vertexBufferView = new GltfBufferView(0, 0, vertexByteSize, GltfTargets.ARRAY_BUFFER, "POSITION");
-        var indexBufferView = new GltfBufferView(0, vertexByteSize, indexByteSize, GltfTargets.ELEMENT_ARRAY_BUFFER, "INDICES");
+        var vertexBufferView = new GltfBufferView(0, 0, vertexByteSize, GltfTargets.ARRAY_BUFFER, string.Empty);
+        var indexBufferView = new GltfBufferView(0, vertexByteSize, indexByteSize, GltfTargets.ELEMENT_ARRAY_BUFFER, string.Empty);
 
         Data.bufferViews.Add(vertexBufferView);
         Data.bufferViews.Add(indexBufferView);
@@ -179,16 +170,21 @@ public class GltfBuilder
         };
         Data.buffers.Add(buffer);
 
-        var vertexBytes = MemoryMarshal.AsBytes(Vertices.ToArray().AsSpan());
-        var indexBytes = MemoryMarshal.AsBytes(Faces.ToArray().AsSpan());
-        var byteCount = vertexBytes.Length + indexBytes.Length;
-        
-        Data.bytes.AddRange(BitConverter.GetBytes((uint)byteCount));
-        Data.bytes.AddRange(GltfExporter.BinChunkType);
-        Data.bytes.AddRange(vertexBytes);
-        Data.bytes.AddRange(indexBytes);
+        bytes.AddRange(BitConverter.GetBytes((uint)totalBufferSize));
+        bytes.AddRange(GltfExporter.BinChunkType);
 
-        Debug.Assert(Data.accessors.Count == MeshSlices.Count * 2);
+        foreach (var x in Vertices)
+        {
+            bytes.AddRange(BitConverter.GetBytes(x.X.Value));
+            bytes.AddRange(BitConverter.GetBytes(x.Y.Value));
+            bytes.AddRange(BitConverter.GetBytes(x.Z.Value));
+        }
+        foreach (var x in Faces)
+        {
+            bytes.AddRange(BitConverter.GetBytes(x.A.Value));
+            bytes.AddRange(BitConverter.GetBytes(x.B.Value));
+            bytes.AddRange(BitConverter.GetBytes(x.C.Value));
+        }
 
         var scene = new GltfScene();
         for (var i = 0; i < Data.nodes.Count; i++)

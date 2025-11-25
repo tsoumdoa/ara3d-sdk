@@ -6,13 +6,12 @@ namespace Ara3D.IO.GltfExporter;
 /// </summary>
 public class GltfData
 {
-    public GltfVersion asset = new();
-    public List<GltfScene> scenes = new();
-    public List<GltfNode> nodes = new();
-    public List<GltfMesh> meshes = new();
-    public List<GltfBuffer> buffers = new();
-    public List<GltfBufferView> bufferViews = new();
-    public List<GltfAccessor> accessors = new();
-    public List<GltfMaterial> materials = new();
-    public List<byte> bytes = new();
+    public GltfVersion asset { get; set; } = new();
+    public List<GltfBuffer> buffers { get; set; } = new();
+    public List<GltfBufferView> bufferViews { get; set; } = new();
+    public List<GltfAccessor> accessors { get; set; } = new();
+    public List<GltfScene> scenes { get; set; } = new();
+    public List<GltfNode> nodes { get; set; } = new();
+    public List<GltfMesh> meshes { get; set; } = new();
+    public List<GltfMaterial> materials { get; set; } = new();
 }

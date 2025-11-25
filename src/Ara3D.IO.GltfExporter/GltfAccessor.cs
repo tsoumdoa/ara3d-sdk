@@ -6,12 +6,12 @@
 /// </summary>
 public class GltfAccessor
 {
-    public GltfAccessor(int bufferView, int byteOffset, GltfComponentType gltfComponentType, int count, string type, 
+    public GltfAccessor(int bufferView, int byteOffset, GltfComponentType componentType, int count, string type, 
         List<float> min, List<float> max, string name)
     {
         this.bufferView = bufferView;
         this.byteOffset = byteOffset;
-        this.GltfComponentType = gltfComponentType;
+        this.componentType = componentType;
         this.count = count;
         this.type = type;
         this.min = min;
@@ -32,7 +32,7 @@ public class GltfAccessor
     /// <summary>
     /// Gets or sets the datatype of the components in the attribute.
     /// </summary>
-    public GltfComponentType GltfComponentType { get; set; }
+    public GltfComponentType componentType { get; set; }
 
     /// <summary>
     /// Gets or sets the number of attributes referenced by this accessor.

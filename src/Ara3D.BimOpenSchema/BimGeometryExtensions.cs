@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Ara3D.Collections;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Models;
@@ -129,7 +128,7 @@ public static class BimGeometryExtensions
     public static IDataSet ToDataSet(this BimGeometry self)
     {
         var r = new DataSetBuilder();
-        r.AddTable("Material")
+        r.AddTable(BimGeometry.MaterialTableName)
             .AddColumn(self, self.MaterialRed, nameof(self.MaterialRed))
             .AddColumn(self, self.MaterialGreen, nameof(self.MaterialGreen))
             .AddColumn(self, self.MaterialBlue, nameof(self.MaterialBlue))
@@ -137,7 +136,7 @@ public static class BimGeometryExtensions
             .AddColumn(self, self.MaterialMetallic, nameof(self.MaterialMetallic))
             .AddColumn(self, self.MaterialRoughness, nameof(self.MaterialRoughness));
 
-        r.AddTable("Transform")
+        r.AddTable(BimGeometry.TransformTableName)
             .AddColumn(self, self.TransformTX, nameof(self.TransformTX))
             .AddColumn(self, self.TransformTY, nameof(self.TransformTY))
             .AddColumn(self, self.TransformTZ, nameof(self.TransformTZ))
@@ -149,21 +148,21 @@ public static class BimGeometryExtensions
             .AddColumn(self, self.TransformSX, nameof(self.TransformSY))
             .AddColumn(self, self.TransformSX, nameof(self.TransformSZ));
 
-        r.AddTable("Vertex")
+        r.AddTable(BimGeometry.VertexTableName)
             .AddColumn(self, self.VertexX, nameof(self.VertexX))
             .AddColumn(self, self.VertexY, nameof(self.VertexY))
             .AddColumn(self, self.VertexZ, nameof(self.VertexZ));
 
-        r.AddTable("Index")
+        r.AddTable(BimGeometry.IndexTableName)
             .AddColumn(self, self.IndexBuffer, nameof(self.IndexBuffer));
 
-        r.AddTable("Element")
+        r.AddTable(BimGeometry.ElementTableName)
             .AddColumn(self, self.ElementEntityIndex, nameof(self.ElementEntityIndex))
             .AddColumn(self, self.ElementMaterialIndex, nameof(self.ElementMaterialIndex))
             .AddColumn(self, self.ElementMeshIndex, nameof(self.ElementMeshIndex))
             .AddColumn(self, self.ElementTransformIndex, nameof(self.ElementTransformIndex));
 
-        r.AddTable("Mesh")
+        r.AddTable(BimGeometry.MeshTableName)
             .AddColumn(self, self.MeshIndexOffset, nameof(self.MeshIndexOffset))
             .AddColumn(self, self.MeshVertexOffset, nameof(self.MeshVertexOffset));
 
@@ -186,43 +185,49 @@ public static class BimGeometryExtensions
         return bgb.BuildModel();
     }
 
-    public static T[] ReadColumn<T>(this IDataSet set, string tableName, string columnName)
+    public static IDataTable GetTable(this IDataSet self, BimGeometryTableName name)
+        => self.GetTable(BimGeometry.GetTableName(name));
+
+    public static T[] ReadColumn<T>(this IDataSet set, BimGeometryTableName tableName, string columnName)
         => set.GetTable(tableName).GetColumn(columnName).GetTypedValues<T>();
 
     public static BimGeometry ToBimGeometry(this IDataSet self)
     {
         var r = new BimGeometry();
-        r.MaterialRed = ReadColumn<byte>(self, "Material", nameof(r.MaterialRed));
-        r.MaterialGreen = ReadColumn<byte>(self, "Material", nameof(r.MaterialGreen));
-        r.MaterialBlue = ReadColumn<byte>(self, "Material", nameof(r.MaterialBlue));
-        r.MaterialAlpha = ReadColumn<byte>(self, "Material", nameof(r.MaterialAlpha));
-        r.MaterialMetallic = ReadColumn<byte>(self, "Material", nameof(r.MaterialMetallic));
-        r.MaterialRoughness = ReadColumn<byte>(self, "Material", nameof(r.MaterialRoughness));
+        r.MaterialRed = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialRed));
+        r.MaterialGreen = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialGreen));
+        r.MaterialBlue = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialBlue));
+        r.MaterialAlpha = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialAlpha));
+        r.MaterialMetallic = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialMetallic));
+        r.MaterialRoughness = ReadColumn<byte>(self, BimGeometryTableName.Material, nameof(r.MaterialRoughness));
 
-        r.TransformTX = ReadColumn<float>(self, "Transform", nameof(r.TransformTX));
-        r.TransformTY = ReadColumn<float>(self, "Transform", nameof(r.TransformTY));
-        r.TransformTZ = ReadColumn<float>(self, "Transform", nameof(r.TransformTZ));
-        r.TransformQX = ReadColumn<float>(self, "Transform", nameof(r.TransformQX));
-        r.TransformQY = ReadColumn<float>(self, "Transform", nameof(r.TransformQY));
-        r.TransformQZ = ReadColumn<float>(self, "Transform", nameof(r.TransformQZ));
-        r.TransformQW = ReadColumn<float>(self, "Transform", nameof(r.TransformQW));
-        r.TransformSX = ReadColumn<float>(self, "Transform", nameof(r.TransformSX));
-        r.TransformSY = ReadColumn<float>(self, "Transform", nameof(r.TransformSY));
-        r.TransformSZ = ReadColumn<float>(self, "Transform", nameof(r.TransformSZ));
+        r.TransformTX = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformTX));
+        r.TransformTY = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformTY));
+        r.TransformTZ = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformTZ));
+        r.TransformQX = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformQX));
+        r.TransformQY = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformQY));
+        r.TransformQZ = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformQZ));
+        r.TransformQW = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformQW));
+        r.TransformSX = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformSX));
+        r.TransformSY = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformSY));
+        r.TransformSZ = ReadColumn<float>(self, BimGeometryTableName.Transform, nameof(r.TransformSZ));
 
-        r.VertexX = ReadColumn<float>(self, "Vertex", nameof(r.VertexX));
-        r.VertexY = ReadColumn<float>(self, "Vertex", nameof(r.VertexY));
-        r.VertexZ = ReadColumn<float>(self, "Vertex", nameof(r.VertexZ));
+        r.VertexX = ReadColumn<float>(self, BimGeometryTableName.Vertex, nameof(r.VertexX));
+        r.VertexY = ReadColumn<float>(self, BimGeometryTableName.Vertex, nameof(r.VertexY));
+        r.VertexZ = ReadColumn<float>(self, BimGeometryTableName.Vertex, nameof(r.VertexZ));
 
-        r.IndexBuffer = ReadColumn<int>(self, "Index", nameof(r.IndexBuffer));
+        r.IndexBuffer = ReadColumn<int>(self, BimGeometryTableName.Index, nameof(r.IndexBuffer));
 
-        r.ElementMaterialIndex = ReadColumn<int>(self, "Element", nameof(r.ElementMaterialIndex));
-        r.ElementMeshIndex = ReadColumn<int>(self, "Element", nameof(r.ElementMeshIndex));
-        r.ElementTransformIndex = ReadColumn<int>(self, "Element", nameof(r.ElementTransformIndex));
+        r.ElementMaterialIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementMaterialIndex));
+        r.ElementMeshIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementMeshIndex));
+        r.ElementTransformIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementTransformIndex));
 
-        r.MeshIndexOffset = ReadColumn<int>(self, "Mesh", nameof(r.MeshIndexOffset));
-        r.MeshVertexOffset = ReadColumn<int>(self, "Mesh", nameof(r.MeshVertexOffset));
+        r.MeshIndexOffset = ReadColumn<int>(self, BimGeometryTableName.Mesh, nameof(r.MeshIndexOffset));
+        r.MeshVertexOffset = ReadColumn<int>(self, BimGeometryTableName.Mesh, nameof(r.MeshVertexOffset));
 
         return r;
     }
+
+    public static BimModel3D ToModel3D(this BimData self)
+        => BimModel3D.Create(self);
 }

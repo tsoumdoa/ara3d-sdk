@@ -59,15 +59,19 @@ public class DataTableFromEntities : IDataTable
         Entities = entities;
         ColumnLookup.Clear();
         var nameColumn = AddColumn("Name", typeof(string));
-        //var globalIdColumn = AddColumn("GlobalId", typeof(string));
         var localIdColumn = AddColumn("LocalId", typeof(long));
         var documentColumn = AddColumn("Document", typeof(int));
         var categoryColumn = AddColumn("Category", typeof(string));
+        var categoryTypeColumn = AddColumn("CategoryType", typeof(string));
         var classNameColumn = AddColumn("ClassName", typeof(string));
         var levelColumn = AddColumn("Level", typeof(string));
         var groupColumn = AddColumn("Group", typeof(string));
-        var assemblyColumn = AddColumn("Assembly", typeof(string));
         var roomColumn = AddColumn("Room", typeof(string));
+        var familyTypeColumn = AddColumn("FamilyType", typeof(string));
+
+        //var assemblyColumn = AddColumn("Assembly", typeof(string));
+        //var worksetColumn = AddColumn("Workset", typeof(int));
+        //var globalIdColumn = AddColumn("GlobalId", typeof(string));
 
         var nonParameterColumnCount = ColumnLookup.Count;
 
@@ -79,12 +83,15 @@ public class DataTableFromEntities : IDataTable
                 foreach (var pm in e.Parameters)
                 {
                     // TODO: temporary. These type can't be converted to Parquet 
-                    if (pm.Descriptor.ParameterType == ParameterType.Entity
-                        || pm.Descriptor.ParameterType == ParameterType.Point)
+                    if (pm.Descriptor.ParameterType == ParameterType.Point)
                         continue;
 
                     var paramType = pm.Descriptor.DotNetType;
                     var paramName = pm.Descriptor.Name;
+
+                    if (pm.Descriptor.ParameterType == ParameterType.Entity)
+                        paramType = typeof(int);
+
                     AddColumn(paramName, paramType);
                 }
             }
@@ -94,14 +101,18 @@ public class DataTableFromEntities : IDataTable
         {
             nameColumn.Values.Add(e.Name);
             localIdColumn.Values.Add(e.LocalId);
-            //globalIdColumn.Values.Add(e.GlobalId);
             documentColumn.Values.Add(e.DocumentTitle);
             categoryColumn.Values.Add(e.Category);
+            categoryTypeColumn.Values.Add(e.CategoryType);
             classNameColumn.Values.Add(e.ClassName);
             levelColumn.Values.Add(e.LevelName);
             groupColumn.Values.Add(e.GroupName);
-            assemblyColumn.Values.Add(e.AssemblyName);
             roomColumn.Values.Add(e.RoomName);
+            familyTypeColumn.Values.Add(e.FamilyType);
+
+            //globalIdColumn.Values.Add(e.GlobalId);
+            //assemblyColumn.Values.Add(e.AssemblyName);
+            //worksetColumn.Values.Add(e.WorksetId);
 
             // Add values or default values 
             foreach (var column in ColumnLookup.Values)
@@ -113,7 +124,10 @@ public class DataTableFromEntities : IDataTable
                 if (e.ParameterValues.TryGetValue(column.Name, out var val)
                     && val.GetType() == column.Type)
                 {
-                    column.Values.Add(val);
+                    if (val is EntityModel em)
+                        column.Values.Add((int)em.Index);
+                    else
+                        column.Values.Add(val);
                 }
                 else
                 {

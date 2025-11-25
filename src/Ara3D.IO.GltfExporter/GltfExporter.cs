@@ -38,12 +38,11 @@ public static class GltfExporter
             .Concat(chunkData)
             .ToArray();
 
-    public static void Export(this GltfData data, string filePath)
+    public static void Export(this GltfData data, IReadOnlyList<byte> binChunk, string filePath)
     {
         var json = JsonConvert.SerializeObject(data, 
             new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
         var jsonChunk = GetJsonBytes(json);
-        var binChunk = data.bytes;
 
         var lengthBytes = BitConverter.GetBytes(Convert.ToUInt32(jsonChunk.Length + binChunk.Count + 12));
         var headerChunk = Magic.Concat(Version).Concat(lengthBytes).ToArray();
@@ -52,6 +51,7 @@ public static class GltfExporter
             .Concat(jsonChunk)
             .Concat(binChunk)
             .ToArray();
+
         File.WriteAllBytes(filePath, exportArray);
     }
 }

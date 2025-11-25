@@ -1,110 +1,269 @@
-﻿namespace Ara3D.BimOpenSchema;
+﻿using System.Collections.Generic;
+using System.Reflection;
+
+namespace Ara3D.BimOpenSchema;
+
+public record Parameter(string Name, ParameterType Type)
+{
+    public static implicit operator string(Parameter p) => p.Name;
+}
 
 public static class CommonRevitParameters
 {
+
     // Object
-    public const string ObjectTypeName = "rvt:Object:TypeName";
+    public static Parameter ObjectTypeName =
+        new("rvt:Object:TypeName", ParameterType.String);
 
     // Element
-    public const string ElementLevel = "rvt:Element:Level";
-    public const string ElementLocationPoint = "rvt:Element:Location.Point";
-    public const string ElementLocationStartPoint = "rvt:Element:Location.StartPoint";
-    public const string ElementLocationEndPoint = "rvt:Element:Location.EndPoint";
-    public const string ElementBoundsMin = "rvt:Element:Bounds.Min";
-    public const string ElementBoundsMax = "rvt:Element:Bounds.Max";
-    public const string ElementAssemblyInstance = "rvt:Element:AssemblyInstance";
-    public const string ElementDesignOption = "rvt:Element:DesignOption";
-    public const string ElementGroup = "rvt:Element:Group";
-    public const string ElementWorkset = "rvt:Element:Workset";
-    public const string ElementCreatedPhase = "rvt:Element:CreatedPhase";
-    public const string ElementDemolishedPhase = "rvt:Element:DemolishedPhase";
-    public const string ElementCategory = "rvt:Element:Category";
-    public const string ElementIsViewSpecific = "rvt:Element:IsViewSpecific";
-    public const string ElementOwnerView = "rvt:Element:OwnerView";
+    public static Parameter ElementLevel =
+        new("rvt:Element:Level", ParameterType.Entity);
+
+    public static Parameter ElementLocationPoint =
+        new("rvt:Element:Location.Point", ParameterType.Point);
+
+    public static Parameter ElementLocationStartPoint =
+        new("rvt:Element:Location.StartPoint", ParameterType.Point);
+
+    public static Parameter ElementLocationEndPoint =
+        new("rvt:Element:Location.EndPoint", ParameterType.Point);
+
+    public static Parameter ElementBoundsMin =
+        new("rvt:Element:Bounds.Min", ParameterType.Point);
+
+    public static Parameter ElementBoundsMax =
+        new("rvt:Element:Bounds.Max", ParameterType.Point);
+
+    public static Parameter ElementAssemblyInstance =
+        new("rvt:Element:AssemblyInstance", ParameterType.Entity);
+
+    public static Parameter ElementDesignOption =
+        new("rvt:Element:DesignOption", ParameterType.Entity);
+
+    public static Parameter ElementGroup =
+        new("rvt:Element:Group", ParameterType.Entity);
+
+    public static Parameter ElementWorksetId =
+        new("rvt:Element:WorksetId", ParameterType.Int);
+
+    public static Parameter ElementCreatedPhase =
+        new("rvt:Element:CreatedPhase", ParameterType.Entity);
+
+    public static Parameter ElementDemolishedPhase =
+        new("rvt:Element:DemolishedPhase", ParameterType.Entity);
+
+    public static Parameter ElementCategory =
+        new("rvt:Element:Category", ParameterType.Entity);
+
+    public static Parameter ElementIsViewSpecific =
+        new("rvt:Element:IsViewSpecific", ParameterType.Int);
+
+    public static Parameter ElementOwnerView =
+        new("rvt:Element:OwnerView", ParameterType.Entity);
 
     // FamilyInstance
-    public const string FIToRoom = "rvt:FamilyInstance:ToRoom";
-    public const string FIFromRoom = "rvt:FamilyInstance:FromRoom";
-    public const string FIHost = "rvt:FamilyInstance:Host";
-    public const string FISpace = "rvt:FamilyInstance:Space";
-    public const string FIRoom = "rvt:FamilyInstance:Room";
-    public const string FIFamilyType = "rvt:FamilyInstance:FamilyType";
-    public const string FIStructuralUsage = "rvt:FamilyInstance:StructuralUsage";
-    public const string FIStructuralMaterialType = "rvt:FamilyInstance:StructuralMaterialType";
-    public const string FIStructuralMaterialId = "rvt:FamilyInstance:StructuralMaterialId";
-    public const string FIStructuralType = "rvt:FamilyInstance:StructuralType";
+    public static Parameter FIToRoom =
+        new("rvt:FamilyInstance:ToRoom", ParameterType.Entity);
+
+    public static Parameter FIFromRoom =
+        new("rvt:FamilyInstance:FromRoom", ParameterType.Entity);
+
+    public static Parameter FIHost =
+        new("rvt:FamilyInstance:Host", ParameterType.Entity);
+
+    public static Parameter FISpace =
+        new("rvt:FamilyInstance:Space", ParameterType.Entity);
+
+    public static Parameter FIRoom =
+        new("rvt:FamilyInstance:Room", ParameterType.Entity);
+
+    public static Parameter FIFamilyType =
+        new("rvt:FamilyInstance:FamilyType", ParameterType.Entity);
+
+    public static Parameter FIStructuralUsage =
+        new("rvt:FamilyInstance:StructuralUsage", ParameterType.String);
+
+    public static Parameter FIStructuralMaterialType =
+        new("rvt:FamilyInstance:StructuralMaterialType", ParameterType.String);
+
+    public static Parameter FIStructuralMaterial =
+        new("rvt:FamilyInstance:StructuralMaterial", ParameterType.Entity);
+
+    public static Parameter FIStructuralType =
+        new("rvt:FamilyInstance:StructuralType", ParameterType.String);
 
     // Family
-    public const string FamilyStructuralCodeName = "rvt:Family:StructuralCodeName";
-    public const string FamilyStructuralMaterialType = "rvt:Family:StructuralMaterialType";
+    public static Parameter FamilyStructuralCodeName =
+        new("rvt:Family:StructuralCodeName", ParameterType.String);
+
+    public static Parameter FamilyStructuralMaterialType =
+        new("rvt:Family:StructuralMaterialType", ParameterType.String);
 
     // Room
-    public const string RoomNumber = "rvt:Room:Number";
-    public const string RoomBaseOffset = "rvt:Room:BaseOffset";
-    public const string RoomLimitOffset = "rvt:Room:LimitOffset";
-    public const string RoomUnboundedHeight = "rvt:Room:UnboundedHeight";
-    public const string RoomVolume = "rvt:Room:Volume";
-    public const string RoomUpperLimit = "rvt:Room:UpperLimit";
+    public static Parameter RoomNumber =
+        new("rvt:Room:Number", ParameterType.String);
+
+    public static Parameter RoomBaseOffset =
+        new("rvt:Room:BaseOffset", ParameterType.Double);
+
+    public static Parameter RoomLimitOffset =
+        new("rvt:Room:LimitOffset", ParameterType.Double);
+
+    public static Parameter RoomUnboundedHeight =
+        new("rvt:Room:UnboundedHeight", ParameterType.Double);
+
+    public static Parameter RoomVolume =
+        new("rvt:Room:Volume", ParameterType.Double);
+
+    public static Parameter RoomUpperLimit =
+        new("rvt:Room:UpperLimit", ParameterType.Entity);
 
     // Level
-    public const string LevelProjectElevation = "rvt:Level:ProjectElevation";
-    public const string LevelElevation = "rvt:Level:Elevation";
+    public static Parameter LevelProjectElevation =
+        new("rvt:Level:ProjectElevation", ParameterType.Double);
+
+    public static Parameter LevelElevation =
+        new("rvt:Level:Elevation", ParameterType.Double);
 
     // Material
-    public const string MaterialColorRed = "rvt:Material:Color.Red";
-    public const string MaterialColorGreen = "rvt:Material:Color.Green";
-    public const string MaterialColorBlue = "rvt:Material:Color.Blue";
-    public const string MaterialShininess = "rvt:Material:Shininess";
-    public const string MaterialSmoothness = "rvt:Material:Smoothness";
-    public const string MaterialCategory = "rvt:Material:Category";
-    public const string MaterialClass = "rvt:Material:Class";
-    public const string MaterialTransparency = "rvt:Material:Transparency";
+    public static Parameter MaterialColorRed =
+        new("rvt:Material:Color.Red", ParameterType.Double);
+
+    public static Parameter MaterialColorGreen =
+        new("rvt:Material:Color.Green", ParameterType.Double);
+
+    public static Parameter MaterialColorBlue =
+        new("rvt:Material:Color.Blue", ParameterType.Double);
+
+    public static Parameter MaterialShininess =
+        new("rvt:Material:Shininess", ParameterType.Double);
+
+    public static Parameter MaterialSmoothness =
+        new("rvt:Material:Smoothness", ParameterType.Double);
+
+    public static Parameter MaterialCategory =
+        new("rvt:Material:Category", ParameterType.String);
+
+    public static Parameter MaterialClass =
+        new("rvt:Material:Class", ParameterType.String);
+
+    public static Parameter MaterialTransparency =
+        new("rvt:Material:Transparency", ParameterType.Double);
 
     // Workset
-    public const string WorksetKind = "rvt:Workset:Kind";
+    public static Parameter WorksetKind =
+        new("rvt:Workset:Kind", ParameterType.String);
 
     // Layer
-    public const string LayerIndex = "rvt:Layer:Index";
-    public const string LayerFunction = "rvt:Layer:Function";
-    public const string LayerWidth = "rvt:Layer:Width";
-    public const string LayerMaterialId = "rvt:Layer:MaterialId";
-    public const string LayerIsCore = "rvt:Layer:IsCore";
+    public static Parameter LayerIndex =
+        new("rvt:Layer:Index", ParameterType.Int);
+
+    public static Parameter LayerFunction =
+        new("rvt:Layer:Function", ParameterType.String);
+
+    public static Parameter LayerWidth =
+        new("rvt:Layer:Width", ParameterType.Double);
+
+    public static Parameter LayerMaterialId =
+        new("rvt:Layer:MaterialId", ParameterType.Entity);
+
+    public static Parameter LayerIsCore =
+        new("rvt:Layer:IsCore", ParameterType.Int);
 
     // Document
-    public const string DocumentCreationGuid = "rvt:Document:CreationGuid";
-    public const string DocumentWorksharingGuid = "rvt:Document:WorksharingGuid";
-    public const string DocumentTitle = "rvt:Document:Title";
-    public const string DocumentPath = "rvt:Document:Path";
-    public const string DocumentElevation = "rvt:Document:Elevation";
-    public const string DocumentLatitude = "rvt:Document:Latitude";
-    public const string DocumentLongitude = "rvt:Document:Longitude";
-    public const string DocumentPlaceName = "rvt:Document:PlaceName";
-    public const string DocumentWeatherStationName = "rvt:Document:WeatherStationName";
-    public const string DocumentTimeZone = "rvt:Document:TimeZone";
-    public const string DocumentLastSaveTime = "rvt:Document:LastSaveTime";
-    public const string DocumentSaveCount = "rvt:Document:SaveCount";
-    public const string DocumentIsDetached = "rvt:Document:IsDetached";
-    public const string DocumentIsLinked = "rvt:Document:IsLinked";
-    
+    public static Parameter DocumentCreationGuid =
+        new("rvt:Document:CreationGuid", ParameterType.String);
+
+    public static Parameter DocumentWorksharingGuid =
+        new("rvt:Document:WorksharingGuid", ParameterType.String);
+
+    public static Parameter DocumentTitle =
+        new("rvt:Document:Title", ParameterType.String);
+
+    public static Parameter DocumentPath =
+        new("rvt:Document:Path", ParameterType.String);
+
+    public static Parameter DocumentElevation =
+        new("rvt:Document:Elevation", ParameterType.Double);
+
+    public static Parameter DocumentLatitude =
+        new("rvt:Document:Latitude", ParameterType.Double);
+
+    public static Parameter DocumentLongitude =
+        new("rvt:Document:Longitude", ParameterType.Double);
+
+    public static Parameter DocumentPlaceName =
+        new("rvt:Document:PlaceName", ParameterType.String);
+
+    public static Parameter DocumentWeatherStationName =
+        new("rvt:Document:WeatherStationName", ParameterType.String);
+
+    public static Parameter DocumentTimeZone =
+        new("rvt:Document:TimeZone", ParameterType.String);
+
+    public static Parameter DocumentLastSaveTime =
+        new("rvt:Document:LastSaveTime", ParameterType.String);
+
+    public static Parameter DocumentSaveCount =
+        new("rvt:Document:SaveCount", ParameterType.Int);
+
+    public static Parameter DocumentIsDetached =
+        new("rvt:Document:IsDetached", ParameterType.Int);
+
+    public static Parameter DocumentIsLinked =
+        new("rvt:Document:IsLinked", ParameterType.Int);
+
     // Project
-    public const string ProjectName = "rvt:Document:Project:Name";
-    public const string ProjectNumber = "rvt:Document:Project:Number";
-    public const string ProjectStatus = "rvt:Document:Project:Status";
-    public const string ProjectAddress = "rvt:Document:Project:Address";
-    public const string ProjectClientName = "rvt:Document:Project:Client";
-    public const string ProjectIssueDate = "rvt:Document:Project:IssueDate";
-    public const string ProjectAuthor = "rvt:Document:Project:Author";
-    public const string ProjectBuildingName = "rvt:Document:Project:BuildingName";
-    public const string ProjectOrgDescription = "rvt:Document:Project:OrganizationDescription";
-    public const string ProjectOrgName = "rvt:Document:Project:OrganizationName";
+    public static Parameter ProjectName =
+        new("rvt:Document:Project:Name", ParameterType.String);
+
+    public static Parameter ProjectNumber =
+        new("rvt:Document:Project:Number", ParameterType.String);
+
+    public static Parameter ProjectStatus =
+        new("rvt:Document:Project:Status", ParameterType.String);
+
+    public static Parameter ProjectAddress =
+        new("rvt:Document:Project:Address", ParameterType.String);
+
+    public static Parameter ProjectClientName =
+        new("rvt:Document:Project:Client", ParameterType.String);
+
+    public static Parameter ProjectIssueDate =
+        new("rvt:Document:Project:IssueDate", ParameterType.String);
+
+    public static Parameter ProjectAuthor =
+        new("rvt:Document:Project:Author", ParameterType.String);
+
+    public static Parameter ProjectBuildingName =
+        new("rvt:Document:Project:BuildingName", ParameterType.String);
+
+    public static Parameter ProjectOrgDescription =
+        new("rvt:Document:Project:OrganizationDescription", ParameterType.String);
+
+    public static Parameter ProjectOrgName =
+        new("rvt:Document:Project:OrganizationName", ParameterType.String);
 
     // Category
-    public const string CategoryCategoryType = "rvt:Category:CategoryType";
-    public const string CategoryBuiltInType = "rvt:Category:BuiltInType";
+    public static Parameter CategoryCategoryType =
+        new("rvt:Category:CategoryType", ParameterType.String);
+
+    public static Parameter CategoryBuiltInType =
+        new("rvt:Category:BuiltInType", ParameterType.String);
 
     /// <summary>
     /// Returns a UI friendly version of the parameter name
     /// </summary>
     public static string ParameterNameToUI(string name)
         => name.Substring(name.LastIndexOf(':') + 1);
+
+    public static IEnumerable<Parameter> GetParameters()
+    {
+        foreach (var fi in typeof(CommonRevitParameters).GetFields(
+                     BindingFlags.Static | BindingFlags.Public))
+        {
+            var p = fi.GetValue(null) as Parameter;
+            yield return p;
+        }
+    }
 }

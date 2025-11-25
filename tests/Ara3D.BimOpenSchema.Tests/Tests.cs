@@ -88,8 +88,6 @@ namespace Ara3D.BIMOpenSchema.Tests
 
             TestWriteData(bimData, "duckdb", (bd, f) => bd.WriteDuckDB(f));
             TestWriteData(bimData, "xlsx", (bd, f) => bd.WriteToExcel(f));
-            TestWriteData(bimData, "json", (bd, f) => bd.WriteToJson(f, true, false));
-            TestWriteData(bimData, "json.zip", (bd, f) => bd.WriteToJson(f, true, true));
             TestWriteData(bimData, "parquet.zip", (bd, f) => bd.WriteToParquetZip(f));
         }
 

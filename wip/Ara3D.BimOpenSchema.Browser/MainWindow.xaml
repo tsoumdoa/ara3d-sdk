@@ -19,6 +19,8 @@
 				</MenuItem>
 				<MenuItem Header="_Export Excel" Click="ExportExcel_Click">
 				</MenuItem>
+				<MenuItem Header="_Export GLB" Click="ExportGLB_Click">
+				</MenuItem>
 			</MenuItem>
 			<MenuItem x:Name="GroupingMenuItem" Header="_Grouping">
 			</MenuItem>

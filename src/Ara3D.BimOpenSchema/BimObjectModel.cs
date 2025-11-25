@@ -28,8 +28,11 @@ namespace Ara3D.BimOpenSchema
                     Title = Get(d.Title)
                 });
 
-            Entities = data.EntityIndices().Select(Create).ToList();
-            Descriptors = data.DescriptorIndices().Select(di => Create(di, data.Get(di))).ToList();
+            Entities = data.
+                EntityIndices().Select(Create).ToList();
+            
+            Descriptors = data.
+                DescriptorIndices().Select(di => Create(di, data.Get(di))).ToList();
 
             foreach (var p in data.DoubleParameters)
                 AddParameter(p.Entity, Create(p));
@@ -74,8 +77,9 @@ namespace Ara3D.BimOpenSchema
 
         public void AddParameter(EntityIndex ei, ParameterModel pm)
         {
-            Get(ei).ParameterValues[pm.Descriptor.Name] = pm.Value;
-            Get(ei).Parameters.Add(pm);
+            var e = Get(ei);
+            e.ParameterValues[pm.Descriptor.Name] = pm.Value;
+            e.Parameters.Add(pm);
         }
 
         public ParameterModel Create(ParameterDouble p) => new(p.Value, Get(p.Descriptor));
@@ -102,20 +106,16 @@ namespace Ara3D.BimOpenSchema
         public string Name => Data.Get(Entity.Name);
 
         // Commonly present data stored in parameters
+        public string CategoryType => GetParameterAsEntity(CommonRevitParameters.CategoryCategoryType)?.Name;
         public string ClassName => GetParameterAsString(CommonRevitParameters.ObjectTypeName);
         public string LevelName => GetParameterAsEntity(CommonRevitParameters.ElementLevel)?.Name;
         public string GroupName => GetParameterAsEntity(CommonRevitParameters.ElementGroup)?.Name;
-        public string AssemblyName => GetParameterAsEntity(CommonRevitParameters.ElementAssemblyInstance)?.Name;
-
-        // Family instance specific data 
+        public string AssemblyName => GetParameterAsEntity(CommonRevitParameters.ElementAssemblyInstance)?.Index.ToString();
+        public int WorksetId => GetParameterAsInt(CommonRevitParameters.ElementWorksetId);
+        
+        // Family instance parameters
+        public string FamilyType => GetParameterAsEntity(CommonRevitParameters.FIFamilyType)?.Name;
         public string RoomName => GetParameterAsEntity(CommonRevitParameters.FISpace)?.Name;
-
-        //public string FamilyType => GetParameterAsString(CommonRevitParameters.FISymbol);
-        // TODO: look into more of the relationships (structure, 
-        //public string OmniClassCode { get; init; }
-        //public string UniClassCode { get; init; }
-        //public string UniFormatCode { get; init; }
-        // public string ShortCode { get; init; }      // Mark / Tag / Number commonly used in schedules
 
         public EntityModel(BimObjectModel model, EntityIndex ei)
         {
@@ -131,6 +131,8 @@ namespace Ara3D.BimOpenSchema
         public override string ToString()
             => $"{Name}(#{LocalId})";
 
+        public int GetParameterAsInt(string name)
+            => (int)ParameterValues.GetValueOrDefault(name, -1);
 
         public string GetParameterAsString(string name)
             => ParameterValues.GetValueOrDefault(name) as string;

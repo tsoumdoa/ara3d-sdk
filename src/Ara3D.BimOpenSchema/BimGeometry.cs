@@ -1,4 +1,6 @@
-﻿namespace Ara3D.BimOpenSchema;
+﻿using System;
+
+namespace Ara3D.BimOpenSchema;
 
 /// <summary>
 /// A columnar representation of the 3D representation (geometry and appearance) for large Building Information Models (BIM).
@@ -22,6 +24,18 @@
 /// </summary>
 public class BimGeometry
 {
+    public static string GetTableName(BimGeometryTableName name) 
+        => Enum.GetName(name);
+
+    public const string ElementTableName = nameof(BimGeometryTableName.Element);
+    public const string VertexTableName = nameof(BimGeometryTableName.Vertex);
+    public const string IndexTableName = nameof(BimGeometryTableName.Index);
+    public const string MaterialTableName = nameof(BimGeometryTableName.Material);
+    public const string TransformTableName = nameof(BimGeometryTableName.Transform);
+    public const string MeshTableName = nameof(BimGeometryTableName.Mesh);
+
+    public static string[] TableNames 
+        = typeof(BimGeometryTableName).GetEnumNames();
 
     //==
     // Element Table

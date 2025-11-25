@@ -6,7 +6,7 @@
 /// </summary>
 public class GltfVersion
 {
-    public string version = "1.0";
+    public string version = "2.0";
     public string generator = "Ara 3D Studio";
     public string copyright = "";
 }

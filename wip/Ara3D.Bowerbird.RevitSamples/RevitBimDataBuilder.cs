@@ -1,12 +1,15 @@
 ﻿using Ara3D.BimOpenSchema;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
+using Autodesk.Revit.DB.Mechanical;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Autodesk.Revit.DB.Mechanical;
 using Document = Autodesk.Revit.DB.Document;
+using Parameter = Ara3D.BimOpenSchema.Parameter;
+using static Ara3D.BimOpenSchema.CommonRevitParameters;
+using RevitParameter = Autodesk.Revit.DB.Parameter;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
@@ -45,6 +48,7 @@ public class RevitBimDataBuilder
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
     public DocumentKey CurrentDocumentKey;
+    public Dictionary<string, DescriptorIndex> DescriptorLookup = new();
     public Dictionary<ElementKey, EntityIndex> ProcessedEntities = new();
     public Dictionary<DocumentKey, DocumentIndex> ProcessedDocuments = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
@@ -68,189 +72,13 @@ public class RevitBimDataBuilder
     public PointIndex AddPoint(BimDataBuilder bdb, XYZ xyz)
         => bdb.AddPoint(new(xyz.X, xyz.Y, xyz.Z));
 
-    private DescriptorIndex _apiTypeDescriptor;
-
-    private DescriptorIndex _elementLevel;
-    private DescriptorIndex _elementLocation;
-    private DescriptorIndex _elementLocationStartPoint;
-    private DescriptorIndex _elementLocationEndPoint;
-    private DescriptorIndex _elementBoundsMin;
-    private DescriptorIndex _elementBoundsMax;
-    private DescriptorIndex _elementAssemblyInstance;
-    private DescriptorIndex _elementDesignOption;
-    private DescriptorIndex _elementGroup;
-    private DescriptorIndex _elementWorkset;
-    private DescriptorIndex _elementCreatedPhase;
-    private DescriptorIndex _elementDemolishedPhase;
-    private DescriptorIndex _elementCategory;
-    private DescriptorIndex _elementOwnerView;
-    private DescriptorIndex _elementIsViewSpecific;
-
-    private DescriptorIndex _familyInstanceToRoomDesc;
-    private DescriptorIndex _familyInstanceFromRoomDesc;
-    private DescriptorIndex _familyInstanceRoom;
-    private DescriptorIndex _familyInstanceSpace;
-    private DescriptorIndex _familyInstanceHost;
-    private DescriptorIndex _familyInstanceFamilyType;
-    private DescriptorIndex _familyInstanceStructuralUsage;
-    private DescriptorIndex _familyInstanceStructuralMaterialType;
-    private DescriptorIndex _familyInstanceStructuralMaterialId;
-    private DescriptorIndex _familyInstanceStructuralType;
-
-    private DescriptorIndex _familyStructuralCodeName;
-    private DescriptorIndex _familyStructuralMaterialType;
-
-    private DescriptorIndex _roomBaseOffset;
-    private DescriptorIndex _roomLimitOffset;
-    private DescriptorIndex _roomUnboundedHeight;
-    private DescriptorIndex _roomVolume;
-    private DescriptorIndex _roomUpperLimit;
-    private DescriptorIndex _roomNumber;
-
-    private DescriptorIndex _levelElevation;
-    private DescriptorIndex _levelProjectElevation;
-
-    private DescriptorIndex _materialColorRed;
-    private DescriptorIndex _materialColorGreen;
-    private DescriptorIndex _materialColorBlue;
-    private DescriptorIndex _materialShininess;
-    private DescriptorIndex _materialSmoothness;
-    private DescriptorIndex _materialCategory;
-    private DescriptorIndex _materialClass;
-    private DescriptorIndex _materialTransparency;
-
-    private DescriptorIndex _worksetKind;
-
-    private DescriptorIndex _layerIndex;
-    private DescriptorIndex _layerFunction;
-    private DescriptorIndex _layerWidth;
-    private DescriptorIndex _layerMaterialId;
-    private DescriptorIndex _layerIsCore;
-
-    private DescriptorIndex _documentTitle;
-    private DescriptorIndex _documentPath;
-    private DescriptorIndex _documentWorksharingGuid;
-    private DescriptorIndex _documentCreationGuid;
-    private DescriptorIndex _documentElevation;
-    private DescriptorIndex _documentLatitude;
-    private DescriptorIndex _documentLongitude;
-    private DescriptorIndex _documentPlaceName;
-    private DescriptorIndex _documentWeatherStationName;
-    private DescriptorIndex _documentTimeZone;
-    private DescriptorIndex _documentLastSaveTime;
-    private DescriptorIndex _documentSaveCount;
-    private DescriptorIndex _documentIsDetached;
-    private DescriptorIndex _documentIsLinked;
-
-    private DescriptorIndex _projectName;
-    private DescriptorIndex _projectNumber;
-    private DescriptorIndex _projectStatus;
-    private DescriptorIndex _projectAddress;
-    private DescriptorIndex _projectClientName;
-    private DescriptorIndex _projectIssueDate;
-    private DescriptorIndex _projectAuthor;
-    private DescriptorIndex _projectBuildingName;
-    private DescriptorIndex _projectOrgDescription;
-    private DescriptorIndex _projectOrgName;
-
-    private DescriptorIndex _categoryCategoryType;
-    private DescriptorIndex _categoryBuiltInType;
-
-    private void AddDesc(ref DescriptorIndex desc, string name, ParameterType pt)
-    {
-        desc = Builder.AddDescriptor(name, "", "RevitAPI", pt);
-    }
-
     public void CreateCommonDescriptors()
     {
-        AddDesc(ref _apiTypeDescriptor, CommonRevitParameters.ObjectTypeName, ParameterType.String);
-
-        AddDesc(ref _elementLevel, CommonRevitParameters.ElementLevel, ParameterType.Entity);
-        AddDesc(ref _elementLocation, CommonRevitParameters.ElementLocationPoint, ParameterType.Point);
-        AddDesc(ref _elementLocationStartPoint, CommonRevitParameters.ElementLocationStartPoint, ParameterType.Point);
-        AddDesc(ref _elementLocationEndPoint, CommonRevitParameters.ElementLocationEndPoint, ParameterType.Point);
-        AddDesc(ref _elementBoundsMin, CommonRevitParameters.ElementBoundsMin, ParameterType.Point);
-        AddDesc(ref _elementBoundsMax, CommonRevitParameters.ElementBoundsMax, ParameterType.Point);
-        AddDesc(ref _elementAssemblyInstance, CommonRevitParameters.ElementAssemblyInstance, ParameterType.Entity);
-        AddDesc(ref _elementDesignOption, CommonRevitParameters.ElementDesignOption, ParameterType.Entity);
-        AddDesc(ref _elementGroup, CommonRevitParameters.ElementGroup, ParameterType.Entity);
-        AddDesc(ref _elementWorkset, CommonRevitParameters.ElementWorkset, ParameterType.Int);
-        AddDesc(ref _elementCreatedPhase, CommonRevitParameters.ElementCreatedPhase, ParameterType.Entity);
-        AddDesc(ref _elementDemolishedPhase, CommonRevitParameters.ElementDemolishedPhase, ParameterType.Entity);
-        AddDesc(ref _elementCategory, CommonRevitParameters.ElementCategory, ParameterType.Entity);
-        AddDesc(ref _elementIsViewSpecific, CommonRevitParameters.ElementIsViewSpecific, ParameterType.Int);
-        AddDesc(ref _elementOwnerView, CommonRevitParameters.ElementOwnerView, ParameterType.Entity);
-
-        AddDesc(ref _familyInstanceToRoomDesc, CommonRevitParameters.FIToRoom, ParameterType.Entity);
-        AddDesc(ref _familyInstanceFromRoomDesc, CommonRevitParameters.FIFromRoom, ParameterType.Entity);
-        AddDesc(ref _familyInstanceHost, CommonRevitParameters.FIHost, ParameterType.Entity);
-        AddDesc(ref _familyInstanceSpace, CommonRevitParameters.FISpace, ParameterType.Entity);
-        AddDesc(ref _familyInstanceRoom, CommonRevitParameters.FIRoom, ParameterType.Entity);
-        AddDesc(ref _familyInstanceFamilyType, CommonRevitParameters.FIFamilyType, ParameterType.Entity);
-        AddDesc(ref _familyInstanceStructuralUsage, CommonRevitParameters.FIStructuralUsage, ParameterType.String);
-        AddDesc(ref _familyInstanceStructuralMaterialType, CommonRevitParameters.FIStructuralMaterialType, ParameterType.String);
-        AddDesc(ref _familyInstanceStructuralMaterialId, CommonRevitParameters.FIStructuralMaterialId, ParameterType.Entity);
-        AddDesc(ref _familyInstanceStructuralType, CommonRevitParameters.FIStructuralType, ParameterType.String);
-
-        AddDesc(ref _familyStructuralCodeName, CommonRevitParameters.FamilyStructuralCodeName, ParameterType.String);
-        AddDesc(ref _familyStructuralMaterialType, CommonRevitParameters.FamilyStructuralMaterialType, ParameterType.String);
-
-        AddDesc(ref _roomNumber, CommonRevitParameters.RoomNumber, ParameterType.String);
-        AddDesc(ref _roomBaseOffset, CommonRevitParameters.RoomBaseOffset, ParameterType.Double);
-        AddDesc(ref _roomLimitOffset, CommonRevitParameters.RoomLimitOffset, ParameterType.Double);
-        AddDesc(ref _roomUnboundedHeight, CommonRevitParameters.RoomUnboundedHeight, ParameterType.Double);
-        AddDesc(ref _roomVolume, CommonRevitParameters.RoomVolume, ParameterType.Double);
-        AddDesc(ref _roomUpperLimit, CommonRevitParameters.RoomUpperLimit, ParameterType.Entity);
-
-        AddDesc(ref _levelProjectElevation, CommonRevitParameters.LevelProjectElevation, ParameterType.Double);
-        AddDesc(ref _levelElevation, CommonRevitParameters.LevelElevation, ParameterType.Double);
-
-        AddDesc(ref _materialColorRed, CommonRevitParameters.MaterialColorRed, ParameterType.Double);
-        AddDesc(ref _materialColorGreen, CommonRevitParameters.MaterialColorGreen, ParameterType.Double);
-        AddDesc(ref _materialColorBlue, CommonRevitParameters.MaterialColorBlue, ParameterType.Double);
-        AddDesc(ref _materialShininess, CommonRevitParameters.MaterialShininess, ParameterType.Double);
-        AddDesc(ref _materialSmoothness, CommonRevitParameters.MaterialSmoothness, ParameterType.Double);
-        AddDesc(ref _materialCategory, CommonRevitParameters.MaterialCategory, ParameterType.String);
-        AddDesc(ref _materialClass, CommonRevitParameters.MaterialClass, ParameterType.String);
-        AddDesc(ref _materialTransparency, CommonRevitParameters.MaterialTransparency, ParameterType.Double);
-
-        AddDesc(ref _worksetKind, CommonRevitParameters.WorksetKind, ParameterType.String);
-
-        AddDesc(ref _layerIndex, CommonRevitParameters.LayerIndex, ParameterType.Int);
-        AddDesc(ref _layerFunction, CommonRevitParameters.LayerFunction, ParameterType.String);
-        AddDesc(ref _layerWidth, CommonRevitParameters.LayerWidth, ParameterType.Double);
-        AddDesc(ref _layerMaterialId, CommonRevitParameters.LayerMaterialId, ParameterType.Entity);
-        AddDesc(ref _layerIsCore, CommonRevitParameters.LayerIsCore, ParameterType.Int);
-
-        AddDesc(ref _documentCreationGuid, CommonRevitParameters.DocumentCreationGuid, ParameterType.String);
-        AddDesc(ref _documentWorksharingGuid, CommonRevitParameters.DocumentWorksharingGuid, ParameterType.String);
-        AddDesc(ref _documentTitle, CommonRevitParameters.DocumentTitle, ParameterType.String);
-        AddDesc(ref _documentPath, CommonRevitParameters.DocumentPath, ParameterType.String);
-        AddDesc(ref _documentElevation, CommonRevitParameters.DocumentElevation, ParameterType.Double);
-        AddDesc(ref _documentLatitude, CommonRevitParameters.DocumentLatitude, ParameterType.Double);
-        AddDesc(ref _documentLongitude, CommonRevitParameters.DocumentLongitude, ParameterType.Double);
-        AddDesc(ref _documentPlaceName, CommonRevitParameters.DocumentPlaceName, ParameterType.String);
-        AddDesc(ref _documentWeatherStationName, CommonRevitParameters.DocumentWeatherStationName, ParameterType.String);
-        AddDesc(ref _documentTimeZone, CommonRevitParameters.DocumentTimeZone, ParameterType.String);
-
-        AddDesc(ref _documentLastSaveTime, CommonRevitParameters.DocumentLastSaveTime, ParameterType.String);
-        AddDesc(ref _documentSaveCount, CommonRevitParameters.DocumentSaveCount, ParameterType.Int);
-        AddDesc(ref _documentIsDetached, CommonRevitParameters.DocumentIsDetached, ParameterType.Int);
-        AddDesc(ref _documentIsLinked, CommonRevitParameters.DocumentIsLinked, ParameterType.Int);
-
-        AddDesc(ref _projectName, CommonRevitParameters.ProjectName, ParameterType.String);
-        AddDesc(ref _projectNumber, CommonRevitParameters.ProjectNumber, ParameterType.String);
-        AddDesc(ref _projectStatus, CommonRevitParameters.ProjectStatus, ParameterType.String);
-        AddDesc(ref _projectAddress, CommonRevitParameters.ProjectAddress, ParameterType.String);
-        AddDesc(ref _projectClientName, CommonRevitParameters.ProjectClientName, ParameterType.String);
-        AddDesc(ref _projectIssueDate, CommonRevitParameters.ProjectIssueDate, ParameterType.String);
-        AddDesc(ref _projectAuthor, CommonRevitParameters.ProjectAuthor, ParameterType.String);
-        AddDesc(ref _projectBuildingName, CommonRevitParameters.ProjectBuildingName, ParameterType.String);
-        AddDesc(ref _projectOrgDescription, CommonRevitParameters.ProjectOrgDescription, ParameterType.String);
-        AddDesc(ref _projectOrgName, CommonRevitParameters.ProjectOrgName, ParameterType.String);
-
-        AddDesc(ref _categoryCategoryType, CommonRevitParameters.CategoryCategoryType, ParameterType.String);
-        AddDesc(ref _categoryBuiltInType, CommonRevitParameters.CategoryBuiltInType, ParameterType.String);
+        foreach (var p in CommonRevitParameters.GetParameters())
+        {
+            var desc = Builder.AddDescriptor(p.Name, "", "RevitAPI", p.Type);
+            DescriptorLookup.Add(p.Name, desc);
+        }
     }
 
     public List<StructuralLayer> GetLayers(HostObjAttributes host)
@@ -273,12 +101,18 @@ public class RevitBimDataBuilder
         return r;
     }
 
+    public void AddParameter(EntityIndex ei, Parameter p, string val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
+
     public void AddParameter(EntityIndex ei, DescriptorIndex di, string val)
     {
         var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.String) throw new Exception($"Expected string not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
+
+    public void AddParameter(EntityIndex ei, Parameter p, DateTime val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, DateTime val)
     {
@@ -288,12 +122,18 @@ public class RevitBimDataBuilder
         Builder.AddParameter(ei, str, di);
     }
 
+    public void AddParameter(EntityIndex ei, Parameter p, EntityIndex val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
+
     public void AddParameter(EntityIndex ei, DescriptorIndex di, EntityIndex val)
     {
         var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Entity) throw new Exception($"Expected entity not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
+
+    public void AddParameter(EntityIndex ei, Parameter p, PointIndex val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, PointIndex val)
     {
@@ -302,6 +142,9 @@ public class RevitBimDataBuilder
         Builder.AddParameter(ei, val, di);
     }
 
+    public void AddParameter(EntityIndex ei, Parameter p, int val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
+
     public void AddParameter(EntityIndex ei, DescriptorIndex di, int val)
     {
         var d = Builder.Data.Get(di);
@@ -309,12 +152,18 @@ public class RevitBimDataBuilder
         Builder.AddParameter(ei, val, di);
     }
 
+    public void AddParameter(EntityIndex ei, Parameter p, bool val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
+
     public void AddParameter(EntityIndex ei, DescriptorIndex di, bool val)
     {
         var d = Builder.Data.Get(di);
         if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
         Builder.AddParameter(ei, val ? 1 : 0, di);
     }
+
+    public void AddParameter(EntityIndex ei, Parameter p, double val)
+        => AddParameter(ei, DescriptorLookup[p.Name], val);
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, double val)
     {
@@ -325,7 +174,7 @@ public class RevitBimDataBuilder
 
     public void AddTypeAsParameter(EntityIndex ei, object o)
     {
-        AddParameter(ei, _apiTypeDescriptor, o.GetType().Name);
+        AddParameter(ei, ObjectTypeName, o.GetType().Name);
     }
 
     public EntityIndex ProcessCategory(Category category)
@@ -336,9 +185,9 @@ public class RevitBimDataBuilder
         var r = Builder.AddEntity(category.Id.Value, category.Id.ToString(), CurrentDocumentIndex, category.Name,
             category.BuiltInCategory.ToString());
 
-        AddParameter(r, _apiTypeDescriptor, category.GetType().Name);
-        AddParameter(r, _categoryCategoryType, category.CategoryType.ToString());
-        AddParameter(r, _categoryCategoryType, category.BuiltInCategory.ToString());
+        AddParameter(r, ObjectTypeName, category.GetType().Name);
+        AddParameter(r, CategoryCategoryType, category.CategoryType.ToString());
+        AddParameter(r,  CategoryBuiltInType, category.BuiltInCategory.ToString());
 
         foreach (Category subCategory in category.SubCategories)
         {
@@ -364,16 +213,16 @@ public class RevitBimDataBuilder
                 $"{host.Name}[{index}]", 
                 layer.Function.ToString());
 
-            AddParameter(layerEi, _layerIndex, index);
-            AddParameter(layerEi, _layerFunction, layer.Function.ToString());
-            AddParameter(layerEi, _layerWidth, layer.Width);
-            AddParameter(layerEi, _layerIsCore, layer.IsCore ? 1 : 0);
+            AddParameter(layerEi, LayerIndex, index);
+            AddParameter(layerEi, LayerFunction, layer.Function.ToString());
+            AddParameter(layerEi, LayerWidth, layer.Width);
+            AddParameter(layerEi, LayerIsCore, layer.IsCore);
 
             var matId = layer.MaterialId;
             if (matId != ElementId.InvalidElementId)
             {
                 var matIndex = ProcessElement(matId);
-                AddParameter(layerEi, _layerMaterialId, matIndex);
+                AddParameter(layerEi, LayerMaterialId, matIndex);
                 Builder.AddRelation(layerEi, matIndex, RelationType.HasMaterial);
             }
 
@@ -385,21 +234,21 @@ public class RevitBimDataBuilder
     public void ProcessMaterial(EntityIndex ei, Material m)
     {
         var color = m.Color;            
-        AddParameter(ei, _materialColorGreen, color.Red);
-        AddParameter(ei, _materialColorGreen, color.Green);
-        AddParameter(ei, _materialColorGreen, color.Blue);
+        AddParameter(ei, MaterialColorRed, color.Red / 255.0);
+        AddParameter(ei, MaterialColorGreen, color.Green / 255.0);
+        AddParameter(ei, MaterialColorBlue, color.Blue / 255.0);
 
-        AddParameter(ei, _materialTransparency, m.Transparency);
-        AddParameter(ei, _materialShininess, m.Shininess);
-        AddParameter(ei, _materialSmoothness, m.Smoothness);
-        AddParameter(ei, _materialCategory, m.MaterialCategory);
-        AddParameter(ei, _materialClass, m.MaterialClass);
+        AddParameter(ei, MaterialTransparency, m.Transparency / 100.0);
+        AddParameter(ei, MaterialShininess, m.Shininess / 128.0);
+        AddParameter(ei, MaterialSmoothness, m.Smoothness / 100.0);
+        AddParameter(ei, MaterialCategory, m.MaterialCategory);
+        AddParameter(ei, MaterialClass, m.MaterialClass);
     }
 
     public void ProcessFamily(EntityIndex ei, Family f)
     {
-        AddParameter(ei, _familyStructuralCodeName, f.StructuralCodeName);
-        AddParameter(ei, _familyStructuralMaterialType, f.StructuralMaterialType.ToString());
+        AddParameter(ei, FamilyStructuralCodeName, f.StructuralCodeName);
+        AddParameter(ei, FamilyStructuralMaterialType, f.StructuralMaterialType.ToString());
     }
     
     public void ProcessFamilyInstance(EntityIndex ei, FamilyInstance f)
@@ -408,23 +257,23 @@ public class RevitBimDataBuilder
         if (typeId != ElementId.InvalidElementId)
         {
             var type = ProcessElement(typeId);
-            AddParameter(ei, _familyInstanceFamilyType, type);
+            AddParameter(ei, FIFamilyType, type);
             Builder.AddRelation(ei, type, RelationType.InstanceOf);
         }
 
         var toRoom = f.ToRoom;
         if (toRoom != null && toRoom.IsValidObject)
-            AddParameter(ei, _familyInstanceToRoomDesc, ProcessElement(toRoom));
+            AddParameter(ei, FIToRoom, ProcessElement(toRoom));
 
         var fromRoom = f.FromRoom;
         if (fromRoom != null && fromRoom.IsValidObject)
-            AddParameter(ei, _familyInstanceFromRoomDesc, ProcessElement(fromRoom));
+            AddParameter(ei, FIFromRoom, ProcessElement(fromRoom));
 
         var host = f.Host;
         if (host != null && host.IsValidObject)
         {
             var hostIndex = ProcessElement(host);
-            AddParameter(ei, _familyInstanceHost, hostIndex);
+            AddParameter(ei, FIHost, hostIndex);
             Builder.AddRelation(ei, hostIndex, RelationType.HostedBy);
         }
 
@@ -432,7 +281,7 @@ public class RevitBimDataBuilder
         if (space != null && space.IsValidObject)
         {
             var spaceIndex = ProcessElement(space);
-            AddParameter(ei, _familyInstanceSpace, spaceIndex);
+            AddParameter(ei, FISpace, spaceIndex);
             Builder.AddRelation(ei, spaceIndex, RelationType.ContainedIn);
         }
 
@@ -440,7 +289,7 @@ public class RevitBimDataBuilder
         if (room != null && room.IsValidObject)
         {
             var roomIndex = ProcessElement(room);
-            AddParameter(ei, _familyInstanceRoom, roomIndex);
+            AddParameter(ei, FIRoom, roomIndex);
             Builder.AddRelation(ei, roomIndex, RelationType.ContainedIn);
         }
 
@@ -448,29 +297,30 @@ public class RevitBimDataBuilder
         if (matId != ElementId.InvalidElementId)
         {
             var matIndex = ProcessElement(matId);
-            AddParameter(ei, _familyInstanceStructuralMaterialId, matIndex);
+            AddParameter(ei, FIStructuralMaterial, matIndex);
             Builder.AddRelation(ei, matIndex, RelationType.HasMaterial);
         }
 
-        AddParameter(ei, _familyInstanceStructuralUsage, f.StructuralUsage.ToString());
-        AddParameter(ei, _familyInstanceStructuralType, f.StructuralMaterialType.ToString());
+        AddParameter(ei, FIStructuralUsage, f.StructuralUsage.ToString());
+        AddParameter(ei, FIStructuralMaterialType, f.StructuralMaterialType.ToString());
+        AddParameter(ei, FIStructuralType, f.StructuralType.ToString());
     }
 
     public void ProcessRoom(EntityIndex ei, Room room)
     {
-        AddParameter(ei, _roomBaseOffset, room.BaseOffset);
-        AddParameter(ei, _roomLimitOffset, room.LimitOffset);
-        AddParameter(ei, _roomNumber, room.Number);
-        AddParameter(ei, _roomUnboundedHeight, room.UnboundedHeight);
+        AddParameter(ei, RoomBaseOffset, room.BaseOffset);
+        AddParameter(ei, RoomLimitOffset, room.LimitOffset);
+        AddParameter(ei, RoomNumber, room.Number);
+        AddParameter(ei, RoomUnboundedHeight, room.UnboundedHeight);
         if (room.UpperLimit != null && room.UpperLimit.IsValidObject)
-            AddParameter(ei, _roomUpperLimit, ProcessElement(room.UpperLimit));
-        AddParameter(ei, _roomVolume, room.Volume);
+            AddParameter(ei, RoomUpperLimit, ProcessElement(room.UpperLimit));
+        AddParameter(ei, RoomVolume, room.Volume);
     }
     
     public void ProcessLevel(EntityIndex ei, Level level)
     {
-        AddParameter(ei, _levelElevation, level.Elevation);
-        AddParameter(ei, _levelProjectElevation, level.ProjectElevation);
+        AddParameter(ei, LevelElevation, level.Elevation);
+        AddParameter(ei, LevelProjectElevation, level.ProjectElevation);
     }
 
     public void ProcessMaterials(EntityIndex ei, Element e)
@@ -483,7 +333,7 @@ public class RevitBimDataBuilder
         }
     }
     
-    public static string GetUnitLabel(Parameter p)
+    public static string GetUnitLabel(RevitParameter p)
     {
         var spec = p.Definition.GetDataType();
         if (!UnitUtils.IsMeasurableSpec(spec))
@@ -494,7 +344,7 @@ public class RevitBimDataBuilder
 
     public void ProcessParameters(EntityIndex entityIndex, Element element)
     {
-        foreach (Parameter p in element.Parameters)
+        foreach (RevitParameter p in element.Parameters)
         {
             if (p == null) continue;
             var def = p.Definition;
@@ -586,13 +436,12 @@ public class RevitBimDataBuilder
         var entityIndex = Builder.AddEntity(e.Id.Value, e.UniqueId, CurrentDocumentIndex, e.Name, catName);
         ProcessedEntities.Add(key, entityIndex);
 
-        var eType = e.GetType().Name;
-        AddParameter(entityIndex, _apiTypeDescriptor, eType);
+        AddTypeAsParameter(entityIndex, e);
 
         if (category != null && category.IsValid)
         {
             var catIndex = ProcessCategory(category);
-            AddParameter(entityIndex, _elementCategory, catIndex);
+            AddParameter(entityIndex, ElementCategory, catIndex);
             Builder.AddRelation(entityIndex, catIndex, RelationType.ContainedIn);
         }
 
@@ -604,15 +453,15 @@ public class RevitBimDataBuilder
         {
             var min = AddPoint(Builder, bounds.Value.min);
             var max = AddPoint(Builder, bounds.Value.max);
-            AddParameter(entityIndex, _elementBoundsMin, min);
-            AddParameter(entityIndex, _elementBoundsMax, max);
+            AddParameter(entityIndex, ElementBoundsMin, min);
+            AddParameter(entityIndex, ElementBoundsMax, max);
         }
 
         var levelId = e.LevelId;
         if (levelId != ElementId.InvalidElementId)
         {
             var levelIndex = ProcessElement(levelId);
-            AddParameter(entityIndex, _elementLevel, levelIndex);
+            AddParameter(entityIndex, ElementLevel, levelIndex);
             Builder.AddRelation(entityIndex, levelIndex, RelationType.ContainedIn);
         }
 
@@ -620,7 +469,7 @@ public class RevitBimDataBuilder
         if (assemblyInstanceId != ElementId.InvalidElementId)
         {
             var assemblyIndex = ProcessElement(assemblyInstanceId);
-            AddParameter(entityIndex, _elementAssemblyInstance, assemblyIndex);
+            AddParameter(entityIndex, ElementAssemblyInstance, assemblyIndex);
             Builder.AddRelation(entityIndex, assemblyIndex, RelationType.PartOf);
         }
         
@@ -629,15 +478,15 @@ public class RevitBimDataBuilder
         {
             if (location is LocationPoint lp)
             {
-                AddParameter(entityIndex, _elementLocation, AddPoint(Builder, lp.Point));
+                AddParameter(entityIndex, ElementLocationPoint, AddPoint(Builder, lp.Point));
             }
 
             if (location is LocationCurve lc)
             {
                 if (TryGetLocationEndpoints(lc, out var startPoint, out var endPoint))
                 {
-                    AddParameter(entityIndex, _elementLocationStartPoint, AddPoint(Builder, startPoint));
-                    AddParameter(entityIndex, _elementLocationEndPoint, AddPoint(Builder, endPoint));
+                    AddParameter(entityIndex, ElementLocationStartPoint, AddPoint(Builder, startPoint));
+                    AddParameter(entityIndex, ElementLocationEndPoint, AddPoint(Builder, endPoint));
                 }
             }
         }
@@ -645,13 +494,13 @@ public class RevitBimDataBuilder
         if (e.CreatedPhaseId != ElementId.InvalidElementId)
         {
             var createdPhase = ProcessElement(e.CreatedPhaseId);
-            AddParameter(entityIndex, _elementCreatedPhase, createdPhase);
+            AddParameter(entityIndex, ElementCreatedPhase, createdPhase);
         }
 
         if (e.DemolishedPhaseId != ElementId.InvalidElementId)
         {
             var demolishedPhase = ProcessElement(e.DemolishedPhaseId);
-            AddParameter(entityIndex, _elementDemolishedPhase, demolishedPhase);
+            AddParameter(entityIndex, ElementDemolishedPhase, demolishedPhase);
         }
 
         var designOption = e.DesignOption;
@@ -659,7 +508,7 @@ public class RevitBimDataBuilder
         {
             var doIndex = ProcessElement(designOption);
             Builder.AddRelation(entityIndex, doIndex, RelationType.MemberOf);
-            AddParameter(entityIndex, _elementDesignOption, doIndex);
+            AddParameter(entityIndex, ElementDesignOption, doIndex);
         }
 
         var groupId = e.GroupId;
@@ -667,23 +516,23 @@ public class RevitBimDataBuilder
         {
             var group = ProcessElement(groupId);
             Builder.AddRelation(entityIndex, group, RelationType.MemberOf);
-            AddParameter(entityIndex, _elementGroup, group);
+            AddParameter(entityIndex, ElementGroup, group);
         }
 
         if (e.WorksetId != null)
         {
-            AddParameter(entityIndex, _elementWorkset, e.WorksetId.IntegerValue);
+            AddParameter(entityIndex, ElementWorksetId, e.WorksetId.IntegerValue);
         }
 
         if (e.ViewSpecific)
         {
-            AddParameter(entityIndex, _elementIsViewSpecific, 1);
+            AddParameter(entityIndex, ElementIsViewSpecific, true);
         }
 
         if (e.OwnerViewId != ElementId.InvalidElementId)
         {
             var view = ProcessElement(e.OwnerViewId);
-            AddParameter(entityIndex, _elementOwnerView, view);
+            AddParameter(entityIndex, ElementOwnerView, view);
         }
 
         if (e is HostObjAttributes host)
@@ -703,19 +552,6 @@ public class RevitBimDataBuilder
 
         if (e is Material material)
             ProcessMaterial(entityIndex, material);
-
-        // TODO: handle Mechanica; space
-        //if (e is Space space)
-           
-        // TODO: let's handle schedules. 
-
-        // TODO: consider adjacency, and fixtures. 
-
-        // TODO: look at connected systems as well. 
-        // TODO: phases
-        // TODO: views 
-        // TODO: fixtures
-        // TODO: bounding walls 
 
         return entityIndex;
     }
@@ -759,44 +595,44 @@ public class RevitBimDataBuilder
         if (fi.Exists)
         {
             var saveDate = fi.LastWriteTimeUtc;
-            AddParameter(ei, _documentLastSaveTime, saveDate);
+            AddParameter(ei, DocumentLastSaveTime, saveDate);
             var fileInfo = BasicFileInfo.Extract(d.PathName);
             var docVersion = fileInfo.GetDocumentVersion();
             if (docVersion != null)
             {
-                AddParameter(ei, _documentSaveCount, docVersion.NumberOfSaves);
+                AddParameter(ei, DocumentSaveCount, docVersion.NumberOfSaves);
             }
         }
 
-        AddParameter(ei, _documentPath, CurrentDocument.PathName);
-        AddParameter(ei, _documentTitle, CurrentDocument.Title);
-        AddParameter(ei, _documentIsDetached, CurrentDocument.IsDetached ? 1 : 0);
-        AddParameter(ei, _documentIsLinked, CurrentDocument.IsLinked ? 1 : 0);
-
-        // TODO: what about "IsDetached"?
+        AddParameter(ei, DocumentPath, CurrentDocument.PathName);
+        AddParameter(ei, DocumentTitle, CurrentDocument.Title);
+        AddParameter(ei, DocumentIsDetached, CurrentDocument.IsDetached);
+        AddParameter(ei, DocumentIsLinked, CurrentDocument.IsLinked);
 
         if (CurrentDocument.IsWorkshared)
-            AddParameter(ei, _documentWorksharingGuid, CurrentDocument.WorksharingCentralGUID.ToString());
-        AddParameter(ei, _documentCreationGuid, CurrentDocument.CreationGUID.ToString());
-        AddParameter(ei, _documentElevation, siteLocation.Elevation);
-        AddParameter(ei, _documentLatitude, siteLocation.Latitude);
-        AddParameter(ei, _documentLongitude, siteLocation.Longitude);
-        AddParameter(ei, _documentPlaceName, siteLocation.PlaceName);
-        AddParameter(ei, _documentWeatherStationName, siteLocation.WeatherStationName);
-        AddParameter(ei, _documentTimeZone, siteLocation.TimeZone);
+            AddParameter(ei, DocumentWorksharingGuid, CurrentDocument.WorksharingCentralGUID.ToString());
+        AddParameter(ei, DocumentCreationGuid, CurrentDocument.CreationGUID.ToString());
+        AddParameter(ei, DocumentElevation, siteLocation.Elevation);
+        AddParameter(ei, DocumentLatitude, siteLocation.Latitude);
+        AddParameter(ei, DocumentLongitude, siteLocation.Longitude);
+        AddParameter(ei, DocumentPlaceName, siteLocation.PlaceName);
+        AddParameter(ei, DocumentWeatherStationName, siteLocation.WeatherStationName);
+        
+        // TODO: this is a doujble 
+        //AddParameter(ei, DocumentTimeZone, siteLocation.TimeZone);
 
         var projectInfo = CurrentDocument.ProjectInformation;
 
-        AddParameter(ei, _projectAddress, projectInfo.Address);
-        AddParameter(ei, _projectAuthor, projectInfo.Author);
-        AddParameter(ei, _projectBuildingName, projectInfo.BuildingName);
-        AddParameter(ei, _projectClientName, projectInfo.ClientName);
-        AddParameter(ei, _projectIssueDate, projectInfo.IssueDate);
-        AddParameter(ei, _projectName, projectInfo.Name);
-        AddParameter(ei, _projectNumber, projectInfo.Number);
-        AddParameter(ei, _projectOrgDescription, projectInfo.OrganizationDescription);
-        AddParameter(ei, _projectOrgName, projectInfo.OrganizationName);
-        AddParameter(ei, _projectStatus, projectInfo.Status);
+        AddParameter(ei, ProjectAddress, projectInfo.Address);
+        AddParameter(ei, ProjectAuthor, projectInfo.Author);
+        AddParameter(ei, ProjectBuildingName, projectInfo.BuildingName);
+        AddParameter(ei, ProjectClientName, projectInfo.ClientName);
+        AddParameter(ei, ProjectIssueDate, projectInfo.IssueDate);
+        AddParameter(ei, ProjectName, projectInfo.Name);
+        AddParameter(ei, ProjectNumber, projectInfo.Number);
+        AddParameter(ei, ProjectOrgDescription, projectInfo.OrganizationDescription);
+        AddParameter(ei, ProjectOrgName, projectInfo.OrganizationName);
+        AddParameter(ei, ProjectStatus, projectInfo.Status);
 
         foreach (var e in CurrentDocument.GetElements())
             ProcessElement(e);

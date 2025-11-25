@@ -59,7 +59,8 @@ public enum RelationIndex : long { }
 /// Corresponds roughly to an element in the Revit file.
 /// Some items are associated with entities that are not expressly derived from Element (e.g., Document, 
 /// </summary>
-public record Entity(
+public record Entity
+(
     // ElementID in Revit, and Step Line # in IFC
     // Will be unique when combined with a DocumentIndex (e.g., "${LocalId}-{Document}" would be a unique string identifier within the database). 
     // But multiple documents can share the same entity  
@@ -76,24 +77,26 @@ public record Entity(
 
     // The category of the entity
     StringIndex Category
-    );
+);
 
 /// <summary>
 /// Corresponds with a specific Revit or IFC file 
 /// </summary>
-public record Document(
+public record Document
+(
     StringIndex Title,
     StringIndex Path
-    );
+);
 
 /// <summary>
 /// Represents 3D location data.
 /// </summary>
-public record Point(
+public record Point
+(
     double X,
     double Y,
     double Z
-    );
+);
 
 /// <summary>
 /// Important for grouping the different kinds of parameter data ...
@@ -111,12 +114,13 @@ public enum ParameterType
 /// <summary>
 /// Meta-information for understanding a parameter 
 /// </summary>
-public record ParameterDescriptor(
+public record ParameterDescriptor
+(
     StringIndex Name,
     StringIndex Units,
     StringIndex Group,
     ParameterType Type
-    );
+);
 
 //==
 // Parameter data 
@@ -127,47 +131,52 @@ public record ParameterDescriptor(
 /// <summary>
 /// A 32-bit integer parameter value
 /// </summary>
-public record ParameterInt(
+public record ParameterInt
+(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
     int Value
-    );
+);
 
 /// <summary>
 /// A parameter value representing text
 /// </summary>
-public record ParameterString(
+public record ParameterString
+(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
     StringIndex Value
-    );
+);
 
 /// <summary>
 /// A 64-bit precision floating point (decimal) numeric parameter value
 /// </summary>
-public record ParameterDouble(
+public record ParameterDouble
+(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
     double Value
-    );
+);
 
 /// <summary>
 /// A parameter value which references another entity 
 /// </summary>
-public record ParameterEntity(
+public record ParameterEntity
+(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
     EntityIndex Value
-    );
+);
 
 /// <summary>
 /// A 32-bit integer parameter value
 /// </summary>
-public record ParameterPoint(
+public record ParameterPoint
+(
     EntityIndex Entity,
     DescriptorIndex Descriptor,
     PointIndex Value
-    );
+);
 
 //==
 // Relations data
@@ -175,11 +184,12 @@ public record ParameterPoint(
 /// <summary>
 /// Expresses different kinds of relationships between entities 
 /// </summary>
-public record EntityRelation(
+public record EntityRelation
+(
     EntityIndex EntityA,
     EntityIndex EntityB,
     RelationType RelationType
-    );
+);
 
 /// <summary>
 /// The various kinds of relations, aimed at covering both the Revit API and IFC

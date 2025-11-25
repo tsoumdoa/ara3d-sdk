@@ -158,7 +158,6 @@ public static class ParquetUtils
         public Array AsArray() => Column.Data;
     }
 
-
     public static void WriteParquetToZip(this BimGeometry bg, FilePath file,
         CompressionMethod parquetCompressionMethod = CompressionMethod.Brotli,
         CompressionLevel parquetCompressionLevel = CompressionLevel.Optimal,
@@ -206,7 +205,7 @@ public static class ParquetUtils
     {
         var r = new List<ParquetBuilder>();
         {
-            var pb = new ParquetBuilder("Material");
+            var pb = new ParquetBuilder(BimGeometry.MaterialTableName);
             pb.Add(bg.MaterialRed, nameof(bg.MaterialRed));
             pb.Add(bg.MaterialGreen, nameof(bg.MaterialGreen));
             pb.Add(bg.MaterialBlue, nameof(bg.MaterialBlue));
@@ -216,32 +215,32 @@ public static class ParquetUtils
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder("Vertex");
+            var pb = new ParquetBuilder(BimGeometry.IndexTableName);
             pb.Add(bg.VertexX, nameof(bg.VertexX));
             pb.Add(bg.VertexY, nameof(bg.VertexY));
             pb.Add(bg.VertexZ, nameof(bg.VertexZ));
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder("Index");
+            var pb = new ParquetBuilder(BimGeometry.IndexTableName);
             pb.Add(bg.IndexBuffer, nameof(bg.IndexBuffer));
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder("Element");
+            var pb = new ParquetBuilder(BimGeometry.ElementTableName);
             pb.Add(bg.ElementMaterialIndex, nameof(bg.ElementMaterialIndex));
             pb.Add(bg.ElementMeshIndex, nameof(bg.ElementMeshIndex));
             pb.Add(bg.ElementTransformIndex, nameof(bg.ElementTransformIndex));
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder("Mesh");
+            var pb = new ParquetBuilder(BimGeometry.MeshTableName);
             pb.Add(bg.MeshIndexOffset, nameof(bg.MeshIndexOffset));
             pb.Add(bg.MeshVertexOffset, nameof(bg.MeshVertexOffset));
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder("Transform");
+            var pb = new ParquetBuilder(BimGeometry.TransformTableName);
             pb.Add(bg.TransformTX, nameof(bg.TransformTX));
             pb.Add(bg.TransformTY, nameof(bg.TransformTY));
             pb.Add(bg.TransformTZ, nameof(bg.TransformTZ));
@@ -262,4 +261,53 @@ public static class ParquetUtils
 
     public static BimGeometry ReadBimGeometryFromParquetZip(this FilePath fp)
         => Task.Run(fp.ReadBimGeometryFromParquetZipAsync).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Reads every "*.parquet" entry from <paramref name="zipPath"/>
+    /// and returns them as a list of tables.
+    /// </summary>
+    public static async Task<BimData> ReadBimDataFromParquetZipAsync(this FilePath zipPath)
+    {
+        var geometryTables = new List<IDataTable>();
+        var otherTables = new List<IDataTable>();
+
+        await using var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var zip = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false);
+
+        foreach (var entry in zip.Entries
+                     .Where(e => e.Name.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+                     .OrderBy(e => e.FullName))
+        {
+            await using var entryStream = entry.Open();
+            await using var ms = new MemoryStream();
+            await entryStream.CopyToAsync(ms);
+
+            ms.Position = 0;
+            var table = await ReadParquetAsync(ms, Path.GetFileNameWithoutExtension(entry.Name));
+            
+            if (BimGeometry.TableNames.Contains(table.Name))
+                geometryTables.Add(table);
+            else
+                otherTables.Add(table);
+        }
+
+        var geometryDataSet = geometryTables.ToDataSet();
+        var bimGeometry = geometryDataSet.ToBimGeometry();
+
+        var otherDataSet = otherTables.ToDataSet();
+        var bimData = otherDataSet.ToBimData();
+
+        bimData.Geometry = bimGeometry;
+        return bimData;
+    }
+
+    public static BimData ReadBimDataFromParquetZip(this FilePath fp)
+        => Task.Run(fp.ReadBimDataFromParquetZipAsync).GetAwaiter().GetResult();
+
+    public static async Task WriteToParquetZipAsync(this BimData data, FilePath fp)
+        => await data.ToDataSet().WriteParquetToZipAsync(fp);
+
+    public static void WriteToParquetZip(this BimData data, FilePath fp)
+        => Task.Run(() => data.WriteToParquetZipAsync(fp)).GetAwaiter().GetResult();
+
 }
