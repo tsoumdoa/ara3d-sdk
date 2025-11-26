@@ -182,12 +182,16 @@ public class RevitBimDataBuilder
         if (!ProcessedCategories.TryGetValue(category.Id.Value, out var result))
             return result;
 
-        var r = Builder.AddEntity(category.Id.Value, category.Id.ToString(), CurrentDocumentIndex, category.Name,
+        var r = Builder.AddEntity(
+            category.Id.Value, 
+            category.Id.ToString(), 
+            CurrentDocumentIndex, 
+            category.Name,
             category.BuiltInCategory.ToString());
 
-        AddParameter(r, ObjectTypeName, category.GetType().Name);
+        AddTypeAsParameter(r, category);
         AddParameter(r, CategoryCategoryType, category.CategoryType.ToString());
-        AddParameter(r,  CategoryBuiltInType, category.BuiltInCategory.ToString());
+        AddParameter(r, CategoryBuiltInType, category.BuiltInCategory.ToString());
 
         foreach (Category subCategory in category.SubCategories)
         {

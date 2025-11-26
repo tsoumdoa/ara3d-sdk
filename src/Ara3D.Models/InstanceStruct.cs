@@ -47,12 +47,17 @@ public unsafe struct InstanceStruct
     // Constructors
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public InstanceStruct(Matrix4x4 transform,
+    public InstanceStruct
+    (
+        int entityIndex,
+        Matrix4x4 transform,
         int meshIndex,
         Color color,
         float metallic,
-        float roughness)
+        float roughness
+    )
     {
+        EntityIndex = entityIndex;
         Matrix4x4 = transform;
         MeshIndex = meshIndex;
         Color = color;
@@ -61,10 +66,22 @@ public unsafe struct InstanceStruct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public InstanceStruct(Matrix4x4 transform,
+    public InstanceStruct
+    (
+        int entityIndex,
+        Matrix4x4 transform,
         int meshIndex,
-        Material mat)
-        : this(transform, meshIndex, mat.Color, mat.Metallic, mat.Roughness)
+        Material mat
+    )
+        : this
+        (
+            entityIndex,
+            transform, 
+            meshIndex, 
+            mat.Color, 
+            mat.Metallic, 
+            mat.Roughness
+        )
     { }
 
     //==

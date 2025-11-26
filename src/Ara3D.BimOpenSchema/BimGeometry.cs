@@ -28,14 +28,14 @@ public class BimGeometry
         => Enum.GetName(name);
 
     public const string ElementTableName = nameof(BimGeometryTableName.Element);
-    public const string VertexTableName = nameof(BimGeometryTableName.Vertex);
     public const string IndexTableName = nameof(BimGeometryTableName.Index);
     public const string MaterialTableName = nameof(BimGeometryTableName.Material);
-    public const string TransformTableName = nameof(BimGeometryTableName.Transform);
     public const string MeshTableName = nameof(BimGeometryTableName.Mesh);
+    public const string TransformTableName = nameof(BimGeometryTableName.Transform);
+    public const string VertexTableName = nameof(BimGeometryTableName.Vertex);
 
-    public static string[] TableNames 
-        = typeof(BimGeometryTableName).GetEnumNames();
+    public static string[] TableNames
+        = [ElementTableName, IndexTableName, MaterialTableName, MeshTableName, TransformTableName, VertexTableName];
 
     //==
     // Element Table
@@ -46,8 +46,8 @@ public class BimGeometry
     // Meshes, materials, and transforms may all be shared to reduce repetition 
     // An element corresponds roughly to an "InstanceStructs" in the Ara3D.Models
 
-    // Index of the entity associated with this element
-    // Use this to link the geometry element 
+        // Index of the entity associated with this element
+        // Use this to link the geometry element 
     public int[] ElementEntityIndex { get; set; } = [];
 
     // Index of the material associated with this element

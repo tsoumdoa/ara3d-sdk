@@ -13,13 +13,12 @@
 		<!-- Menu bar -->
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open…" Click="Open_Click">
+				<MenuItem Header="_Open …" Click="Open_Click">
 				</MenuItem>
-				<MenuItem Header="_Export Parquet…" Click="ExportParquet_Click">
+
+				<MenuItem Header="_Export Excel …" Click="ExportExcel_Click">
 				</MenuItem>
-				<MenuItem Header="_Export Excel" Click="ExportExcel_Click">
-				</MenuItem>
-				<MenuItem Header="_Export GLB" Click="ExportGLB_Click">
+				<MenuItem Header="_Export GLB …" Click="ExportGLB_Click">
 				</MenuItem>
 			</MenuItem>
 			<MenuItem x:Name="GroupingMenuItem" Header="_Grouping">

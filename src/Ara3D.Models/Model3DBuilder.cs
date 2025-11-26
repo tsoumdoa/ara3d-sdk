@@ -18,7 +18,7 @@ public class Model3DBuilder
         => AddInstance(meshIndex, Matrix4x4.Identity, material);
 
     public void AddInstance(int meshIndex, Matrix4x4 matrix, Material material)
-        => Instances.Add(new InstanceStruct(matrix, meshIndex, material));
+        => Instances.Add(new InstanceStruct(-1, matrix, meshIndex, material));
 
     public void AddInstance(int meshIndex, Material material, Matrix4x4 matrix)
         => AddInstance(meshIndex, matrix, material);

@@ -103,7 +103,7 @@ public class DataTableFromEntities : IDataTable
             localIdColumn.Values.Add(e.LocalId);
             documentColumn.Values.Add(e.DocumentTitle);
             categoryColumn.Values.Add(e.Category);
-            categoryTypeColumn.Values.Add(e.CategoryType);
+            //categoryTypeColumn.Values.Add(e.CategoryType);
             classNameColumn.Values.Add(e.ClassName);
             levelColumn.Values.Add(e.LevelName);
             groupColumn.Values.Add(e.GroupName);

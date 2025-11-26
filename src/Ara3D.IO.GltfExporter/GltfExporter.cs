@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
+using Ara3D.Models;
+using Ara3D.Utils;
 
 namespace Ara3D.IO.GltfExporter;
 
@@ -38,7 +40,7 @@ public static class GltfExporter
             .Concat(chunkData)
             .ToArray();
 
-    public static void Export(this GltfData data, IReadOnlyList<byte> binChunk, string filePath)
+    public static void Export(this GltfData data, IReadOnlyList<byte> binChunk, FilePath filePath)
     {
         var json = JsonConvert.SerializeObject(data, 
             new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
@@ -53,5 +55,15 @@ public static class GltfExporter
             .ToArray();
 
         File.WriteAllBytes(filePath, exportArray);
+    }
+
+    public static void WriteToGltf(this Model3D model, FilePath filePath)
+    {
+        var builder = new GltfBuilder();
+        builder.SetModel(model);
+        var bytes = new List<byte>();
+        var data = builder.Build(bytes);
+        data.Export(bytes, filePath);
+
     }
 }

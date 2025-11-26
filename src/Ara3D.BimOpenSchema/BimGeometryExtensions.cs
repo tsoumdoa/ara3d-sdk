@@ -78,10 +78,15 @@ public static class BimGeometryExtensions
             self.MaterialRoughness[materialIndex].ToNormalizedFloat());
 
     public static InstanceStruct GetInstanceStruct(this BimGeometry self, int elementIndex)
-        => new(self.GetElementMatrix(elementIndex), self.ElementMeshIndex[elementIndex], self.GetElementMaterial(elementIndex));
+        => new(
+            self.ElementEntityIndex[elementIndex],
+            self.GetElementMatrix(elementIndex), 
+            self.ElementMeshIndex[elementIndex], 
+            self.GetElementMaterial(elementIndex));
 
     public static Material GetMaterial(this BimGeometry self, int materialIndex)
-        => new(self.GetColor(materialIndex), 
+        => new(
+            self.GetColor(materialIndex), 
             self.MaterialMetallic[materialIndex].ToNormalizedFloat(),
             self.MaterialRoughness[materialIndex].ToNormalizedFloat());
 
@@ -168,7 +173,6 @@ public static class BimGeometryExtensions
 
         return r;
     }
-
     
     public static BimGeometry ToBimGeometry(this Model3D self)
     {
@@ -218,6 +222,7 @@ public static class BimGeometryExtensions
 
         r.IndexBuffer = ReadColumn<int>(self, BimGeometryTableName.Index, nameof(r.IndexBuffer));
 
+        r.ElementEntityIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementEntityIndex));
         r.ElementMaterialIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementMaterialIndex));
         r.ElementMeshIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementMeshIndex));
         r.ElementTransformIndex = ReadColumn<int>(self, BimGeometryTableName.Element, nameof(r.ElementTransformIndex));

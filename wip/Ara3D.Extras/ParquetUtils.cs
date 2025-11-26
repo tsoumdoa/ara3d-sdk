@@ -215,7 +215,7 @@ public static class ParquetUtils
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder(BimGeometry.IndexTableName);
+            var pb = new ParquetBuilder(BimGeometry.VertexTableName);
             pb.Add(bg.VertexX, nameof(bg.VertexX));
             pb.Add(bg.VertexY, nameof(bg.VertexY));
             pb.Add(bg.VertexZ, nameof(bg.VertexZ));
@@ -228,6 +228,7 @@ public static class ParquetUtils
         }
         {
             var pb = new ParquetBuilder(BimGeometry.ElementTableName);
+            pb.Add(bg.ElementEntityIndex, nameof(bg.ElementEntityIndex));
             pb.Add(bg.ElementMaterialIndex, nameof(bg.ElementMaterialIndex));
             pb.Add(bg.ElementMeshIndex, nameof(bg.ElementMeshIndex));
             pb.Add(bg.ElementTransformIndex, nameof(bg.ElementTransformIndex));

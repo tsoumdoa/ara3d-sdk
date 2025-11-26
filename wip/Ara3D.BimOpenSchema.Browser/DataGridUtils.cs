@@ -2,6 +2,7 @@
 using Ara3D.DataTable;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Binding = System.Windows.Data.Binding;
 
 namespace Ara3D.BimOpenSchema.Browser;
 
@@ -30,7 +31,7 @@ public static class DataGridUtils
     /// Adds a new tab containing an empty DataGrid and returns that DataGrid.
     /// Call from the UI thread, or any thread – the method marshals to Dispatcher.
     /// </summary>
-    public static DataGrid AddDataGridTab(this TabControl host, string headerText)
+    public static DataGrid AddDataGridTab(this System.Windows.Controls.TabControl host, string headerText)
     {
         // marshal if needed
         if (!host.Dispatcher.CheckAccess())

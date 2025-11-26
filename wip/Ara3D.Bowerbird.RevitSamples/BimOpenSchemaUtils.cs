@@ -45,7 +45,6 @@ namespace Ara3D.Bowerbird.RevitSamples
 
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
 
-
             var builder = new BimGeometryBuilder();
             builder.Meshes.AddRange(meshGatherer.MeshList.Select(m => m.ToAra3D()));
 

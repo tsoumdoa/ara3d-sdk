@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Ara3D.BimOpenSchema.IO;
@@ -7,6 +8,10 @@ using Ara3D.IO.GltfExporter;
 using Ara3D.Models;
 using Ara3D.Utils;
 using Microsoft.Win32;
+using System.Windows.Forms;
+using Ara3D.Collections.wip;
+using MessageBox = System.Windows.Forms.MessageBox;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace Ara3D.BimOpenSchema.Browser
 {
@@ -20,16 +25,16 @@ namespace Ara3D.BimOpenSchema.Browser
         public BimObjectModel ObjectModel => Model3D.ObjectModel;
         public IReadOnlyList<IDataTable> Tables;
         public Grouping CurrentGrouping = Grouping.None;
+        public IReadOnlyList<IGrouping<string, EntityModel>> GroupedEntities = null;
         public FilePath CurrentFile;
         public OpenFileDialog OpenFileDialog = null;
-        public SaveFileDialog SaveParquetFileDialog = null;
-        public SaveFileDialog SaveExcelFileDialog = null;
+        public FolderBrowserDialog FolderDialog = null;
 
         public enum Grouping
         {
             None,
             Document,
-            CategoryType,
+            //CategoryType,
             Level,
             Group,
             Room,
@@ -45,9 +50,12 @@ namespace Ara3D.BimOpenSchema.Browser
             this.Loaded += MainWindow_Loaded;
         }
 
+        public static DirectoryPath DefaultSaveLocation()
+            => SpecialFolders.MyDocuments.RelativeFolder("BIM Open Schema");
+
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await OpenFile(@"C:\Users\cdigg\data\bos\Snowdon Towers Sample Architectural.parquet.zip");
+            //await OpenFile(@"C:\Users\cdigg\data\bos\Snowdon Towers Sample Architectural.parquet.zip");
         }
 
         public static void SaveToGltf(BimModel3D model, FilePath filePath)
@@ -65,7 +73,6 @@ namespace Ara3D.BimOpenSchema.Browser
             CurrentFile = fp;
             Data = await fp.ReadBimDataFromParquetZipAsync().ConfigureAwait(false);
             Model3D = BimModel3D.Create(Data);
-            SaveToGltf(Model3D, @"C:\Users\cdigg\data\bos\output\test.glb");    
             await UpdateTables();
         }
 
@@ -98,14 +105,34 @@ namespace Ara3D.BimOpenSchema.Browser
             await UpdateTables();
         }
 
+        public DirectoryPath ChooseFolder()
+        {
+            if (FolderDialog == null)
+            {
+                FolderDialog = new FolderBrowserDialog();
+                var startFolder = DefaultSaveLocation();
+                startFolder.Create();
+                FolderDialog.SelectedPath = startFolder;
+            }
+
+            if (FolderDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return null;
+
+            var baseName = CurrentFile.GetFileNameWithoutExtension();
+            var baseFolder = new DirectoryPath(FolderDialog.SelectedPath);
+            var folder = baseFolder.RelativeFolder(baseName);
+            folder.Create();
+            return folder;
+        }
+
         public IEnumerable<IGrouping<string, EntityModel>> CreateGroupings()
         {
             switch (CurrentGrouping)
             {
                 case Grouping.None:
                     return ObjectModel.Entities.GroupBy(_ => "All");
-                case Grouping.CategoryType:
-                    return ObjectModel.Entities.GroupBy(e => e.CategoryType);
+                //case Grouping.CategoryType:
+                //    return ObjectModel.Entities.GroupBy(e => e.CategoryType);
                 case Grouping.Category:
                     return ObjectModel.Entities.GroupBy(e => e.Category);
                 case Grouping.Level:
@@ -133,12 +160,11 @@ namespace Ara3D.BimOpenSchema.Browser
                 Filter = "Zipped parquet files (*.zip)|*.zip|All files (*.*)|*.*"
             };
 
-            if (OpenFileDialog.ShowDialog() == true)
+            if (OpenFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 await OpenFile(OpenFileDialog.FileName);
             }
         }
-
 
         private async void ExportExcel_Click(object sender, RoutedEventArgs e)
         {
@@ -148,7 +174,9 @@ namespace Ara3D.BimOpenSchema.Browser
                 return;
             }
 
-            var folder = CurrentFile.RelativeFolder(CurrentFile.GetFileNameWithoutExtension());
+            var folder = ChooseFolder();
+            if (!folder?.Exists() == true)
+                return;
 
             foreach (var t in Tables)
             {
@@ -159,13 +187,29 @@ namespace Ara3D.BimOpenSchema.Browser
 
         private async void ExportGLB_Click(object sender, RoutedEventArgs e)
         {
-            var folder = CurrentFile.RelativeFolder(CurrentFile.GetFileNameWithoutExtension());
-
-            foreach (var t in Tables)
+            if (Tables == null)
             {
-                var fp = folder.RelativeFile(t.Name.ToValidFileName() + ".xlsx");
-                t.WriteToExcel(fp);
+                MessageBox.Show("No data loaded", "Error");
+                return;
             }
+
+            var folder = ChooseFolder();
+            if (!folder?.Exists() == true)
+                return;
+
+            foreach (var g in GroupedEntities)
+            {
+                var fp = folder.RelativeFile(g.Key.ToValidFileName() + ".glb");
+                SaveGltf(g, fp);
+            }
+        }
+        
+        public void SaveGltf(IEnumerable<EntityModel> entities, FilePath fp)
+        {
+            var entityIndices = entities.Select(em => (int)em.Index).ToHashSet();
+            var newModel = Model3D.Model3D.FilterAndRemoveUnusedMeshes(i => entityIndices.Contains(i.EntityIndex));
+            if (newModel.Instances.Count > 0 && newModel.Meshes.Count > 0)
+                newModel.WriteToGltf(fp);
         }
 
         private async void ExportParquet_Click(object sender, RoutedEventArgs e)
@@ -176,6 +220,7 @@ namespace Ara3D.BimOpenSchema.Browser
                 return;
             }
 
+            /*
             SaveParquetFileDialog ??= new SaveFileDialog()
             {
                 DefaultExt = ".zip",
@@ -188,6 +233,7 @@ namespace Ara3D.BimOpenSchema.Browser
                 var ds = Tables.ToDataSet();
                 await ds.WriteParquetToZipAsync(fp);
             }
+            */
         }
         
         public DataTableFromEntities CreateTable(IGrouping<string, EntityModel> entities)
@@ -195,11 +241,11 @@ namespace Ara3D.BimOpenSchema.Browser
 
         private async Task UpdateTables()
         {
-            var groupings = CreateGroupings().OrderBy(g => g.Key).ToList();
+            GroupedEntities = CreateGroupings().OrderBy(g => g.Key).ToList();
 
             await Dispatcher.InvokeAsync(() =>
             {
-                Tables = groupings.Select(CreateTable).ToList();
+                Tables = GroupedEntities.Select(CreateTable).ToList();
 
                 TabControl.Items.Clear();
                 foreach (var t in Tables)
@@ -208,7 +254,6 @@ namespace Ara3D.BimOpenSchema.Browser
                     grid.AssignDataTable(t);
                 }
             });
-
         }
 
         private async void IncludeParamsMenuItem_OnClick(object sender, RoutedEventArgs e)
