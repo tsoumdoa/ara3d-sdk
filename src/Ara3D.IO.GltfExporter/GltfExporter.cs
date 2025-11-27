@@ -64,6 +64,5 @@ public static class GltfExporter
         var bytes = new List<byte>();
         var data = builder.Build(bytes);
         data.Export(bytes, filePath);
-
     }
 }

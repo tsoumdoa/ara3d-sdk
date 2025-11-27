@@ -62,7 +62,6 @@ public class DataTableFromEntities : IDataTable
         var localIdColumn = AddColumn("LocalId", typeof(long));
         var documentColumn = AddColumn("Document", typeof(int));
         var categoryColumn = AddColumn("Category", typeof(string));
-        var categoryTypeColumn = AddColumn("CategoryType", typeof(string));
         var classNameColumn = AddColumn("ClassName", typeof(string));
         var levelColumn = AddColumn("Level", typeof(string));
         var groupColumn = AddColumn("Group", typeof(string));
@@ -72,6 +71,7 @@ public class DataTableFromEntities : IDataTable
         //var assemblyColumn = AddColumn("Assembly", typeof(string));
         //var worksetColumn = AddColumn("Workset", typeof(int));
         //var globalIdColumn = AddColumn("GlobalId", typeof(string));
+        //var categoryTypeColumn = AddColumn("CategoryType", typeof(string));
 
         var nonParameterColumnCount = ColumnLookup.Count;
 
@@ -103,7 +103,6 @@ public class DataTableFromEntities : IDataTable
             localIdColumn.Values.Add(e.LocalId);
             documentColumn.Values.Add(e.DocumentTitle);
             categoryColumn.Values.Add(e.Category);
-            //categoryTypeColumn.Values.Add(e.CategoryType);
             classNameColumn.Values.Add(e.ClassName);
             levelColumn.Values.Add(e.LevelName);
             groupColumn.Values.Add(e.GroupName);
@@ -113,6 +112,7 @@ public class DataTableFromEntities : IDataTable
             //globalIdColumn.Values.Add(e.GlobalId);
             //assemblyColumn.Values.Add(e.AssemblyName);
             //worksetColumn.Values.Add(e.WorksetId);
+            //categoryTypeColumn.Values.Add(e.CategoryType);
 
             // Add values or default values 
             foreach (var column in ColumnLookup.Values)

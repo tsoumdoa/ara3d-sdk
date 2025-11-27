@@ -131,8 +131,6 @@ namespace Ara3D.BimOpenSchema.Browser
             {
                 case Grouping.None:
                     return ObjectModel.Entities.GroupBy(_ => "All");
-                //case Grouping.CategoryType:
-                //    return ObjectModel.Entities.GroupBy(e => e.CategoryType);
                 case Grouping.Category:
                     return ObjectModel.Entities.GroupBy(e => e.Category);
                 case Grouping.Level:
@@ -151,7 +149,10 @@ namespace Ara3D.BimOpenSchema.Browser
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
+        //case Grouping.CategoryType:
+        //    return ObjectModel.Entities.GroupBy(e => e.CategoryType);
+
         private async void Open_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ??= new OpenFileDialog()

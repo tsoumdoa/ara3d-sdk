@@ -190,7 +190,7 @@ public static class BimGeometryExtensions
     }
 
     public static IDataTable GetTable(this IDataSet self, BimGeometryTableName name)
-        => self.GetTable(BimGeometry.GetTableName(name));
+        => self.GetTable(name.ToString());
 
     public static T[] ReadColumn<T>(this IDataSet set, BimGeometryTableName tableName, string columnName)
         => set.GetTable(tableName).GetColumn(columnName).GetTypedValues<T>();

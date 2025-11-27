@@ -1,38 +1,27 @@
-﻿using System;
-
-namespace Ara3D.BimOpenSchema;
+﻿namespace Ara3D.BimOpenSchema;
 
 /// <summary>
 /// A columnar representation of the 3D representation (geometry and appearance) for large Building Information Models (BIM).
-///
+/// This can be serialized via various serialization formats, such as JSON, MessagePack,
+/// but we recommend Parquet. 
+/// 
 /// This 3D format is optimized for representing complex scenes used in AEC (Architecture, Engineering, and Construction) industry
 /// to represent the built environment. 
 ///
-/// It is a collection of meshes, materials, transforms, and instances.
+/// It is a collection of elements, meshes, materials, transforms, and instances.
 /// A mesh is a triangular mesh consisting  
 ///
 /// Coordinates: Z-Up, right-handed.
 /// Units: meters
-///
-/// When stored in a columnar format like parquet, the columns are grouped in the following tables:
-/// - Element
-/// - Vertex
-/// - Index
-/// - Material
-/// - Mesh
-/// - Transform
 /// </summary>
 public class BimGeometry
 {
-    public static string GetTableName(BimGeometryTableName name) 
-        => Enum.GetName(name);
-
-    public const string ElementTableName = nameof(BimGeometryTableName.Element);
-    public const string IndexTableName = nameof(BimGeometryTableName.Index);
-    public const string MaterialTableName = nameof(BimGeometryTableName.Material);
-    public const string MeshTableName = nameof(BimGeometryTableName.Mesh);
-    public const string TransformTableName = nameof(BimGeometryTableName.Transform);
-    public const string VertexTableName = nameof(BimGeometryTableName.Vertex);
+    public const string ElementTableName = "Element";
+    public const string IndexTableName = "Index";
+    public const string MaterialTableName = "Material";
+    public const string MeshTableName = "Mesh";
+    public const string TransformTableName = "Transform";
+    public const string VertexTableName = "Vertex";
 
     public static string[] TableNames
         = [ElementTableName, IndexTableName, MaterialTableName, MeshTableName, TransformTableName, VertexTableName];
@@ -46,8 +35,7 @@ public class BimGeometry
     // Meshes, materials, and transforms may all be shared to reduce repetition 
     // An element corresponds roughly to an "InstanceStructs" in the Ara3D.Models
 
-        // Index of the entity associated with this element
-        // Use this to link the geometry element 
+    // Index of the entity associated with this element
     public int[] ElementEntityIndex { get; set; } = [];
 
     // Index of the material associated with this element
