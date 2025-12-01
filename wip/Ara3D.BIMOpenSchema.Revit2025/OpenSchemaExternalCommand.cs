@@ -21,7 +21,7 @@ namespace Ara3D.BIMOpenSchema.Revit2025
 			}
 			catch ( Exception ex)
             {
-                Autodesk.Revit.UI.TaskDialog.Show("Error",ex.ToString());
+                TaskDialog.Show("Error",ex.ToString());
                 return Result.Failed;
             }
         }

@@ -81,7 +81,7 @@ namespace Ara3D.Bowerbird.RevitSamples
             var dataSet = bimData.ToDataSet();
 
             var inputFile = new FilePath(currentDoc.PathName);
-            var fp = inputFile.ChangeDirectoryAndExt(settings.Folder, ".bos.zip");
+            var fp = inputFile.ChangeDirectoryAndExt(settings.Folder, settings.FileExtension);
 
             sb?.AppendLine($"{sw.PrettyPrintTimeElapsed()} - Creating FileStream");
             var fs = new FileStream(fp, FileMode.Create, FileAccess.Write, FileShare.None);

@@ -141,7 +141,7 @@
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MinimumSize = new System.Drawing.Size(491, 326);
             Name = "BIMOpenSchemaExporterForm";
-            Text = "BIM Open Schema - Parquet Exporter for Revit 2025";
+            Text = "BIM Open Schema - Parquet Exporter";
             ResumeLayout(false);
             PerformLayout();
         }

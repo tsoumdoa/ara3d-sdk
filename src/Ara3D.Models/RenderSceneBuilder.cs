@@ -4,6 +4,7 @@ using Ara3D.Memory;
 
 namespace Ara3D.Models;
 
+// TODO: this can be optimized. 
 public class RenderSceneBuilder : IDisposable
 {
     public UnmanagedList<float>? VertexList = new();
@@ -20,6 +21,7 @@ public class RenderSceneBuilder : IDisposable
             FirstIndex = (uint)IndexList.Count,
             IndexCount = (uint)mesh.FaceIndices.Count * 3,
             BaseVertex = (int)VertexList.Count / 3,
+            VertexCount = mesh.Points.Count
         };
 
         var meshIndex = MeshList.Count;

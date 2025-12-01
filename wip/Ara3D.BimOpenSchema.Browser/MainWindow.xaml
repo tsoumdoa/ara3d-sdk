@@ -15,7 +15,8 @@
 			<MenuItem Header="_File">
 				<MenuItem Header="_Open …" Click="Open_Click">
 				</MenuItem>
-
+				<MenuItem Header="_Export Raw Parquet …" Click="ExportParquet_Click">
+				</MenuItem>
 				<MenuItem Header="_Export Excel …" Click="ExportExcel_Click">
 				</MenuItem>
 				<MenuItem Header="_Export GLB …" Click="ExportGLB_Click">

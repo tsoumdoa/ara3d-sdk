@@ -26,24 +26,26 @@ namespace Ara3D.BIMOpenSchema.Revit2025
         public Result OnShutdown(UIControlledApplication application)
             => Result.Succeeded;
 
-        private BitmapImage BitmapToImageSource(Bitmap bitmap)
+        public static BitmapImage GetImage()
         {
-            using var memory = new MemoryStream();
-            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-            memory.Position = 0;
+            var assembly = Assembly.GetExecutingAssembly();
+            using var stream = assembly.GetManifestResourceStream(
+                "Ara3D.BIMOpenSchema.Revit2025.ara3d-32x32.png");
+
             var bmpImg = new BitmapImage();
             bmpImg.BeginInit();
-            bmpImg.StreamSource = memory;
+            bmpImg.StreamSource = stream;
             bmpImg.CacheOption = BitmapCacheOption.OnLoad;
             bmpImg.EndInit();
             return bmpImg;
         }
 
-       public Bitmap GetImage()
+        public RibbonPanel GetOrCreateRibbonPanel(string name)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream("Ara3D.BIMOpenSchema.Revit2025.bos32x32.png");
-            return new Bitmap(stream);
+            foreach (var rb in UicApp.GetRibbonPanels())
+                if (rb.Name == name)
+                    return rb;
+            return UicApp.CreateRibbonPanel(name);
         }
 
         public Result OnStartup(UIControlledApplication application)
@@ -56,38 +58,26 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             RevitContext = new RevitContext(logger);
             
             // Store a reference to the UIApplication
-            application.Idling += (sender, args) =>
-            {
-                if (UiApp == null)
-                {
-                    UiApp = sender as UIApplication;
-                }
-            };
+            application.Idling += (sender, _) => { UiApp ??= sender as UIApplication; };
 
-            var rvtRibbonPanel = application.CreateRibbonPanel("BIM Open Schema");
-            var pushButtonData = new PushButtonData("Parquet Exporter", "Export to Parquet", 
+            var rvtRibbonPanel = GetOrCreateRibbonPanel("Ara 3D");
+            var pushButtonData = new PushButtonData("BimOpenSchema", "BIM Open Schema\nParquet Exporter", 
                 Assembly.GetExecutingAssembly().Location,
                 typeof(OpenSchemaExternalCommand).FullName);
             // https://www.revitapidocs.com/2020/544c0af7-6124-4f64-a25d-46e81ac5300f.htm
             if (!(rvtRibbonPanel.AddItem(pushButtonData) is PushButton runButton))
                 return Result.Failed;
-            runButton.LargeImage = BitmapToImageSource(GetImage());
-            runButton.ToolTip = "Export BIM data as Parquet files conforming to the BIM Open Schema.";
+            runButton.LargeImage = GetImage();
+            runButton.ToolTip = "Export a zip archive of Parquet files conforming to the BIM Open Schema.";
 
             return Result.Succeeded;
         } 
 
         public void Run(UIApplication application)
         {
-            if (UiApp == null)
-            {
-                UiApp = application;
-            }
+            UiApp ??= application;
 
-            if (Form == null)
-            {
-                Form = new BIMOpenSchemaExporterForm();
-            }
+            Form ??= new BIMOpenSchemaExporterForm();
 
             Form.Show(UiApp.ActiveUIDocument?.Document, Export);
         }
@@ -104,7 +94,7 @@ namespace Ara3D.BIMOpenSchema.Revit2025
                         Form.UpdateProgress(current, count);
                 }
             }
-            catch
+            catch (Exception)
             { }
         }
 

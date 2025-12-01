@@ -13,7 +13,7 @@ public static class RenderSceneSerializer
     {
         nameof(RenderScene.Vertices),
         nameof(RenderScene.Indices),
-        nameof(RenderScene.Meshes),
+        nameof(RenderScene.MeshSlices),
         nameof(RenderScene.Instances),
         nameof(RenderScene.InstanceGroups),
     };
@@ -24,7 +24,7 @@ public static class RenderSceneSerializer
         {
             renderScene.Vertices.Bytes.Count,
             renderScene.Indices.Bytes.Count,
-            renderScene.Meshes.Bytes.Count,
+            renderScene.MeshSlices.Bytes.Count,
             renderScene.Instances.Bytes.Count,
             renderScene.InstanceGroups.Bytes.Count,
         };
@@ -39,7 +39,7 @@ public static class RenderSceneSerializer
         {
             renderScene.Vertices.Bytes.Ptr,
             renderScene.Indices.Bytes.Ptr,
-            renderScene.Meshes.Bytes.Ptr,
+            renderScene.MeshSlices.Bytes.Ptr,
             renderScene.Instances.Bytes.Ptr,
             renderScene.InstanceGroups.Bytes.Ptr,
         };

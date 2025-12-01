@@ -1,5 +1,5 @@
     
-set AddinsDir=%programdata%\Autodesk\Revit\Addins\
+set AddinsDir=%AppData%\Autodesk\Revit\Addins\
 set BowerbirdDir=%AddinsDir%\2025\Ara3D.Bowerbird\
 
 :: -------- 1) No argument?  Leave quietly --------------------

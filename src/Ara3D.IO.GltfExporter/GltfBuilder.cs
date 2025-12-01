@@ -102,7 +102,7 @@ public class GltfBuilder
         return slice;
     }
 
-    public void SetModel(Model3D model)
+    public void SetModel(IModel3D model)
     {
         Debug.Assert(Data.meshes.Count == 0);
         Debug.Assert(Data.accessors.Count == 0);
@@ -171,7 +171,7 @@ public class GltfBuilder
         Data.buffers.Add(buffer);
 
         bytes.AddRange(BitConverter.GetBytes((uint)totalBufferSize));
-        bytes.AddRange(GltfExporter.BinChunkType);
+        bytes.AddRange(GltfWriter.BinChunkType);
 
         foreach (var x in Vertices)
         {
@@ -193,4 +193,3 @@ public class GltfBuilder
         return Data;
     }
 }
-

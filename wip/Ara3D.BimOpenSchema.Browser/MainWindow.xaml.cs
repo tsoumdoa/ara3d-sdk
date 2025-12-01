@@ -1,15 +1,18 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using Ara3D.BimOpenSchema.IO;
+﻿using Ara3D.BimOpenSchema.IO;
+using Ara3D.Collections.wip;
 using Ara3D.DataTable;
 using Ara3D.IO.GltfExporter;
 using Ara3D.Models;
 using Ara3D.Utils;
+using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.Win32;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq.Expressions;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
-using Ara3D.Collections.wip;
 using MessageBox = System.Windows.Forms.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
@@ -112,7 +115,7 @@ namespace Ara3D.BimOpenSchema.Browser
                 FolderDialog = new FolderBrowserDialog();
                 var startFolder = DefaultSaveLocation();
                 startFolder.Create();
-                FolderDialog.SelectedPath = startFolder;
+                FolderDialog.InitialDirectory = startFolder;
             }
 
             if (FolderDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
@@ -157,8 +160,8 @@ namespace Ara3D.BimOpenSchema.Browser
         {
             OpenFileDialog ??= new OpenFileDialog()
             {
-                DefaultExt = ".zip",
-                Filter = "Zipped parquet files (*.zip)|*.zip|All files (*.*)|*.*"
+                DefaultExt = ".bos",
+                Filter = "BIM Open Schema files (*.bos)|*.bos|All files (*.*)|*.*"
             };
 
             if (OpenFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -210,33 +213,39 @@ namespace Ara3D.BimOpenSchema.Browser
             var entityIndices = entities.Select(em => (int)em.Index).ToHashSet();
             var newModel = Model3D.Model3D.FilterAndRemoveUnusedMeshes(i => entityIndices.Contains(i.EntityIndex));
             if (newModel.Instances.Count > 0 && newModel.Meshes.Count > 0)
-                newModel.WriteToGltf(fp);
+                newModel.WriteGlb(fp);
         }
 
         private async void ExportParquet_Click(object sender, RoutedEventArgs e)
         {
-            if (Tables == null)
-            {
-                MessageBox.Show("No data loaded", "Error");
+            var folder = ChooseFolder();
+            if (!folder?.Exists() == true)
                 return;
-            }
 
-            /*
-            SaveParquetFileDialog ??= new SaveFileDialog()
-            {
-                DefaultExt = ".zip",
-                Filter = "Zipped Parquet files (*.zip)|*.zip|All files (*.*)|*.*"
-            };
+            if (!File.Exists(CurrentFile))
+                return;
 
-            if (SaveParquetFileDialog.ShowDialog() == true)
+            try
             {
-                var fp = new FilePath(SaveParquetFileDialog.FileName);
-                var ds = Tables.ToDataSet();
-                await ds.WriteParquetToZipAsync(fp);
+                var fs = new FileStream(CurrentFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var zip = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false);
+
+                foreach (var entry in zip.Entries
+                             .Where(e => e.Name.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+                             .OrderBy(e => e.FullName))
+                {
+                    var newFile = folder.RelativeFile(entry.Name);
+                    await using var outFileStream = newFile.OpenWrite();
+                    await using var entryStream = entry.Open();
+                    await entryStream.CopyToAsync(outFileStream);
+                }
             }
-            */
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error occured when exporting parquet files: {ex}");
+            }
         }
-        
+
         public DataTableFromEntities CreateTable(IGrouping<string, EntityModel> entities)
             => new (entities.ToList(), entities.Key, IncludeParamsMenuItem.IsChecked && CurrentGrouping == Grouping.None);
 

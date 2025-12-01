@@ -10,7 +10,7 @@ public class CommandForegroundExportBos : NamedCommand
     public BimOpenSchemaExportSettings GetExportSettings()
         => new()
         {
-            Folder = @"C:\Users\cdigg\data\bos",
+            Folder = BimOpenSchemaExportSettings.DefaultFolder,
             IncludeLinks = true,
             IncludeGeometry = true
         };
@@ -23,4 +23,4 @@ public class CommandForegroundExportBos : NamedCommand
         doc?.ExportBimOpenSchema(GetExportSettings(), sb);
         TextDisplayForm.DisplayText(sb.ToString());
     }
-}
+}   

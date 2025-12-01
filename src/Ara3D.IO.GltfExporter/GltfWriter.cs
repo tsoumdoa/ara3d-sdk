@@ -5,7 +5,7 @@ using Ara3D.Utils;
 
 namespace Ara3D.IO.GltfExporter;
 
-public static class GltfExporter
+public static class GltfWriter
 {
     public static byte[] Magic = [0x67, 0x6C, 0x54, 0x46];
     public static byte[] Version = [0x02, 0x00, 0x00, 0x00];
@@ -57,7 +57,7 @@ public static class GltfExporter
         File.WriteAllBytes(filePath, exportArray);
     }
 
-    public static void WriteToGltf(this Model3D model, FilePath filePath)
+    public static void WriteGlb(this IModel3D model, FilePath filePath)
     {
         var builder = new GltfBuilder();
         builder.SetModel(model);

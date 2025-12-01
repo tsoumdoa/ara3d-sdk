@@ -1,4 +1,6 @@
-﻿using Ara3D.Memory;
+﻿using System.Runtime.CompilerServices;
+using Ara3D.Geometry;
+using Ara3D.Memory;
 
 namespace Ara3D.Models;
 
@@ -6,24 +8,55 @@ public class RenderScene
 (
     IMemoryOwner<float> vertices,
     IMemoryOwner<uint> indices,
-    IMemoryOwner<MeshSliceStruct> meshes,
+    IMemoryOwner<MeshSliceStruct> meshSlices,
     IMemoryOwner<InstanceStruct> instances,
     IMemoryOwner<InstanceGroupStruct> groups
 )
-    : IDisposable
+    : IModel3D
 {
     public IMemoryOwner<float> Vertices { get; set; } = vertices;
     public IMemoryOwner<uint> Indices { get; set; } = indices;
-    public IMemoryOwner<MeshSliceStruct> Meshes { get; set; } = meshes;
+    public IMemoryOwner<MeshSliceStruct> MeshSlices { get; set; } = meshSlices;
     public IMemoryOwner<InstanceStruct> Instances { get; set; } = instances;
     public IMemoryOwner<InstanceGroupStruct> InstanceGroups { get; set; } = groups;
+
+    public IReadOnlyList<TriangleMesh3D> Meshes
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => MeshSlices.Map(ToMesh); 
+    }
+
+    IReadOnlyList<InstanceStruct> IModel3D.Instances
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Instances;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TriangleMesh3D ToMesh(MeshSliceStruct slice)
+    {
+        var points = BufferExtensions.Cast<Point3D>(Vertices);
+        var faces = BufferExtensions.Cast<Integer3>(Indices);
+        var pointSlice = points.Slice(slice.BaseVertex, slice.VertexCount);
+        var faceSlice = faces.Slice(slice.FirstIndex * 3, slice.IndexCount / 3);
+        return new TriangleMesh3D(pointSlice, faceSlice);
+    }
 
     public void Dispose()
     {
         Vertices.Dispose();
         Indices.Dispose();
-        Meshes.Dispose();
+        MeshSlices.Dispose();
         Instances.Dispose();
         InstanceGroups.Dispose();
+    }
+
+    public void UpdateScene(RenderScene scene)
+    {
+        scene.Vertices = Vertices;
+        scene.Indices = Indices;
+        scene.InstanceGroups = InstanceGroups;
+        scene.MeshSlices = MeshSlices;
+        scene.Instances = Instances;
     }
 }

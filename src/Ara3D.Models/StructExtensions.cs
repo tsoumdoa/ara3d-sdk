@@ -8,7 +8,7 @@ public static class StructExtensions
         for (var i=0; i < self.InstanceGroups.Count; i++)
         {
             var group = self.InstanceGroups[i];
-            var mesh = self.Meshes[(int)group.MeshIndex];
+            var mesh = self.MeshSlices[(int)group.MeshIndex];
 
             for (var j = 0; j < group.InstanceCount; j++)
             {

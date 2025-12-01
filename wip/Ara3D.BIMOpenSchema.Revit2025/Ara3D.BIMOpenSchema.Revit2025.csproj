@@ -9,13 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ara3d-32x32.png" />
     <None Remove="bim-open-schema-duck.png" />
-    <None Remove="BOS-32x32.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="BOS-32x32.ico" />
-    <EmbeddedResource Include="bos32x32.png" />
+    <Content Include="ara3d.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ara3d-32x32.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ namespace Ara3D.Models;
 public struct MeshSliceStruct
 {
     public int BaseVertex;
+    public int VertexCount;
     public uint FirstIndex;
     public uint IndexCount;
 
@@ -14,6 +15,10 @@ public struct MeshSliceStruct
 
     public bool Equals(MeshSliceStruct other)
         => BaseVertex == other.BaseVertex 
+           && VertexCount == other.VertexCount
            && FirstIndex == other.FirstIndex 
            && IndexCount == other.IndexCount;
+
+    public override int GetHashCode()
+        => HashCode.Combine(BaseVertex, VertexCount, FirstIndex, IndexCount);
 }

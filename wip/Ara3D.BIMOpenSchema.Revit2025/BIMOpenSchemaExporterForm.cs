@@ -23,13 +23,11 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             var defaultExportDir = DefaultFolder;
             try
             {
-                // Try to create the default dir if it doesn't exists 
                 defaultExportDir.Create();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Quietly use the "my documents"
-                defaultExportDir = new DirectoryPath(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+                defaultExportDir = "";
             }
             exportDirTextBox.Text = defaultExportDir;
             FormClosing += (_, args) =>
@@ -58,8 +56,8 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             Show();
         }
 
-        public static Utils.DirectoryPath DefaultFolder =>
-            new DirectoryPath(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)).RelativeFolder("BIMOpenSchemaExports");
+        public static DirectoryPath DefaultFolder =>
+            SpecialFolders.MyDocuments.RelativeFolder("BIM Open Schema");
 
         private void linkLabel1_Click(object sender, EventArgs e)
         {

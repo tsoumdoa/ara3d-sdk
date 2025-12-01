@@ -69,10 +69,17 @@ namespace Ara3D.Bowerbird.Revit
             return new Bitmap(stream);
         }
 
+        public RibbonPanel GetOrCreateRibbonPanel(string name)
+        {
+            foreach (var rb in UicApp.GetRibbonPanels())
+                if (rb.Name == name)
+                    return rb;
+            return UicApp.CreateRibbonPanel(name);
+        }
+
         public Result OnStartup(UIControlledApplication application)
         {
-
-            var _ = typeof(NamedPipeServerStream);
+            _ = typeof(NamedPipeServerStream);
 
             UicApp = application;
             Instance = this;
@@ -85,16 +92,10 @@ namespace Ara3D.Bowerbird.Revit
             application.ControlledApplication.DocumentOpened += App_DocumentOpened;
 
             // Store a reference to the UIApplication
-            application.Idling += (sender, args) =>
-            {
-                if (UiApp == null)
-                {
-                    UiApp = sender as UIApplication;
-                }
-            };
+            application.Idling += (sender, _) => { UiApp ??= sender as UIApplication; };
 
-            var rvtRibbonPanel = application.CreateRibbonPanel("Ara 3D");
-            var pushButtonData = new PushButtonData("Bowerbird", "Bowerbird", 
+            var rvtRibbonPanel = GetOrCreateRibbonPanel("Ara 3D"); 
+            var pushButtonData = new PushButtonData("Bowerbird", "Bowerbird\nC# Scripting", 
                 Assembly.GetExecutingAssembly().Location,
                 typeof(BowerbirdExternalCommand).FullName);
             // https://www.revitapidocs.com/2020/544c0af7-6124-4f64-a25d-46e81ac5300f.htm
