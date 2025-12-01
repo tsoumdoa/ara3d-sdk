@@ -4,7 +4,10 @@ using Ara3D.Memory;
 
 namespace Ara3D.Models;
 
-public class RenderScene
+/// <summary>
+/// This is exactly what the GPU expects for rendering. 
+/// </summary>
+public class RenderModel3D
 (
     IMemoryOwner<float> vertices,
     IMemoryOwner<uint> indices,
@@ -51,12 +54,6 @@ public class RenderScene
         InstanceGroups.Dispose();
     }
 
-    public void UpdateScene(RenderScene scene)
-    {
-        scene.Vertices = Vertices;
-        scene.Indices = Indices;
-        scene.InstanceGroups = InstanceGroups;
-        scene.MeshSlices = MeshSlices;
-        scene.Instances = Instances;
-    }
+    public IModel3D Transform(Transform3D t)
+        => Model3DExtensions.Transform(this, t);
 }

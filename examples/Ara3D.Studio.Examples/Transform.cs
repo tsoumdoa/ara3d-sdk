@@ -12,7 +12,7 @@ public class Transform : IModelModifier
     [Range(-360f, 360f)] public float Pitch;
     [Range(-360f, 360f)] public float Roll;
 
-    public Model3D Eval(Model3D model3D, EvalContext context)
+    public IModel3D Eval(IModel3D model3D, EvalContext context)
         => model3D
             .Translate((XOffset, YOffset, ZOffset))
             .Rotate(Yaw.Degrees(), Pitch.Degrees(), Roll.Degrees())

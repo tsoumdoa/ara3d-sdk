@@ -8,7 +8,7 @@ public class Arrow : IModelGenerator
     [Range(0f, 1f)] public float TipWidth = 0.2f;
     [Range(0f, 1f)] public float TipHeight = 0.2f;
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var TotalHeight = ShaftHeight + TipHeight;
         var halfOutLine = new Point3D[]
@@ -21,6 +21,6 @@ public class Arrow : IModelGenerator
         };
         
         var grid = halfOutLine.Revolve(Vector3.UnitZ, Count);
-        return grid.Triangulate();
+        return grid.Triangulate().ToModel3D();
     }
 }

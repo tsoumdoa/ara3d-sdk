@@ -44,7 +44,7 @@ public class ClonePyramidOnFace : IModelModifier
     public static Matrix4x4 AlignToQuad(Quad3D q)
         => AlignZAxisWith(q.Normal) * Matrix4x4.CreateTranslation(q.Center);
 
-    public Model3D Eval(Model3D model3D, EvalContext context)
+    public IModel3D Eval(IModel3D model3D, EvalContext context)
     {
         var firstMesh = model3D.Meshes[0];
         var firstMat = model3D.FirstOrDefaultMaterial();

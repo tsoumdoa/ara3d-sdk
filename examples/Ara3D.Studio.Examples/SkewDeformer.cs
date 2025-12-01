@@ -26,6 +26,6 @@ public class SkewDeformer : IModelModifier
         return mesh.Deform(p => Deform(p, bounds));
     }
 
-    public Model3D Eval(Model3D model, EvalContext context)
+    public IModel3D Eval(IModel3D model, EvalContext context)
         => model.WithMeshes(Deform);
 }

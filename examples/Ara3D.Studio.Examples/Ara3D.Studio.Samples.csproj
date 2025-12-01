@@ -16,8 +16,4 @@
     <ProjectReference Include="..\..\src\Ara3D.Studio.API\Ara3D.Studio.API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wip\" />
-  </ItemGroup>
-
 </Project>

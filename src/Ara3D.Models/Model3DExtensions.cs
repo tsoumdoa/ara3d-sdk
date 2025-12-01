@@ -3,7 +3,9 @@ using Ara3D.DataTable;
 using Ara3D.Geometry;
 using Ara3D.Memory;
 using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Ara3D.Utils;
 
 namespace Ara3D.Models;
 
@@ -14,10 +16,10 @@ public static class Model3DExtensions
     public static Integer3 Offset(Integer3 self, Integer offset)
         => (self.A + offset, self.B + offset, self.C + offset);
 
-    public static TriangleMesh3D GetMesh(this Model3D self, InstanceStruct node)
+    public static TriangleMesh3D GetMesh(this IModel3D self, InstanceStruct node)
         => node.MeshIndex < 0 ? EmptyMesh : self.Meshes[node.MeshIndex];
 
-    public static TriangleMesh3D ToMesh(this Model3D self)
+    public static TriangleMesh3D ToMesh(this IModel3D self)
     {
         var points = new List<Point3D>();
         var indices = new List<Integer3>();
@@ -57,7 +59,7 @@ public static class Model3DExtensions
         return new TriangleMesh3D(points, indices);
     }
 
-    public static IReadOnlyList<Point3D> TransformedPoints(this Model3D self)
+    public static IReadOnlyList<Point3D> TransformedPoints(this IModel3D self)
     {
         var points = new UnmanagedList<Point3D>();
 
@@ -80,10 +82,10 @@ public static class Model3DExtensions
         return points;
     }
 
-    public static IReadOnlyList<Bounds3D> GetMeshBounds(this Model3D self)
+    public static IReadOnlyList<Bounds3D> GetMeshBounds(this IModel3D self)
         => self.Meshes.Map(m => m.Bounds).ToArray();
 
-    public static Bounds3D GetBounds(this Model3D self)
+    public static Bounds3D GetBounds(this IModel3D self)
     {
         var r = Bounds3D.Empty;
         var meshBounds = self.Meshes.Map(m => m.Bounds).ToArray();
@@ -100,41 +102,90 @@ public static class Model3DExtensions
         return r;
     }
 
-    public static Model3D WithMeshes(this Model3D self, Func<TriangleMesh3D, TriangleMesh3D> f)
+    public static IModel3D WithMeshes(this IModel3D self, Func<TriangleMesh3D, TriangleMesh3D> f)
         => self.WithMeshes(self.Meshes.Select(f));
 
-    public static Model3D WithInstances(this Model3D self, Func<InstanceStruct, InstanceStruct> f)
+    public static IModel3D WithInstances(this IModel3D self, Func<InstanceStruct, InstanceStruct> f)
         => self.WithInstances(self.Instances.Select(f));
 
-    public static Model3D Where(this Model3D self, Func<InstanceStruct, bool> f)
+    public static IModel3D Where(this IModel3D self, Func<InstanceStruct, bool> f)
         => self.WithInstances(self.Instances.Where(f).ToList());
 
-    public static Model3D Where(this Model3D self, Func<TriangleMesh3D, bool> f)
+    public static IModel3D Where(this IModel3D self, Func<TriangleMesh3D, bool> f)
         => self.WithInstances(self.Instances.Where(i => f(self.GetMesh(i))).ToList());
 
-    public static Model3D Where(this Model3D self, Func<InstanceStruct, int, bool> f)
+    public static IModel3D Where(this IModel3D self, Func<InstanceStruct, int, bool> f)
         => self.WithInstances(self.Instances.Where(f).ToList());
 
-    public static Model3D Clone(this Model3D model, IReadOnlyList<Vector3> positions)
+    public static IModel3D Clone(this IModel3D model, IReadOnlyList<Vector3> positions)
         => model.Clone(positions.Map(Matrix4x4.CreateTranslation));
 
-    public static Model3D Clone(this Model3D model, IReadOnlyList<Matrix4x4> matrices)
+    public static IModel3D Clone(this IModel3D model, IReadOnlyList<Matrix4x4> matrices)
         => model.WithInstances(
             model.Instances.SelectMany(
                 node => matrices.Select(m => node.Transform(m))).ToList());
     
-    public static Model3D Clone(this TriangleMesh3D mesh, Material material, IReadOnlyList<Point3D> points)
+    public static IModel3D Clone(this TriangleMesh3D mesh, Material material, IReadOnlyList<Point3D> points)
         => mesh.Clone(material, points.Map(p => Matrix4x4.CreateTranslation(p.Vector3)));
 
-    public static Model3D Clone(this TriangleMesh3D mesh, Material material, IReadOnlyList<Matrix4x4> transforms)
+    public static IModel3D Clone(this TriangleMesh3D mesh, Material material, IReadOnlyList<Matrix4x4> transforms)
         => Model3D.Create(mesh, material, transforms);
 
-    public static Model3D CloneAlong(this TriangleMesh3D mesh, Func<Number, Point3D> curveFunc, Integer count)
+    public static IModel3D CloneAlong(this TriangleMesh3D mesh, Func<Number, Point3D> curveFunc, Integer count)
     {
         var transforms = count.LinearSpaceExclusive.Map(curveFunc).Map(p => Matrix4x4.CreateTranslation(p));
         return Clone(mesh, Material.Default, transforms);
     }
 
-    public static Material FirstOrDefaultMaterial(this Model3D self)
+    public static Material FirstOrDefaultMaterial(this IModel3D self)
         => self.Instances.Count > 0 ? self.Instances[0].Material : Material.Default;
+
+    public static Model3D WithMeshes(this IModel3D self, IReadOnlyList<TriangleMesh3D> meshes)
+        => new(meshes, self.Instances);
+
+    public static Model3D WithInstances(this IModel3D self, IReadOnlyList<InstanceStruct> instances)
+        => new(self.Meshes, instances);
+
+    public static Model3D Transform(this IModel3D self, Transform3D transform)
+        => self.WithInstances(self.Instances.Select(i => i.Transform(transform)));
+
+    public static Model3D FilterAndRemoveUnusedMeshes(this IModel3D self, Func<InstanceStruct, bool> f)
+        => new Model3D(self.Meshes, self.Instances.Where(f).ToList()).RemoveUnusedMeshes();
+
+    public static Model3D RemoveUnusedMeshes(this IModel3D self)
+    {
+        var newMeshIndices = new IndexedSet<int>();
+        var newInstances = new List<InstanceStruct>();
+        var newMeshes = new List<TriangleMesh3D>();
+        foreach (var inst in self.Instances)
+        {
+            if (inst.MeshIndex < 0)
+            {
+                newInstances.Add(inst);
+                continue;
+            }
+
+            if (!newMeshIndices.Contains(inst.MeshIndex))
+            {
+                var mesh = self.Meshes[inst.MeshIndex];
+                var newMeshIndex = newMeshIndices.Add(inst.MeshIndex);
+                newMeshes.Add(mesh);
+                Debug.Assert(newMeshIndex == newMeshIndices.Count - 1);
+                newInstances.Add(inst.WithMeshIndex(newMeshIndex));
+            }
+            else
+            {
+                var newMeshIndex = newMeshIndices[inst.MeshIndex];
+                newInstances.Add(inst.WithMeshIndex(newMeshIndex));
+            }
+        }
+
+        return new(newMeshes, newInstances);
+    }
+
+    public static IModel3D ToModel3D(this TriangleMesh3D self)
+        => Model3D.Create(self);
+
+    public static IModel3D ToModel3D(this TriangleMesh3D self, Material mat)
+        => Model3D.Create(self, mat);
 }

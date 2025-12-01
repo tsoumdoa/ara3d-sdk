@@ -31,7 +31,7 @@ public class GeoJsonDemo : IModelGenerator
         App.Invalidate(this);
     }
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var fc = GeoJsonSerializer.LoadFeatureCollection(Dir);
         var mb = new Model3DBuilder();

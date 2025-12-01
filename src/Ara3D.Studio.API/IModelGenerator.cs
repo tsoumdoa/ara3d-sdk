@@ -4,5 +4,5 @@ namespace Ara3D.Studio.API;
 
 public interface IModelGenerator : IScriptedComponent
 {
-    Model3D Eval(EvalContext context);
+    IModel3D Eval(EvalContext context);
 }

@@ -117,7 +117,7 @@ public class RandomizeColors : IModelModifier
     [Range(0.0f, 1.0f)] public float Metallic = 0.90f;
     [Range(0.0f, 1.0f)] public float Roughness = 0.90f;
     
-    public Model3D Eval(Model3D model3D, EvalContext context)
+    public IModel3D Eval(IModel3D model3D, EvalContext context)
     {
         var nIds = model3D.Instances.Select(es => es.MeshIndex).ToIndexedSet();
         var n = nIds.Count;

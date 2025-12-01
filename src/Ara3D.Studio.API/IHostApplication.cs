@@ -5,7 +5,7 @@ namespace Ara3D.Studio.API;
 
 public interface IHostApplication
 {
-    IEnumerable<Model3D> GetModels();
+    IEnumerable<IModel3D> GetModels();
     ILogger Logger { get; }
     void Invalidate(object obj);
     

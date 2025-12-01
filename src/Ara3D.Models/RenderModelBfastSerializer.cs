@@ -7,26 +7,26 @@ using Ara3D.Utils;
 
 namespace Ara3D.Models;
 
-public static class RenderSceneSerializer
+public static class RenderModelBfastSerializer
 {
     public static string[] BufferNames = new[]
     {
-        nameof(RenderScene.Vertices),
-        nameof(RenderScene.Indices),
-        nameof(RenderScene.MeshSlices),
-        nameof(RenderScene.Instances),
-        nameof(RenderScene.InstanceGroups),
+        nameof(RenderModel3D.Vertices),
+        nameof(RenderModel3D.Indices),
+        nameof(RenderModel3D.MeshSlices),
+        nameof(RenderModel3D.Instances),
+        nameof(RenderModel3D.InstanceGroups),
     };
 
-    public static unsafe void Save(RenderScene renderScene, FilePath filePath)
+    public static unsafe void Save(RenderModel3D renderModel3D, FilePath filePath)
     {
         var sizes = new[]
         {
-            renderScene.Vertices.Bytes.Count,
-            renderScene.Indices.Bytes.Count,
-            renderScene.MeshSlices.Bytes.Count,
-            renderScene.Instances.Bytes.Count,
-            renderScene.InstanceGroups.Bytes.Count,
+            renderModel3D.Vertices.Bytes.Count,
+            renderModel3D.Indices.Bytes.Count,
+            renderModel3D.MeshSlices.Bytes.Count,
+            renderModel3D.Instances.Bytes.Count,
+            renderModel3D.InstanceGroups.Bytes.Count,
         };
 
         Debug.Assert(sizes[0] % sizeof(Point3D) == 0);
@@ -37,11 +37,11 @@ public static class RenderSceneSerializer
 
         var ptrs = new[]             
         {
-            renderScene.Vertices.Bytes.Ptr,
-            renderScene.Indices.Bytes.Ptr,
-            renderScene.MeshSlices.Bytes.Ptr,
-            renderScene.Instances.Bytes.Ptr,
-            renderScene.InstanceGroups.Bytes.Ptr,
+            renderModel3D.Vertices.Bytes.Ptr,
+            renderModel3D.Indices.Bytes.Ptr,
+            renderModel3D.MeshSlices.Bytes.Ptr,
+            renderModel3D.Instances.Bytes.Ptr,
+            renderModel3D.InstanceGroups.Bytes.Ptr,
         };
 
         long OnBuffer(Stream stream, int index, string name, long bytesToWrite)
@@ -65,7 +65,7 @@ public static class RenderSceneSerializer
         BFast.Write((string)filePath, BufferNames, sizes.Select(sz => (long)sz), OnBuffer);
     }
 
-    public static unsafe RenderScene Load(FilePath fp)
+    public static unsafe RenderModel3D Load(FilePath fp)
     {
         AlignedMemory<float> vertices = null;
         AlignedMemory<uint> indices = null;
@@ -100,6 +100,6 @@ public static class RenderSceneSerializer
 
         BFastReader.Read(fp, OnView);
             
-        return new RenderScene(vertices, indices, meshes, instances, groups);
+        return new RenderModel3D(vertices, indices, meshes, instances, groups);
     }
 }

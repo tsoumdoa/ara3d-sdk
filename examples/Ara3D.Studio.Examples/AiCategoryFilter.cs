@@ -12,7 +12,7 @@ public class AiCategoryFilter : IModelModifier
 
     private IHostApplication _app;
 
-    public Model3D Eval(Model3D model, EvalContext eval)
+    public IModel3D Eval(IModel3D model, EvalContext eval)
     {
         if (_app == null)
         {

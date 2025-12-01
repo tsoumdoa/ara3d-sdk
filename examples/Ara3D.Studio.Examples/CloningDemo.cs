@@ -31,7 +31,7 @@ public class CloningDemo : IModelGenerator
 
     public Color Color => (Red, Green, Blue, Alpha);
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var mesh = PlatonicSolids.GetMesh(Shape);
         var matrices = new List<Matrix4x4>();

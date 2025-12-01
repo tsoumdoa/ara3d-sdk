@@ -15,24 +15,24 @@ public static class ModelExtensions
     public static InstanceStruct TransformMaterial(this InstanceStruct self, Func<Material, Material> f)
         => self.WithMaterial(f(self.Material));
 
-    public static RenderScene TransformInstances(this RenderScene scene, Func<InstanceStruct, InstanceStruct> f)
+    public static RenderModel3D TransformInstances(this RenderModel3D renderModel3D, Func<InstanceStruct, InstanceStruct> f)
     {
-        scene.Instances.Transform(f);
-        return scene;
+        renderModel3D.Instances.Transform(f);
+        return renderModel3D;
     }
 
-    public static RenderScene TransformMaterials(this RenderScene scene, Func<Material, Material> f)
-        => scene.TransformInstances(inst => inst.TransformMaterial(f));
+    public static RenderModel3D TransformMaterials(this RenderModel3D renderModel3D, Func<Material, Material> f)
+        => renderModel3D.TransformInstances(inst => inst.TransformMaterial(f));
 
-    public static RenderScene TransformVertices(this RenderScene scene, Func<Point3D, Point3D> f)
+    public static RenderModel3D TransformVertices(this RenderModel3D renderModel3D, Func<Point3D, Point3D> f)
     {
-        scene.Vertices.CastMemory<Point3D>().Transform(f);
-        return scene;
+        renderModel3D.Vertices.CastMemory<Point3D>().Transform(f);
+        return renderModel3D;
     }
 
-    public static RenderScene TransformVertices(this RenderScene scene, Func<Vector3, Vector3> f)
+    public static RenderModel3D TransformVertices(this RenderModel3D renderModel3D, Func<Vector3, Vector3> f)
     {
-        scene.Vertices.CastMemory<Vector3>().Transform(f);
-        return scene;
+        renderModel3D.Vertices.CastMemory<Vector3>().Transform(f);
+        return renderModel3D;
     }
 }

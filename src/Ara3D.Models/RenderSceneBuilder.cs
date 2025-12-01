@@ -109,9 +109,9 @@ public class RenderSceneBuilder : IDisposable
         InstanceGroupList.Clear();
     }
 
-    public RenderScene Build()
+    public RenderModel3D Build()
     {
-        var rs = new RenderScene(
+        var rs = new RenderModel3D(
             VertexList,
             IndexList,
             MeshList,

@@ -7,7 +7,7 @@ public class WallDemo : IModelGenerator
     [Range(0f, 10f)] public float Radius = 2;
     [Range(2, 20)] public int Count = 5;
     
-    public Model3D Eval(EvalContext ctx)
+    public IModel3D Eval(EvalContext ctx)
     {
         var mesh = PlatonicSolids.TriangulatedCube;
         var pts = Polygons.CirclePoints(Count).Select(pt => pt * Radius);

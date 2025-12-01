@@ -41,7 +41,7 @@ public class VoxelDemo : IModelGenerator
         throw new InvalidOperationException();
     }
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var sdf = GetShape(Shape);
         var bounds = UnitBounds.Scale(BoundSize);
@@ -50,7 +50,10 @@ public class VoxelDemo : IModelGenerator
 
         if (Triangulate)
         {
-            return voxelField.MarchingCubes(Threshold).ToTriangleMesh3D();
+            return voxelField
+                .MarchingCubes(Threshold)
+                .ToTriangleMesh3D()
+                .ToModel3D();
         }
 
         var positions = voxelField.Where(v => v.Value < Threshold).Select(v => v.Position).ToList();

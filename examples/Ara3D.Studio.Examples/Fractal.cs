@@ -185,7 +185,7 @@ namespace Ara3D.Studio.Samples
             return Quaternion.CreateFromAxisAngle(axisN, angle);
         }
 
-        public Model3D Eval(EvalContext context)
+        public IModel3D Eval(EvalContext context)
         {
             var s = LSystem.Eval(Iterations);
             var lines = ConstructLines(s);

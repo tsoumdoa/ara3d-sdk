@@ -268,7 +268,7 @@ public class LetterDemo : IModelGenerator
     [Range(0f, 1f)] public float Stroke { get; set; } = 0.22f;
     public bool UseEarCut { get; set; } = true;
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var func = LetterFuncs[Letter]; 
         var poly = func.Invoke(null, [Stroke]) as IPolygon2D;

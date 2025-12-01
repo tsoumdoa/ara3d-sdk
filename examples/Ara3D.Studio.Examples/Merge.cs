@@ -2,7 +2,7 @@
 
 public class Merge : IModelModifier
 {
-    public Model3D Eval(Model3D m, EvalContext eval)
+    public IModel3D Eval(IModel3D m, EvalContext eval)
     {
         var mesh = m.ToMesh(); 
         var mat = m.FirstOrDefaultMaterial();

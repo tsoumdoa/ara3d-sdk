@@ -29,7 +29,7 @@ public class MeshBoxes : IModelModifier
             : PlatonicSolids.TriangulatedCube.Scale(obb.Size).Translate(obb.Center);
     }
 
-    public Model3D Eval(Model3D model, EvalContext context)
+    public IModel3D Eval(IModel3D model, EvalContext context)
     {
         if (Disabled)
             return model;

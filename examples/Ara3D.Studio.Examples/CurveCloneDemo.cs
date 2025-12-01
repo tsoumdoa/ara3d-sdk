@@ -38,7 +38,7 @@
             return Circle; // Default to Circle if index is out of range
         }
 
-        public Model3D Eval(EvalContext context)
+        public IModel3D Eval(EvalContext context)
         {
             var mesh = PlatonicSolids.TriangulatedCube;
             var curve = GetCurve(Curve);

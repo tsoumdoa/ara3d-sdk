@@ -39,7 +39,7 @@ public class ParametricSurfaceDemo : IModelGenerator
     public Material Material =>
         new((Red, Green, Blue, Alpha), Metallic, Roughness);
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var mesh = GetSurface(Surface)
             .WithClosedUV(ClosedU, ClosedV)

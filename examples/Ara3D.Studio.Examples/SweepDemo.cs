@@ -32,13 +32,13 @@ public class SweepDemo : IModelGenerator
 
     public static Angle QuarterTurn = 0.25f.Turns();
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var profile = Curves.Circle.RotateX(QuarterTurn);
         var path = Curves.Helix(Height, Revolutions);
         var profilePoints = profile.Sample(SampleCount);
         var pathFrames = GetTransforms(path, SampleCount);
         var grid = profilePoints.Sweep(pathFrames, true, false);
-        return grid.Triangulate();
+        return Model3D.Create(grid.Triangulate());
     }
 }

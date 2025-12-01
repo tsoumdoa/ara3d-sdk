@@ -192,7 +192,7 @@ public class ReactionDiffusion : IModelGenerator
         return QuadGrid3D.Create(tmp, false, false).Triangulate();
     }
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var pattern = ReactionDiffusion2D.Generate(
             width: SideCount,
@@ -207,6 +207,6 @@ public class ReactionDiffusion : IModelGenerator
             seedAmount: 1.0f,
             wrapEdges: true,
             outputField: "V");
-        return HeightField(pattern);
+        return HeightField(pattern).ToModel3D();
     }
 }

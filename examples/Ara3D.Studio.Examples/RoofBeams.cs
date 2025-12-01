@@ -26,7 +26,7 @@
             return mesh.Triangulate();
         }
 
-        public Model3D Eval(EvalContext context)
+        public IModel3D Eval(EvalContext context)
         {
             var coreMesh = PlatonicSolids.TriangulatedCube;
             var totalLength = HorizontalBeamWidth * NumHorizontal + HorizontalSpacing * (NumHorizontal - 1);

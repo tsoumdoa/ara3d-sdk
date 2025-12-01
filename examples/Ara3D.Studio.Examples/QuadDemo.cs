@@ -14,7 +14,7 @@ public class QuadDemo : IModelGenerator
         return new FunctionalReadOnlyList2D<T>(cols, rows, (col, row) => xs[row * cols + col]);
     }
 
-    public Model3D Eval(EvalContext eval)
+    public IModel3D Eval(EvalContext eval)
     {
         // Bottom Row
         var x00 = new Point3D(-0.5f, -0.5f, 0);

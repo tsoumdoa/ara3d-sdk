@@ -23,7 +23,7 @@ public class Model3DBuilder
     public void AddInstance(int meshIndex, Material material, Matrix4x4 matrix)
         => AddInstance(meshIndex, matrix, material);
     
-    public void AddModel(Model3D model)
+    public void AddModel(IModel3D model)
     {
         var meshOffset = Meshes.Count;
         Meshes.AddRange(model.Meshes);

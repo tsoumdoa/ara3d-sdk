@@ -6,7 +6,7 @@
             => (i / (float)NumColumns, j / (float)NumRows);
 
         public Point3D PointOnTorus(int i, int j)
-            => SurfaceFunctions.Torus(ToUv(i, j), MajorRadius, MinorRadius);
+            => ToUv(i, j).Torus(MajorRadius, MinorRadius);
 
         private QuadGrid3D GetQuadGrid()
         {
@@ -23,7 +23,7 @@
         public bool ClosedX;
         public bool ClosedY;
         
-        public Model3D Eval(EvalContext context)
-            => GetQuadGrid().Triangulate();
+        public IModel3D Eval(EvalContext context)
+            => Model3D.Create(GetQuadGrid().Triangulate());
     }
 }

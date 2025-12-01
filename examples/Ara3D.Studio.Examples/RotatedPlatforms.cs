@@ -9,7 +9,7 @@ public class RotatedPlatforms : IModelGenerator
     [Range(0.01, 100)] public float Spacing = 4;
     [Range(-10, 10)] public float RotationInTurns = 0.5f;
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         var rotationPerFloor = RotationInTurns.Turns() / Count;
         var mesh = PlatonicSolids.TriangulatedCube;

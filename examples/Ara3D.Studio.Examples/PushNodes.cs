@@ -12,7 +12,7 @@ public class PushNodes : IModelModifier
         return self.WithTranslation(newPos);   
     }
 
-    public Model3D Eval(Model3D m, EvalContext eval)
+    public IModel3D Eval(IModel3D m, EvalContext eval)
     {
         if (m.Instances.Count == 0) return m;
         var center = m.GetBounds().Center;

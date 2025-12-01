@@ -104,7 +104,7 @@ public class AnimateSize : IModelModifier, IAnimated
         return scale * rot * trans;
     }
 
-    public Model3D Eval(Model3D model3D, EvalContext context)
+    public IModel3D Eval(IModel3D model3D, EvalContext context)
     {
         // Time in seconds with global speed scaling
         float t = (float)context.AnimationTime * Speed;

@@ -4,5 +4,5 @@ namespace Ara3D.Studio.API;
 
 public interface IModelModifier : IScriptedComponent
 {
-    Model3D Eval(Model3D model3D, EvalContext context);
+    IModel3D Eval(IModel3D model3D, EvalContext context);
 }

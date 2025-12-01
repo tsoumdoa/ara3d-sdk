@@ -6,7 +6,7 @@ public class Clone : IModelModifier
     [Range(1, 100)] public int Columns = 2;
     [Range(1f, 20f)] public float Spacing = 7f;
     
-    public Model3D Eval(Model3D model, EvalContext eval)
+    public IModel3D Eval(IModel3D model, EvalContext eval)
     {
         var offset = MathF.Pow(2, Spacing);
         var positions = new List<Vector3>();
