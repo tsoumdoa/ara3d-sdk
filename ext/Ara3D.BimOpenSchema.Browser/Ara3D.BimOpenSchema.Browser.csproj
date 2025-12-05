@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿  <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <GenerateSatelliteAssemblies>false</GenerateSatelliteAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,4 +25,8 @@
     <Resource Include="ara3d.ico" />
   </ItemGroup>
 
-</Project>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="call post-build.bat $(OutDir)" />
+    </Target>
+
+  </Project>

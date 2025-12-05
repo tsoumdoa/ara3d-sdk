@@ -22,7 +22,7 @@ public class CommandBackgroundExportEverything : NamedCommand
     public List<long> Ids = new();
     public int QueueSize;
     public override string Name => "BOM Background Export";
-    public RevitBimDataBuilder Builder;
+    public BimOpenSchemaRevitBuilder RevitBuilder;
     public UIApplication UiApp;
     public string Folder = @"C:\dev\aec-tech-linter\tmp\";
     public int LastCount = 0;
@@ -43,7 +43,7 @@ public class CommandBackgroundExportEverything : NamedCommand
         Doc = UiApp?.ActiveUIDocument?.Document;
         Ids.Clear();
 
-        Builder = new(Doc, true, false);
+        RevitBuilder = new(Doc, true, false);
         
         UiApp.Application.DocumentChanged += OnDocumentChanged;
 
@@ -98,7 +98,7 @@ public class CommandBackgroundExportEverything : NamedCommand
             var elapsed = DateTimeOffset.Now - LastSave;
             if (elapsed.TotalSeconds < UpdateFrequency) return;
 
-            var bimData = Builder.Builder.Data;
+            var bimData = RevitBuilder.Builder.Data;
             var dataSet = bimData.ToDataSet();
 
             var fp = new FilePath($@"C:\dev\aec-tech-linter\tmp\changes-{PathUtil.GetTimeStamp()}.parquet.zip");
@@ -117,7 +117,7 @@ public class CommandBackgroundExportEverything : NamedCommand
 
             LastSave = DateTimeOffset.Now;
             Modified = false;
-            Builder = new(Doc, true, false);
+            RevitBuilder = new(Doc, true, false);
         }
         catch
         {
@@ -134,7 +134,7 @@ public class CommandBackgroundExportEverything : NamedCommand
         }
         else
         {
-            Builder.ProcessElement(el);
+            RevitBuilder.ProcessElement(el);
         }
     }
 

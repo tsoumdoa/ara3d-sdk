@@ -1,4 +1,7 @@
-﻿namespace Ara3D.Logging
+﻿using System;
+using System.Text;
+
+namespace Ara3D.Logging
 {
     public class Logger : ILogger
     {
@@ -25,5 +28,11 @@
 
         public static ILogger Null
             = new Logger(LogWriter.NullWriter, "");
+
+        public static ILogger Create(StringBuilder sb)
+            => new Logger(LogWriter.Create(sb), "");
+
+        public static ILogger Create(Action<string> action)
+            => new Logger(LogWriter.Create(action), "");
     }
 }

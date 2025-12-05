@@ -17,6 +17,8 @@ namespace Ara3D.Memory
         {
             Bytes = bytes;
             _pointer = bytes.GetPointer<T>();
+            if (bytes.Length % sizeof(T) != 0)
+                throw new Exception($"Failed to reinterpret data as {typeof(T)}");
             Count = (int)(bytes.Length / sizeof(T));
         }
 

@@ -16,12 +16,12 @@
 /// </summary>
 public class BimGeometry
 {
-    public const string ElementTableName = "Element";
-    public const string IndexTableName = "Index";
-    public const string MaterialTableName = "Material";
-    public const string MeshTableName = "Mesh";
-    public const string TransformTableName = "Transform";
-    public const string VertexTableName = "Vertex";
+    public const string ElementTableName = nameof(BimGeometryTableName.Elements);
+    public const string IndexTableName = nameof(BimGeometryTableName.IndexBuffer);
+    public const string MaterialTableName = nameof(BimGeometryTableName.Materials);
+    public const string MeshTableName = nameof(BimGeometryTableName.Meshes);
+    public const string TransformTableName = nameof(BimGeometryTableName.Transforms);
+    public const string VertexTableName = nameof(BimGeometryTableName.VertexBuffer);
 
     public static string[] TableNames
         = [ElementTableName, IndexTableName, MaterialTableName, MeshTableName, TransformTableName, VertexTableName];

@@ -1,18 +1,12 @@
 ﻿using Ara3D.BimOpenSchema.IO;
-using Ara3D.Collections.wip;
 using Ara3D.DataTable;
 using Ara3D.IO.GltfExporter;
 using Ara3D.Models;
 using Ara3D.Utils;
-using DocumentFormat.OpenXml.Vml.Office;
-using Microsoft.Win32;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
@@ -53,13 +47,24 @@ namespace Ara3D.BimOpenSchema.Browser
             this.Loaded += MainWindow_Loaded;
         }
 
-        public static DirectoryPath DefaultSaveLocation()
-            => SpecialFolders.MyDocuments.RelativeFolder("BIM Open Schema");
-
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            //await OpenFile(@"C:\Users\cdigg\data\bos\Snowdon Towers Sample Architectural.parquet.zip");
+            try
+            {
+                var args = Environment.GetCommandLineArgs();
+                if (args.Length > 1)
+                {
+                    await OpenFile(args[1]);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error occured {ex.Message}");
+            }
         }
+
+        public static DirectoryPath DefaultSaveLocation()
+            => SpecialFolders.MyDocuments.RelativeFolder("BIM Open Schema");
 
         public static void SaveToGltf(BimModel3D model, FilePath filePath)
         {
@@ -72,6 +77,10 @@ namespace Ara3D.BimOpenSchema.Browser
 
         public async Task OpenFile(FilePath fp)
         {
+            if (!fp.Exists())
+                return;
+            using var waitContext = new WpfWaitContext();
+
             Model3D = null;
             CurrentFile = fp;
             Data = await fp.ReadBimDataFromParquetZipAsync().ConfigureAwait(false);
@@ -99,7 +108,7 @@ namespace Ara3D.BimOpenSchema.Browser
             }
         }
 
-        public async void SetGrouping(Grouping g)
+        public async Task SetGrouping(Grouping g)
         {
             if (g == CurrentGrouping)
                 return;
@@ -124,6 +133,11 @@ namespace Ara3D.BimOpenSchema.Browser
             var baseName = CurrentFile.GetFileNameWithoutExtension();
             var baseFolder = new DirectoryPath(FolderDialog.SelectedPath);
             var folder = baseFolder.RelativeFolder(baseName);
+            if (CurrentGrouping != Grouping.None)
+            {
+                var subFolder = CurrentGrouping.ToString();
+                folder = folder.RelativeFolder(subFolder);
+            }
             folder.Create();
             return folder;
         }
@@ -182,13 +196,15 @@ namespace Ara3D.BimOpenSchema.Browser
             if (!folder?.Exists() == true)
                 return;
 
+            using var waitContext = new WpfWaitContext();
+
             foreach (var t in Tables)
             {
                 var fp = folder.RelativeFile(t.Name.ToValidFileName() + ".xlsx");
                 t.WriteToExcel(fp);
             }
         }
-
+        
         private async void ExportGLB_Click(object sender, RoutedEventArgs e)
         {
             if (Tables == null)
@@ -200,6 +216,8 @@ namespace Ara3D.BimOpenSchema.Browser
             var folder = ChooseFolder();
             if (!folder?.Exists() == true)
                 return;
+
+            using var waitContext = new WpfWaitContext();
 
             foreach (var g in GroupedEntities)
             {
@@ -227,6 +245,8 @@ namespace Ara3D.BimOpenSchema.Browser
 
             try
             {
+                using var waitContext = new WpfWaitContext();
+
                 var fs = new FileStream(CurrentFile, FileMode.Open, FileAccess.Read, FileShare.Read);
                 using var zip = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false);
 
@@ -246,11 +266,38 @@ namespace Ara3D.BimOpenSchema.Browser
             }
         }
 
+        private async void ExportSplitBOS_Click(object sender, RoutedEventArgs e)
+        {
+            if (GroupedEntities.Count <= 1)
+            {
+                MessageBox.Show("Exporting split BOS files requires one of the grouping options to be used");
+                return;
+            }
+
+            var folder = ChooseFolder();
+            if (!folder?.Exists() == true)
+                return;
+
+            if (!File.Exists(CurrentFile))
+                return;
+
+            try
+            {
+                // TODO: create new BOS files. 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error occured when exporting BOS files: {ex}");
+            }
+        }
+
         public DataTableFromEntities CreateTable(IGrouping<string, EntityModel> entities)
-            => new (entities.ToList(), entities.Key, IncludeParamsMenuItem.IsChecked && CurrentGrouping == Grouping.None);
+            => new (entities.ToList(), entities.Key, IncludeParamsMenuItem.IsChecked && CurrentGrouping != Grouping.None);
 
         private async Task UpdateTables()
         {
+            using var waitContext = new WpfWaitContext();
+
             GroupedEntities = CreateGroupings().OrderBy(g => g.Key).ToList();
 
             await Dispatcher.InvokeAsync(() =>

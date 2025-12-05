@@ -35,6 +35,9 @@ namespace Ara3D.Memory
             GC.SuppressFinalize(this);
         }
 
+        public IMemoryOwner<T> Cast<T>() where T : unmanaged
+            => new MemoryOwner<T>(this);
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

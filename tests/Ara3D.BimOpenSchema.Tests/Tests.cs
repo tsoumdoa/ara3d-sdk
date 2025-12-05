@@ -86,7 +86,6 @@ namespace Ara3D.BIMOpenSchema.Tests
             var bimData = GetTestInputData();
             Console.WriteLine($"Loaded {InputFile.GetFileSizeAsString()} of BIM data in {sw.Elapsed.Seconds:F} seconds");
 
-            TestWriteData(bimData, "duckdb", (bd, f) => bd.WriteDuckDB(f));
             TestWriteData(bimData, "xlsx", (bd, f) => bd.WriteToExcel(f));
             TestWriteData(bimData, "parquet.zip", (bd, f) => bd.WriteToParquetZip(f));
         }

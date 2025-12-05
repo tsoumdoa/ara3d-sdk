@@ -105,6 +105,7 @@ public record Point
 public enum ParameterType
 {
     Int, 
+    Bool = Int,
     Double,
     Entity,
     String,

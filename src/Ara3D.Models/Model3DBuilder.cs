@@ -1,5 +1,4 @@
-﻿using Ara3D.DataTable;
-using Ara3D.Geometry;
+﻿using Ara3D.Geometry;
 
 namespace Ara3D.Models;
 

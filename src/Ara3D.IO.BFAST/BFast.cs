@@ -313,7 +313,7 @@ namespace Ara3D.IO.BFAST
         /// <summary>
         /// Reads a BFAST from a file as a collection of named buffers.
         /// </summary>
-        public static INamedBuffer[] Read(string filePath)
+        public static NamedBuffer[] Read(string filePath)
         {
             using (var stream = File.OpenRead(filePath))
                 return Read(stream);
@@ -322,13 +322,13 @@ namespace Ara3D.IO.BFAST
         /// <summary>
         /// Reads a BFAST from a stream as a collection of named buffers.
         /// </summary>
-        public static INamedBuffer[] Read(Stream stream)
+        public static NamedBuffer[] Read(Stream stream)
             => stream.ReadBFast().ToArray();
 
         /// <summary>
         /// Reads a BFAST from a stream as a collection of named buffers.
         /// </summary>
-        public static IEnumerable<INamedBuffer> ReadBFast(this Stream stream)
+        public static IEnumerable<NamedBuffer> ReadBFast(this Stream stream)
         {
             var header = stream.ReadBFastHeader();
             var start = header.Preamble.DataStart;
@@ -394,7 +394,7 @@ namespace Ara3D.IO.BFAST
         /// Reads a BFAST from a byte array as a collection of named buffers.
         /// This call limits the buffers to 2GB.
         /// </summary>
-        public static INamedBuffer[] ReadBFast(this byte[] bytes)
+        public static NamedBuffer[] ReadBFast(this byte[] bytes)
         {
             using (var stream = new MemoryStream(bytes))
                 return ReadBFast(stream).ToArray();
@@ -491,7 +491,7 @@ namespace Ara3D.IO.BFAST
                 writerFn);
         }
 
-        public static void WriteBFast(this FilePath filePath, IEnumerable<INamedBuffer> buffers)
+        public static void WriteBFast(this FilePath filePath, IEnumerable<NamedBuffer> buffers)
         {
             var bs = buffers.ToList();
             var sizes = bs.Select(b => b.NumBytes()).ToArray();
@@ -546,7 +546,7 @@ namespace Ara3D.IO.BFAST
                     return writer.Position - initPosition;
                 });
 
-        public static BFastBuilder ToBFastBuilder(this IEnumerable<INamedBuffer> buffers)
+        public static BFastBuilder ToBFastBuilder(this IEnumerable<NamedBuffer> buffers)
             => new BFastBuilder().Add(buffers);
     }
 }

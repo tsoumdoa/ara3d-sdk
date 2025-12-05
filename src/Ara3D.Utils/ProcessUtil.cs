@@ -28,6 +28,14 @@ namespace Ara3D.Utils
         public static Process OpenFolderInExplorer(this DirectoryPath folderPath)
             => Process.Start("explorer.exe", folderPath);
 
+        public static Process Execute(this FilePath filePath, string args = "")
+            => Process.Start(new ProcessStartInfo
+            {
+                FileName = filePath.GetFullPath(),
+                Arguments = args,
+                UseShellExecute = false
+            });
+
         public static Process SelectFileInExplorer(this FilePath filePath)
             => Process.Start(new ProcessStartInfo
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Ara3D.IO.BFAST;
 using Ara3D.Memory;
 
 namespace Ara3D.IO.VIM
@@ -7,12 +8,12 @@ namespace Ara3D.IO.VIM
     public class VimColumn : PropertyDescriptor
     {
         public VimTable Table { get; }
-        public ITypedNamedBuffer Buffer { get; }
+        public ITypedBuffer Buffer { get; }
         public int ColumnIndex { get; }
         public Type ColumnType { get; }
         public string RelatedTableName { get; }
 
-        public VimColumn(VimTable table, ITypedNamedBuffer buffer, int index)
+        public VimColumn(VimTable table, TypedNamedBuffer buffer, int index)
             : base(buffer.Name.GetColumnNameFromBufferName(), null)
         {
             Table = table;

@@ -10,7 +10,7 @@ namespace Ara3D.Memory;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 [SkipLocalsInit]
-public class MemoryOwner<T> : IMemoryOwner<T>
+public unsafe class MemoryOwner<T> : IMemoryOwner<T>
     where T : unmanaged
 {
     public IMemoryOwner Memory { get; private set; }
@@ -19,6 +19,9 @@ public class MemoryOwner<T> : IMemoryOwner<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public MemoryOwner(IMemoryOwner memory)
     {
+        if (memory.Bytes.Count % sizeof(T) != 0)
+            throw new Exception($"Cannot cast memory to type {typeof(T)}");
+
         Memory = memory;
         Buffer = new Buffer<T>(memory.Bytes);
     }
@@ -26,7 +29,7 @@ public class MemoryOwner<T> : IMemoryOwner<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        Memory.Dispose();
+        Memory?.Dispose();
         Memory = null;
         Buffer = null;
     }
@@ -55,7 +58,6 @@ public class MemoryOwner<T> : IMemoryOwner<T>
         get => this[index];
     }
 
-
     public ByteSlice Bytes
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)] 
@@ -75,4 +77,13 @@ public class MemoryOwner<T> : IMemoryOwner<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable)Buffer).GetEnumerator();
+
+    public IMemoryOwner<T1> Cast<T1>()
+        where T1 : unmanaged
+    {
+        var r = new MemoryOwner<T1>(Memory);
+        Memory = null;
+        Buffer = null;
+        return r;
+    }
 }

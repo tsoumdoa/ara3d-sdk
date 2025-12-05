@@ -2,10 +2,10 @@
 
 public enum BimGeometryTableName
 {
-    Element,
-    Vertex,
-    Index,
-    Material,
-    Transform,
-    Mesh
+    Elements,
+    VertexBuffer,
+    IndexBuffer,
+    Materials,
+    Transforms,
+    Meshes
 }

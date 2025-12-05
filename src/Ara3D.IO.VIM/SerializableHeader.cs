@@ -22,14 +22,14 @@ namespace Ara3D.IO.VIM
         public const string DummyPersistingIdPrefix = "unknown_";
 
         public static readonly string[] RequiredFields =
-        {
+        [
             FormatVersionField,
             IdField,
             RevisionField,
             GeneratorField,
             CreationDateField,
-            SchemaField,
-        };
+            SchemaField
+        ];
 
         public readonly SerializableVersion FileFormatVersion;
         public readonly Guid Id;

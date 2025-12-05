@@ -8,6 +8,6 @@ public class Element
     public string Type { get; set; }
     public string Name { get; set; }
     public string Category { get; set; }
-    public List<int> Nodes { get; } = new();
-    public List<Parameter> Parameters { get; } = new();
+    public List<int> Nodes { get; } = [];
+    public List<Parameter> Parameters { get; } = [];
 }

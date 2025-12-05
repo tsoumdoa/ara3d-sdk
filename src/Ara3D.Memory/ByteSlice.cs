@@ -252,5 +252,13 @@ namespace Ara3D.Memory
                 throw new InvalidOperationException($"Pointer is not aligned to {sizeof(T)}-byte");
             return r;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyTo(ByteSlice other)
+            => CopyTo(other.Ptr, other.Length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyTo(byte* other, long otherLength)
+            => Buffer.MemoryCopy(Ptr, other, otherLength, Math.Min(Length, otherLength));
     }
 }

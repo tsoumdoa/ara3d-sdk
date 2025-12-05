@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ara3D.Memory;
 
 namespace Ara3D.IO.BFAST;
 
 public class BFastBuffers : IDisposable
 {
-    public IReadOnlyList<INamedMemoryOwner> Buffers { get; private set; }
+    public IReadOnlyList<BFastBuffer> Buffers { get; private set; }
 
-    public BFastBuffers(IEnumerable<INamedMemoryOwner> buffers)
+    public BFastBuffers(IEnumerable<BFastBuffer> buffers)
         => Buffers = buffers.ToList();
 
     public void Dispose()

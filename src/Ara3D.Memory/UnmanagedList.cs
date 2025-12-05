@@ -18,6 +18,7 @@ namespace Ara3D.Memory
         private long _capacity;
 
         // Constructor to allocate initial capacity in unmanaged memory
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UnmanagedList(int capacity = 0, int count = 0)
         {
             Count = count;
@@ -30,6 +31,16 @@ namespace Ara3D.Memory
             _capacity = capacity; 
             Memory = new AlignedMemory(_capacity * ElementTypeSize);
             _pointer = Memory.Bytes.GetPointer<T>();
+        }
+
+        // This constructor is used when transferring memory to this unmanaged list (for example when casting)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public UnmanagedList(AlignedMemory mem, int cap, int count)
+        {
+            Memory = mem;
+            Count = count;
+            _pointer = Memory.Bytes.GetPointer<T>();
+            _capacity = cap;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,6 +108,7 @@ namespace Ara3D.Memory
         public void Clear()
             => Count = 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ~UnmanagedList()
         {
             if (Memory != null)
@@ -106,10 +118,32 @@ namespace Ara3D.Memory
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            Memory.Dispose();
+            Memory?.Dispose();
             Memory = null;
             _pointer = null;
             Count = 0;
+        }
+
+        /// <summary>
+        /// Casting a memory owner, effectively transfers ownership to a new memory owner block. 
+        /// </summary>
+        public IMemoryOwner<T1> Cast<T1>() where T1 : unmanaged
+        {
+            if (this is IMemoryOwner<T1> same)
+                return same;
+            var newCap = Memory.NumBytes / sizeof(T1);
+            if (Memory.NumBytes % sizeof(T1) != 0)
+                throw new Exception($"Old type {typeof(T)} cannot be cast to new type {typeof(T1)}");
+            var usedBytes = Count * sizeof(T);
+            var newCnt = usedBytes / sizeof(T1);
+            if (usedBytes % sizeof(T1) != 0)
+                throw new Exception($"Old type {typeof(T)} cannot be cast to new type {typeof(T1)}");
+            var r = new UnmanagedList<T1>(Memory, newCnt, (int)newCap);
+            Memory = null;
+            _pointer = null;
+            Count = 0;
+            _capacity = 0;
+            return r;
         }
 
         public ref T this[int index]
@@ -124,21 +158,37 @@ namespace Ara3D.Memory
             get => this[index];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator<T> GetEnumerator()
         {
             for (var i=0; i < Count; i++)
                 yield return this[i];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
-        public ByteSlice Bytes 
-            => Memory.Bytes.Take((long)Count * ElementTypeSize);
+        public ByteSlice Bytes
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Memory.Bytes.Take((long)Count * ElementTypeSize);
+        }
 
-        public Type Type => typeof(T);
+        public Type Type
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => typeof(T);
+        }
 
         public static int ElementTypeSize 
-            => sizeof(T);
+            = sizeof(T);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyFrom(IBuffer<T> other)
+        {
+            Clear();
+            AddRange(other);
+        }
     }
 }

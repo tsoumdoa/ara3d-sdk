@@ -112,7 +112,7 @@ public class DataTableFromEntities : IDataTable
             //globalIdColumn.Values.Add(e.GlobalId);
             //assemblyColumn.Values.Add(e.AssemblyName);
             //worksetColumn.Values.Add(e.WorksetId);
-            //categoryTypeColumn.Values.Add(e.CategoryType);
+            //categoryTypeColumn.Values.Add(e.CategoryT ype);
 
             // Add values or default values 
             foreach (var column in ColumnLookup.Values)
@@ -121,13 +121,20 @@ public class DataTableFromEntities : IDataTable
                 if (column.ColumnIndex < nonParameterColumnCount)
                     continue;
 
-                if (e.ParameterValues.TryGetValue(column.Name, out var val)
-                    && val.GetType() == column.Type)
+                if (e.ParameterValues.TryGetValue(column.Name, out var val))
                 {
                     if (val is EntityModel em)
-                        column.Values.Add((int)em.Index);
-                    else
+                    {
+                        column.Values.Add($"{(int)em.Index}({nameof(BimGeometryTableName.Materials)})");
+                    }
+                    else if (val.GetType() == column.Type)
+                    {
                         column.Values.Add(val);
+                    }
+                    else
+                    {
+                        column.Values.Add(column.DefaultValue);
+                    }
                 }
                 else
                 {

@@ -1,25 +1,22 @@
 ﻿using Ara3D.Bowerbird.RevitSamples;
 using Ara3D.Utils;
 using System;
+using System.IO;
 using System.Windows.Forms;
+using Ara3D.Logging;
 
 namespace Ara3D.BIMOpenSchema.Revit2025
 {
     public partial class BIMOpenSchemaExporterForm : Form
     {
-        public void UpdateProgress(int index, int count)
-        {
-            progressBar1.Minimum = 0;
-            progressBar1.Maximum = count + 1;
-            progressBar1.Value = Math.Clamp(index, progressBar1.Minimum, count);
-        }
-
         public Autodesk.Revit.DB.Document CurrentDocument;
-        public Action<BimOpenSchemaExportSettings> ExportAction;
+        public FilePath CurrentFilePath;
 
         public BIMOpenSchemaExporterForm()
         {
             InitializeComponent();
+            buttonLuanchBOSExplorer.Enabled = OpenSchemaApp.BrowserAppPath.Exists();
+
             var defaultExportDir = DefaultFolder;
             try
             {
@@ -37,21 +34,14 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             };
         }
 
-        public void Show(Autodesk.Revit.DB.Document doc, Action<BimOpenSchemaExportSettings> export)
+        public void Show(Autodesk.Revit.DB.Document doc)
         {
-            progressBar1.Value = 0;
             if (doc == null)
             {
                 MessageBox.Show("No Revit document is available. Please open a Revit document first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (export == null)
-            {
-                MessageBox.Show("Internal error: no export action provided.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
 
-            ExportAction = export;
             CurrentDocument = doc;
             Show();
         }
@@ -78,7 +68,7 @@ namespace Ara3D.BIMOpenSchema.Revit2025
 
         private void chooseFolderButton_Click(object sender, EventArgs e)
         {
-            folderBrowserDialog1.SelectedPath = GetCurrentExportFolder().GetFullPath();
+            folderBrowserDialog1.InitialDirectory = GetCurrentExportFolder().GetFullPath();
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 exportDirTextBox.Text = folderBrowserDialog1.SelectedPath;
@@ -106,14 +96,28 @@ namespace Ara3D.BIMOpenSchema.Revit2025
             return new DirectoryPath(folder);
         }
 
+        public void Log(string s)
+        {
+            richTextBox1.BeginInvoke(() =>
+            {
+                try
+                {
+                    richTextBox1.AppendText(s + Environment.NewLine);
+                }
+                catch
+                { }
+            });
+        }
+
         private void buttonExport_Click(object sender, EventArgs e)
         {
+            richTextBox1.Clear();
             var settings = GetExportSettings();
 
             var folder = settings.Folder;
             try
             {
-                if (!System.IO.Directory.Exists(folder))
+                if (!Directory.Exists(folder))
                 {
                     MessageBox.Show($"The folder {folder} does not exist. Please choose a valid folder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -129,12 +133,54 @@ namespace Ara3D.BIMOpenSchema.Revit2025
 
             try
             {
-                ExportAction.Invoke(settings);
+                if (CurrentDocument == null)
+                {
+                    MessageBox.Show("No active document found. Please open a Revit document and try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var logWriter = LogWriter.Create(Log);
+                var logger = new Logger(logWriter, "BOS Exporter");
+                CurrentFilePath = CurrentDocument.ExportBimOpenSchema(settings, logger);
             }
             catch (Exception ex)
             {
+                Log(ex.Message);
                 MessageBox.Show($"An error occurred during export: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void buttonLaunchBosExplorer_Click(object sender, EventArgs e)
+        {
+            if (!OpenSchemaApp.BrowserAppPath.Exists())
+                MessageBox.Show("Could not find the browser application");
+
+            if (CurrentFilePath.Exists())
+                OpenSchemaApp.BrowserAppPath.Execute(CurrentFilePath.Value.Quote());
+            else
+                OpenSchemaApp.BrowserAppPath.Execute();
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        { }
+
+        private void buttonLaunchWindowsExplorer_Click(object sender, EventArgs e)
+        {
+            if (CurrentFilePath.Exists())
+                CurrentFilePath.SelectFileInExplorer();
+            else
+                GetCurrentExportFolder().OpenFolderInExplorer();
+        }
+
+        private void buttonAra3D_Click(object sender, EventArgs e)
+        {
+            if (!OpenSchemaApp.Ara3dStudioExePath.Exists())
+                MessageBox.Show("Could not find the path to Ara 3D Studio");
+
+            if (CurrentFilePath.Exists())
+                OpenSchemaApp.Ara3dStudioExePath.Execute(CurrentFilePath.Value.Quote());
+            else
+                OpenSchemaApp.Ara3dStudioExePath.Execute();
         }
     }
 }

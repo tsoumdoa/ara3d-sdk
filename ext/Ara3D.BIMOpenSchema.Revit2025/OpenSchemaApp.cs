@@ -2,15 +2,8 @@
 using Ara3D.Logging;
 using Ara3D.Utils;
 using Autodesk.Revit.UI;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using Bitmap = System.Drawing.Bitmap;
-using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Ara3D.BIMOpenSchema.Revit2025
 {
@@ -76,56 +69,20 @@ namespace Ara3D.BIMOpenSchema.Revit2025
         public void Run(UIApplication application)
         {
             UiApp ??= application;
-
             Form ??= new BIMOpenSchemaExporterForm();
-
-            Form.Show(UiApp.ActiveUIDocument?.Document, Export);
+            Form.Show(UiApp.ActiveUIDocument?.Document);
         }
 
-        public void ReportProgress(int current, int count)
-        {
-            try
-            {
-                if (current % 10 == 0)
-                {
-                    if (Form.InvokeRequired)
-                        Form.BeginInvoke(() => Form.UpdateProgress(current, count));
-                    else
-                        Form.UpdateProgress(current, count);
-                }
-            }
-            catch (Exception)
-            { }
-        }
+        public static FilePath GetAddInAssemblyPath
+            => Assembly.GetExecutingAssembly().Location;
 
-        public void Export(BimOpenSchemaExportSettings settings)
-        {
-            var currentDoc = UiApp.ActiveUIDocument?.Document;
-            if (currentDoc == null)
-            {
-                MessageBox.Show("No active document found. Please open a Revit document and try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+        public static FilePath BrowserAppPath
+            => GetAddInAssemblyPath.RelativeFile(BrowserAppName);
 
-            try
-            {
-                var sb = new StringBuilder();
-                var timer = Stopwatch.StartNew();
-                currentDoc.ExportBimOpenSchema(settings, sb);
-                timer.Stop();
+        public static string BrowserAppName
+            => "Ara3D.BimOpenSchema.Browser.exe";
 
-                if (MessageBox.Show($"Completed export process in {timer.Elapsed.TotalSeconds:F1} seconds.\nOpen output folder?", "Congratulations!",
-                        MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    settings.Folder.OpenFolderInExplorer();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error occurred during export: {ex.Message}.", "Error");
-            }
-
-            ReportProgress(0, 1); 
-        }
+        public static FilePath Ara3dStudioExePath 
+            => SpecialFolders.LocalApplicationData.RelativeFile("Ara 3D", "Ara 3D Studio", "Ara3D.Studio.exe");
     }
 }

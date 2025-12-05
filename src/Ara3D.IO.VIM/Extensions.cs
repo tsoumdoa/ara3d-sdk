@@ -1,4 +1,5 @@
-﻿using Ara3D.Memory;
+﻿using Ara3D.IO.BFAST;
+using Ara3D.Memory;
 
 namespace Ara3D.IO.VIM
 {
@@ -29,7 +30,7 @@ namespace Ara3D.IO.VIM
         public static string GetSimplifiedBufferName(this string name)
             => name[(name.IndexOf(':') + 1)..];
 
-        public static string GetSimplifiedBufferName(this INamedBuffer c)
+        public static string GetSimplifiedBufferName(this NamedBuffer c)
             => c.Name.GetSimplifiedBufferName();
     }
 }

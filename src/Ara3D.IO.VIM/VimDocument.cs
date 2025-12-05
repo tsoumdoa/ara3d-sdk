@@ -9,8 +9,8 @@ namespace Ara3D.IO.VIM
     {
         public SerializableDocument Document { get; }
         public Dictionary<long, Element> Elements = new();
-        public List<string> CategoryNames = new();
-        public List<int> NodeElements = new();
+        public List<string> CategoryNames = [];
+        public List<int> NodeElements = [];
 
         public static VimDocument Load(FilePath filePath) => new(VimSerializer.Deserialize(filePath));
 
@@ -94,7 +94,7 @@ namespace Ara3D.IO.VIM
         public void Add(VimTable table)
             => _tables.Add(table);
 
-        private List<VimTable> _tables = new();
+        private List<VimTable> _tables = [];
         public IReadOnlyList<VimTable> Tables => _tables;
 
         public VimTable FindTable(string name)

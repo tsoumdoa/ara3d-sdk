@@ -1,22 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Ara3D.IO.BFAST;
 using Ara3D.Memory;
 
 namespace Ara3D.IO.VIM
 {
     public interface IBufferGroup
     {
-        IEnumerable<INamedBuffer> GetBuffers();
+        IEnumerable<NamedBuffer> GetBuffers();
     }
 
     public class Vector3BufferGroup : IBufferGroup
     {
-        public INamedBuffer<float> X { get; set; }
-        public INamedBuffer<float> Y { get; set; }
-        public INamedBuffer<float> Z { get; set; }
+        public NamedBuffer<float> X { get; set; }
+        public NamedBuffer<float> Y { get; set; }
+        public NamedBuffer<float> Z { get; set; }
 
-        public IEnumerable<INamedBuffer> GetBuffers()
+        public IEnumerable<NamedBuffer> GetBuffers()
             => [X, Y, Z];
 
         public static Vector3BufferGroup Create(string name, IReadOnlyList<Vector3> vectors)
@@ -38,12 +39,12 @@ namespace Ara3D.IO.VIM
 
     public class Vector4BufferGroup : IBufferGroup
     {
-        public INamedBuffer<float> X { get; set; }
-        public INamedBuffer<float> Y { get; set; }
-        public INamedBuffer<float> Z { get; set; }
-        public INamedBuffer<float> W { get; set; }
+        public NamedBuffer<float> X { get; set; }
+        public NamedBuffer<float> Y { get; set; }
+        public NamedBuffer<float> Z { get; set; }
+        public NamedBuffer<float> W { get; set; }
 
-        public IEnumerable<INamedBuffer> GetBuffers()
+        public IEnumerable<NamedBuffer> GetBuffers()
             => [X, Y, Z, W];
 
         public static Vector4BufferGroup Create(string name, IReadOnlyList<Vector4> vectors)
@@ -87,7 +88,7 @@ namespace Ara3D.IO.VIM
         public Vector4BufferGroup Rotation { get; set; }
         public Vector3BufferGroup Scale { get; set; }
 
-        public IEnumerable<INamedBuffer> GetBuffers()
+        public IEnumerable<NamedBuffer> GetBuffers()
             => Position.GetBuffers()
                 .Concat(Rotation.GetBuffers())
                 .Concat(Scale.GetBuffers());
@@ -141,18 +142,18 @@ namespace Ara3D.IO.VIM
         public int NumMaterials => MaterialColors.Count;
         public int NumSubMeshes => SubMeshMaterials.Count;
 
-        public INamedBuffer<int> Indices { get; set; }
-        public INamedBuffer<Matrix4x4> InstanceTransforms { get; set; }
-        public INamedBuffer<int> InstanceMeshes { get; set; }
-        public INamedBuffer<Vector4> MaterialColors { get; set; }
-        public INamedBuffer<float> MaterialGlossiness { get; set; }
-        public INamedBuffer<float> MaterialSmoothness { get; set; }
-        public INamedBuffer<int> MeshSubMeshOffset { get; set; }
-        public INamedBuffer<int> SubMeshIndexOffsets { get; set; }
-        public INamedBuffer<int> SubMeshMaterials { get; set; }
-        public INamedBuffer<Vector3> Vertices { get; set; }
+        public NamedBuffer<int> Indices { get; set; }
+        public NamedBuffer<Matrix4x4> InstanceTransforms { get; set; }
+        public NamedBuffer<int> InstanceMeshes { get; set; }
+        public NamedBuffer<Vector4> MaterialColors { get; set; }
+        public NamedBuffer<float> MaterialGlossiness { get; set; }
+        public NamedBuffer<float> MaterialSmoothness { get; set; }
+        public NamedBuffer<int> MeshSubMeshOffset { get; set; }
+        public NamedBuffer<int> SubMeshIndexOffsets { get; set; }
+        public NamedBuffer<int> SubMeshMaterials { get; set; }
+        public NamedBuffer<Vector3> Vertices { get; set; }
 
-        public IEnumerable<INamedBuffer> GetBuffers()
+        public IEnumerable<NamedBuffer> GetBuffers()
             => [Indices, 
                 InstanceTransforms, 
                 InstanceMeshes, 
@@ -179,14 +180,14 @@ namespace Ara3D.IO.VIM
                 g3d.Vertices.ToNamedBuffer(nameof(Vertices)),
             ]);
 
-        public static VimGeometryBuffers Create(IEnumerable<INamedBuffer> buffers)
+        public static VimGeometryBuffers Create(IEnumerable<NamedBuffer> buffers)
         {
             var t = typeof(VimGeometryBuffers);
             var r = new VimGeometryBuffers();
             foreach (var b in buffers)
             {
                 var p = t.GetProperty(b.Name);
-                if (p.PropertyType.Name.StartsWith("INamedBuffer"))
+                if (p.PropertyType.Name.StartsWith("NamedBuffer"))
                     p.SetValue(r, b);
             }
             return r;
@@ -206,18 +207,18 @@ namespace Ara3D.IO.VIM
         public int NumMaterials => MaterialGlossiness.Count;
         public int NumSubMeshes => SubMeshMaterials.Count;
 
-        public INamedBuffer<int> Indices { get; set; }
+        public NamedBuffer<int> Indices { get; set; }
         public TransformBufferGroup InstanceTransforms { get; set; }
-        public INamedBuffer<int> InstanceMeshes { get; set; }
+        public NamedBuffer<int> InstanceMeshes { get; set; }
         public Vector4BufferGroup MaterialColors { get; set; }
-        public INamedBuffer<float> MaterialGlossiness { get; set; }
-        public INamedBuffer<float> MaterialSmoothness { get; set; }
-        public INamedBuffer<int> MeshSubMeshOffset { get; set; }
-        public INamedBuffer<int> SubMeshIndexOffsets { get; set; }
-        public INamedBuffer<int> SubMeshMaterials { get; set; }
+        public NamedBuffer<float> MaterialGlossiness { get; set; }
+        public NamedBuffer<float> MaterialSmoothness { get; set; }
+        public NamedBuffer<int> MeshSubMeshOffset { get; set; }
+        public NamedBuffer<int> SubMeshIndexOffsets { get; set; }
+        public NamedBuffer<int> SubMeshMaterials { get; set; }
         public Vector3BufferGroup Vertices { get; set; }
 
-        public IEnumerable<INamedBuffer> GetBuffers()
+        public IEnumerable<NamedBuffer> GetBuffers()
             => InstanceTransforms.GetBuffers().Concat(Vertices.GetBuffers()).Concat(MaterialColors.GetBuffers()).Concat([Indices,
                 InstanceMeshes,
                 MaterialGlossiness,
@@ -241,50 +242,50 @@ namespace Ara3D.IO.VIM
                 InstanceTransforms = TransformBufferGroup.Create(nameof(InstanceTransforms), g.InstanceTransforms),
             };
 
-        public static VimGeometryBuffers2 Create(IEnumerable<INamedBuffer> buffers)
+        public static VimGeometryBuffers2 Create(IEnumerable<NamedBuffer> buffers)
         {
             var r = new VimGeometryBuffers2();
             var d = buffers.ToDictionary(b => b.Name, b => b);
-            r.Indices = (INamedBuffer<int>)d[nameof(Indices)];
-            r.InstanceMeshes = (INamedBuffer<int>)d[nameof(InstanceMeshes)];
-            r.MaterialGlossiness = (INamedBuffer<float>)d[nameof(MaterialGlossiness)];
-            r.MaterialSmoothness = (INamedBuffer<float>)d[nameof(MaterialSmoothness)];
-            r.MeshSubMeshOffset = (INamedBuffer<int>)d[nameof(MeshSubMeshOffset)];
-            r.SubMeshIndexOffsets = (INamedBuffer<int>)d[nameof(SubMeshIndexOffsets)];
-            r.SubMeshMaterials = (INamedBuffer<int>)d[nameof(SubMeshMaterials)];
+            r.Indices = (NamedBuffer<int>)d[nameof(Indices)];
+            r.InstanceMeshes = (NamedBuffer<int>)d[nameof(InstanceMeshes)];
+            r.MaterialGlossiness = (NamedBuffer<float>)d[nameof(MaterialGlossiness)];
+            r.MaterialSmoothness = (NamedBuffer<float>)d[nameof(MaterialSmoothness)];
+            r.MeshSubMeshOffset = (NamedBuffer<int>)d[nameof(MeshSubMeshOffset)];
+            r.SubMeshIndexOffsets = (NamedBuffer<int>)d[nameof(SubMeshIndexOffsets)];
+            r.SubMeshMaterials = (NamedBuffer<int>)d[nameof(SubMeshMaterials)];
             r.Vertices = new ()
             {
-                X = (INamedBuffer<float>)d["Vertices.X"], 
-                Y = (INamedBuffer<float>)d["Vertices.Y"],
-                Z = (INamedBuffer<float>)d["Vertices.Z"],
+                X = (NamedBuffer<float>)d["Vertices.X"], 
+                Y = (NamedBuffer<float>)d["Vertices.Y"],
+                Z = (NamedBuffer<float>)d["Vertices.Z"],
             };
             r.MaterialColors = new()
             {
-                X = (INamedBuffer<float>)d["MaterialColors.X"],
-                Y = (INamedBuffer<float>)d["MaterialColors.Y"],
-                Z = (INamedBuffer<float>)d["MaterialColors.Z"],
-                W = (INamedBuffer<float>)d["MaterialColors.W"],
+                X = (NamedBuffer<float>)d["MaterialColors.X"],
+                Y = (NamedBuffer<float>)d["MaterialColors.Y"],
+                Z = (NamedBuffer<float>)d["MaterialColors.Z"],
+                W = (NamedBuffer<float>)d["MaterialColors.W"],
             };
             r.InstanceTransforms = new()
             {
                 Position = new()
                 {
-                    X = (INamedBuffer<float>)d["InstanceTransforms.Position.X"],
-                    Y = (INamedBuffer<float>)d["InstanceTransforms.Position.Y"],
-                    Z = (INamedBuffer<float>)d["InstanceTransforms.Position.Z"],
+                    X = (NamedBuffer<float>)d["InstanceTransforms.Position.X"],
+                    Y = (NamedBuffer<float>)d["InstanceTransforms.Position.Y"],
+                    Z = (NamedBuffer<float>)d["InstanceTransforms.Position.Z"],
                 },
                 Rotation = new()
                 {
-                    X = (INamedBuffer<float>)d["InstanceTransforms.Rotation.X"],
-                    Y = (INamedBuffer<float>)d["InstanceTransforms.Rotation.Y"],
-                    Z = (INamedBuffer<float>)d["InstanceTransforms.Rotation.Z"],
-                    W = (INamedBuffer<float>)d["InstanceTransforms.Rotation.W"],
+                    X = (NamedBuffer<float>)d["InstanceTransforms.Rotation.X"],
+                    Y = (NamedBuffer<float>)d["InstanceTransforms.Rotation.Y"],
+                    Z = (NamedBuffer<float>)d["InstanceTransforms.Rotation.Z"],
+                    W = (NamedBuffer<float>)d["InstanceTransforms.Rotation.W"],
                 },
                 Scale = new()
                 {
-                    X = (INamedBuffer<float>)d["InstanceTransforms.Scale.X"],
-                    Y = (INamedBuffer<float>)d["InstanceTransforms.Scale.Y"],
-                    Z = (INamedBuffer<float>)d["InstanceTransforms.Scale.Z"],
+                    X = (NamedBuffer<float>)d["InstanceTransforms.Scale.X"],
+                    Y = (NamedBuffer<float>)d["InstanceTransforms.Scale.Y"],
+                    Z = (NamedBuffer<float>)d["InstanceTransforms.Scale.Z"],
                 }
             };
             return r;

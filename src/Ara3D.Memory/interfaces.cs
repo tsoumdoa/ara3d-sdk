@@ -12,58 +12,34 @@ namespace Ara3D.Memory
     }
 
     /// <summary>
-    /// Represents a buffer associated with a string name. 
-    /// </summary>
-    public interface INamedBuffer : IBuffer
-    {
-        string Name { get; }
-    }
-
-    /// <summary>
     /// Represents a buffer with a known run-time type.
     /// </summary>
     public interface ITypedBuffer : IBuffer
     {
         Type Type { get; }
     }
-
-    /// <summary>
-    /// Represents a buffer with a known run-time type and a name.
-    /// </summary>
-    public interface ITypedNamedBuffer : ITypedBuffer, INamedBuffer
-    {
-    }
-
+    
     /// <summary>
     /// Represents a buffer associated with a string name. 
     /// </summary>
     public interface IBuffer<T> : ITypedBuffer, IReadOnlyList<T> 
+        where T: unmanaged
     {
         new ref T this[int i] { get; }
     }
 
     /// <summary>
-    /// Represents a buffer associated with a string name. 
-    /// </summary>
-    public interface INamedBuffer<T> : IBuffer<T>, INamedBuffer
-    { }
-
-    /// <summary>
     /// A block of memory is a buffer that owns the actual memory and is responsible for cleaning it up 
     /// </summary>
-    public interface IMemoryOwner : IBuffer, IDisposable 
-    { }
+    public interface IMemoryOwner : IBuffer, IDisposable
+    {
+        public IMemoryOwner<T> Cast<T>() where T : unmanaged;
+    }
 
     /// <summary>
     /// A block of memory is a buffer that owns the actual memory and is responsible for cleaning it up 
     /// </summary>
     public interface IMemoryOwner<T> : IBuffer<T>, IMemoryOwner
-    { }
-
-    /// <summary>
-    /// A named block of memory is a buffer
-    /// that owns the actual memory and is responsible for cleaning it up 
-    /// </summary>
-    public interface INamedMemoryOwner : INamedBuffer, IMemoryOwner
+        where T : unmanaged
     { }
 }

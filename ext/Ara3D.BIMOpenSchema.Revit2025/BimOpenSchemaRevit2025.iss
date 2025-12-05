@@ -6,7 +6,7 @@
 
 [Setup]
 AppName                ={#PlugName}
-AppVersion             =1.0.0
+AppVersion             =1.1.0
 DefaultDirName         ={#AddinsPath}
 PrivilegesRequired     =none
 CreateUninstallRegKey  =no
@@ -19,7 +19,7 @@ DisableProgramGroupPage=yes
 OutputBaseFilename     =ParquetExporter_Revit{#RevitYear}
 Compression            =lzma2
 SolidCompression       =yes
-SetupIconFile          =bim-open-schema-duck.ico
+SetupIconFile          =ara3d.ico
 
 [Files]
 Source: "{#SrcRoot}\\*.addin"; DestDir: "{#AddinsPath}"; Flags: ignoreversion

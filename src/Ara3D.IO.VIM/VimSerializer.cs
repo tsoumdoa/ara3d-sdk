@@ -4,15 +4,14 @@ using System.Text.RegularExpressions;
 using Ara3D.IO.BFAST;
 using Ara3D.Memory;
 using Ara3D.MemoryMappedFiles;
-using INamedBuffer = Ara3D.Memory.INamedBuffer;
 
 namespace Ara3D.IO.VIM
 {
     public static class VimSerializer
     {
-        public static List<INamedBuffer> ToBuffers(this SerializableEntityTable table)
+        public static List<NamedBuffer> ToBuffers(this SerializableEntityTable table)
         {
-            var r = new List<INamedBuffer>();
+            var r = new List<NamedBuffer>();
             r.AddRange(table.DataColumns);
             r.AddRange(table.IndexColumns);
             r.AddRange(table.StringColumns);
@@ -30,7 +29,7 @@ namespace Ara3D.IO.VIM
         /// <summary>
         /// Returns the named buffer prefix, or null if no prefix was found.
         /// </summary>
-        public static string GetTypePrefix(this INamedBuffer namedBuffer)
+        public static string GetTypePrefix(this NamedBuffer namedBuffer)
             => namedBuffer.Name.GetTypePrefix();
 
         /// <summary>

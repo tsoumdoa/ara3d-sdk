@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using Ara3D.Utils;
 
 namespace Ara3D.Logging
@@ -31,6 +32,9 @@ namespace Ara3D.Logging
         public static ILogWriter Create(Action<string> onLogMessage)
             => new LogWriter((elapsed, logEntry) 
                 => onLogMessage(FormatLogEntry(elapsed, logEntry)));
+
+        public static ILogWriter Create(StringBuilder sb)
+            => Create(msg => sb.AppendLine(msg));
 
         public static ILogWriter DebugWriter 
             => Create(DebugWriteLine);

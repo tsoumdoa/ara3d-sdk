@@ -55,13 +55,13 @@ namespace Ara3D.IO.BFAST
         public BFastBuilder Add(string name, IBuffer buffer)
             => _add(name, new BufferAsBFastComponent(buffer));
 
-        public BFastBuilder Add(INamedBuffer buffer)
+        public BFastBuilder Add(NamedBuffer buffer)
             => Add(buffer.Name, buffer);
 
-        public BFastBuilder Add(IEnumerable<INamedBuffer> buffers)
+        public BFastBuilder Add(IEnumerable<NamedBuffer> buffers)
             => buffers.Aggregate(this, (x, y) => x.Add(y));
 
-        public BFastBuilder Add(string name, IEnumerable<INamedBuffer> buffers)
+        public BFastBuilder Add(string name, IEnumerable<NamedBuffer> buffers)
             => Add(name, new BFastBuilder().Add(buffers));
 
         public IEnumerable<string> BufferNames()

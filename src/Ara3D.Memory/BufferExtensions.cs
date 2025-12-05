@@ -34,17 +34,8 @@ namespace Ara3D.Memory
             where T : unmanaged
             => new(self);
 
-        public static NamedBuffer<T> Rename<T>(this IBuffer<T> xs, string name) where T : unmanaged
-            => new(xs, name);
-
-        public static NamedBuffer Rename(this INamedBuffer xs, string name) 
-            => new(xs, name);
-
         public static Buffer<T> Reinterpret<T>(this IBuffer xs) where T : unmanaged
             => new(xs.Bytes);
-
-        public static NamedBuffer<T> Reinterpret<T>(this INamedBuffer xs) where T : unmanaged
-            => ((IBuffer)xs).Reinterpret<T>().Rename(xs.Name);
 
         public static Buffer<T> Slice<T>(this IBuffer<T> xs, long start, long count) where T : unmanaged
             => xs.Bytes.Slice(start * Marshal.SizeOf<T>(), count * Marshal.SizeOf<T>()).ToBuffer<T>();
@@ -54,18 +45,6 @@ namespace Ara3D.Memory
 
         public static Buffer<T> Take<T>(this IBuffer<T> xs, long count) where T : unmanaged
             => xs.Slice(0, count);
-
-        public static NamedBuffer ToNamedBuffer(this IBuffer buffer, string name = "") 
-            => new(buffer, name);
-
-        public static NamedBuffer<T> ToNamedBuffer<T>(this IBuffer<T> buffer, string name = "") where T : unmanaged 
-            => new(buffer, name);
-
-        public static NamedBuffer<T> ToNamedBuffer<T>(this IBuffer buffer, string name = "") where T : unmanaged 
-            => new(buffer.Reinterpret<T>(), name);
-
-        public static INamedBuffer<T> ToNamedBuffer<T>(this T[] xs, string name = "") where T: unmanaged  
-            => xs.Fix().ToNamedBuffer(name);
 
         public static FixedArray<T> Fix<T>(this T[] self) where T : unmanaged
             => new(self);
@@ -88,19 +67,11 @@ namespace Ara3D.Memory
         public static object GetElement(this IBuffer buffer, long n)
             => Marshal.PtrToStructure(buffer.ElementPointer(n), buffer.ElementType());
 
-        public static INamedMemoryOwner ToNamedMemoryOwner(this byte[] bytes, string name)
-            => new NamedAlignedMemory(bytes.Fix(), name);
-
         public static T* Begin<T>(this IBuffer<T> buffer) where T : unmanaged
             => (T*)Unsafe.AsPointer(ref buffer[0]);
 
         public static T* End<T>(this IBuffer<T> buffer) where T : unmanaged
             => (T*)Unsafe.AsPointer(ref buffer[0]) + buffer.Count;
 
-        public static IBuffer<T> Cast<T>(this IBuffer buffer) where T : unmanaged
-            => buffer.CastMemory<T>();
-
-        public static IBuffer<T> CastMemory<T>(this IBuffer buffer) where T : unmanaged
-            => new Buffer<T>(buffer.Bytes);
     }
 }

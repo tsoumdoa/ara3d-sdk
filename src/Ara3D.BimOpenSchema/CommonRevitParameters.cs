@@ -18,12 +18,14 @@ public static class CommonRevitParameters
     // Object
     // =========================
 
-    public static Parameter ObjectTypeName = new("Rvt:Object:TypeName", ParameterType.String);
-
+    public static Parameter ObjectTypeName = new("Bos:Object:TypeName", ParameterType.String);
+    public static Parameter ObjectError = new("Bos:Object:Error", ParameterType.String);
+    public static Parameter ObjectCategory = new("Bos:Object:Category", ParameterType.Entity);
+    
     // =========================
     // Element
     // =========================
-    
+
     public static Parameter ElementLevel = new("Rvt:Element:Level", ParameterType.Entity);
     public static Parameter ElementLocationPoint = new("Rvt:Element:Location.Point", ParameterType.Point);
     public static Parameter ElementLocationStartPoint = new("Rvt:Element:Location.StartPoint", ParameterType.Point);
@@ -36,7 +38,6 @@ public static class CommonRevitParameters
     public static Parameter ElementWorksetId = new("Rvt:Element:WorksetId", ParameterType.Int);
     public static Parameter ElementCreatedPhase = new("Rvt:Element:CreatedPhase", ParameterType.Entity);
     public static Parameter ElementDemolishedPhase = new("Rvt:Element:DemolishedPhase", ParameterType.Entity);
-    public static Parameter ElementCategory = new("Rvt:Element:Category", ParameterType.Entity);
     public static Parameter ElementIsViewSpecific = new("Rvt:Element:IsViewSpecific", ParameterType.Int);
     public static Parameter ElementOwnerView = new("Rvt:Element:OwnerView", ParameterType.Entity);
 
@@ -63,6 +64,13 @@ public static class CommonRevitParameters
     public static Parameter FamilyStructuralMaterialType = new("Rvt:Family:StructuralMaterialType", ParameterType.String);
 
     // =========================
+    // Area
+    // =========================
+
+    public static Parameter AreaSchemeParameter = new("Rvt:Area:Scheme", ParameterType.Entity);
+    public static Parameter AreaIsGrossInterior = new("Rvt:Area:IsGrossInterior", ParameterType.Bool);
+
+    // =========================
     // Room
     // =========================
 
@@ -72,6 +80,62 @@ public static class CommonRevitParameters
     public static Parameter RoomUnboundedHeight = new("Rvt:Room:UnboundedHeight", ParameterType.Double);
     public static Parameter RoomVolume = new("Rvt:Room:Volume", ParameterType.Double);
     public static Parameter RoomUpperLimit = new("Rvt:Room:UpperLimit", ParameterType.Entity);
+
+    // =========================
+    // Space
+    // =========================
+
+    public static Parameter SpaceActualExhaustAirflow = new("Rvt:Space:ActualExhaustAirflow", ParameterType.Double);
+    public static Parameter SpaceActualHVACLoad = new("Rvt:Space:ActualHVACLoad", ParameterType.Double);
+    public static Parameter SpaceActualLightingLoad = new("Rvt:Space:ActualLightingLoad", ParameterType.Double);
+    public static Parameter SpaceActualOtherLoad = new("Rvt:Space:ActualOtherLoad", ParameterType.Double);
+    public static Parameter SpaceActualPowerLoad = new("Rvt:Space:ActualPowerLoad", ParameterType.Double);
+    public static Parameter SpaceActualReturnAirflow = new("Rvt:Space:ActualReturnAirflow", ParameterType.Double);
+    public static Parameter SpaceActualSupplyAirflow = new("Rvt:Space:ActualSupplyAirflow", ParameterType.Double);
+    public static Parameter SpaceAirChangesPerHour = new("Rvt:Space:AirChangesPerHour", ParameterType.Double);
+    public static Parameter SpaceAreaPerPerson = new("Rvt:Space:AreaPerPerson", ParameterType.Double);
+    public static Parameter SpaceAverageEstimatedIllumination = new("Rvt:Space:AverageEstimatedIllumination", ParameterType.Double);
+    public static Parameter SpaceBaseHeatLoadOn = new("Rvt:Space:BaseHeatLoadOn", ParameterType.String);
+    public static Parameter SpaceBaseOffset = new("Rvt:Space:BaseOffset", ParameterType.Double);
+    public static Parameter SpaceLimitOffset = new("Rvt:Space:LimitOffset", ParameterType.Double);
+    public static Parameter SpaceUnboundedHeight = new("Rvt:Space:UnboundedHeight", ParameterType.Double);
+    public static Parameter SpaceCalculatedCoolingLoad = new("Rvt:Space:CalculatedCoolingLoad", ParameterType.Double);
+    public static Parameter SpaceCalculatedHeatingLoad = new("Rvt:Space:CalculatedHeatingLoad", ParameterType.Double);
+    public static Parameter SpaceCalculatedSupplyAirflow = new("Rvt:Space:CalculatedSupplyAirflow", ParameterType.Double);
+    public static Parameter SpaceCeilingReflectance = new("Rvt:Space:CeilingReflectance", ParameterType.Double);
+    public static Parameter SpaceFloorReflectance = new("Rvt:Space:FloorReflectance", ParameterType.Double);
+    public static Parameter SpaceWallReflectance = new("Rvt:Space:WallReflectance", ParameterType.Double);
+    public static Parameter SpaceConditionType = new("Rvt:Space:ConditionType", ParameterType.String);
+    public static Parameter SpaceLightingLoadUnit = new("Rvt:Space:LightingLoadUnit", ParameterType.String);
+    public static Parameter SpacePowerLoadUnit = new("Rvt:Space:PowerLoadUnit", ParameterType.String);
+    public static Parameter SpaceOccupancyUnit = new("Rvt:Space:OccupancyUnit", ParameterType.String);
+    public static Parameter SpaceOutdoorAirFlowStandard = new("Rvt:Space:OutdoorAirFlowStandard", ParameterType.String);
+    public static Parameter SpaceSpaceType = new("Rvt:Space:SpaceType", ParameterType.String);
+    public static Parameter SpaceDesignCoolingLoad = new("Rvt:Space:DesignCoolingLoad", ParameterType.Double);
+    public static Parameter SpaceDesignExhaustAirflow = new("Rvt:Space:DesignExhaustAirflow", ParameterType.Double);
+    public static Parameter SpaceDesignHeatingLoad = new("Rvt:Space:DesignHeatingLoad", ParameterType.Double);
+    public static Parameter SpaceDesignHVACLoadPerArea = new("Rvt:Space:DesignHVACLoadPerArea", ParameterType.Double);
+    public static Parameter SpaceDesignLightingLoad = new("Rvt:Space:DesignLightingLoad", ParameterType.Double);
+    public static Parameter SpaceDesignOtherLoadPerArea = new("Rvt:Space:DesignOtherLoadPerArea", ParameterType.Double);
+    public static Parameter SpaceDesignPowerLoad = new("Rvt:Space:DesignPowerLoad", ParameterType.Double);
+    public static Parameter SpaceDesignReturnAirflow = new("Rvt:Space:DesignReturnAirflow", ParameterType.Double);
+    public static Parameter SpaceDesignSupplyAirflow = new("Rvt:Space:DesignSupplyAirflow", ParameterType.Double);
+    public static Parameter SpaceNumberOfPeople = new("Rvt:Space:NumberOfPeople", ParameterType.Double);
+    public static Parameter SpaceLatentHeatGainPerPerson = new("Rvt:Space:LatentHeatGainPerPerson", ParameterType.Double);
+    public static Parameter SpaceSensibleHeatGainPerPerson = new("Rvt:Space:SensibleHeatGainPerPerson", ParameterType.Double);
+    public static Parameter SpaceOutdoorAirflow = new("Rvt:Space:OutdoorAirflow", ParameterType.Double);
+    public static Parameter SpaceOutdoorAirPerArea = new("Rvt:Space:OutdoorAirPerArea", ParameterType.Double);
+    public static Parameter SpaceOutdoorAirPerPerson = new("Rvt:Space:OutdoorAirPerPerson", ParameterType.Double);
+    public static Parameter SpaceLightingCalculationWorkplane = new("Rvt:Space:LightingCalculationWorkplane", ParameterType.Double);
+    public static Parameter SpaceReturnAirflow = new("Rvt:Space:ReturnAirflow", ParameterType.String);
+    public static Parameter SpaceSpaceCavityRatio = new("Rvt:Space:SpaceCavityRatio", ParameterType.Double);
+    public static Parameter SpaceVolume = new("Rvt:Space:Volume", ParameterType.Double);
+    public static Parameter SpaceOccupiable = new("Rvt:Space:Occupiable", ParameterType.Bool);
+    public static Parameter SpacePlenum = new("Rvt:Space:Plenum", ParameterType.Bool);
+    public static Parameter SpaceUpperLimit = new("Rvt:Space:UpperLimit", ParameterType.Entity);      // Level
+    public static Parameter SpaceRoom = new("Rvt:Space:Room", ParameterType.Entity);            // Related Room
+    public static Parameter SpaceSpaceTypeElement = new("Rvt:Space:SpaceTypeElement", ParameterType.Entity);  // SpaceTypeId
+    public static Parameter SpaceZone = new("Rvt:Space:Zone", ParameterType.Entity);            // Zone this space belongs to
 
     // =========================
     // Level
@@ -102,12 +166,6 @@ public static class CommonRevitParameters
     public static Parameter TextNoteText = new("Rvt:TextNote:Text", ParameterType.String);
     public static Parameter TextNoteWidth = new("Rvt:TextNote:Width", ParameterType.Double);
     public static Parameter TextNoteHeight = new("Rvt:TextNote:Height", ParameterType.Double);
-
-    // =========================
-    // Workset
-    // =========================
-    
-    public static Parameter WorksetKind = new("Rvt:Workset:Kind", ParameterType.String);
 
     // =========================
     // Layer
@@ -236,9 +294,7 @@ public static class CommonRevitParameters
     public static Parameter ElecSystemTrueCurrent = new("Rvt:ElectricalSystem:TrueCurrent", ParameterType.Double);
     public static Parameter ElecSystemTrueLoad = new("Rvt:ElectricalSystem:TrueLoad", ParameterType.Double);
     public static Parameter ElecSystemVoltage = new("Rvt:ElectricalSystem:Voltage", ParameterType.Double);
-    public static Parameter ElecSystemVoltageDrop = new("Rvt:ElectricalSystem:VoltageDrop", ParameterType.Double);
     public static Parameter ElecSystemWays = new("Rvt:ElectricalSystem:Ways", ParameterType.Int);
-    public static Parameter ElecSystemWireSizeString = new("Rvt:ElectricalSystem:WireSizeString", ParameterType.String);
     public static Parameter ElecSystemWireType = new("Rvt:ElectricalSystem:WireType", ParameterType.String);
 
     // =========================

@@ -57,7 +57,7 @@ namespace Ara3D.SDK.Tests
             logger.Log("Loaded BFAST");
             foreach (var buffer in buffers.Buffers)
             {
-                logger.Log($"Buffer {buffer.Name} has {buffer.Bytes.Count} bytes");
+                logger.Log($"Buffer {buffer.Name} has {buffer.Memory.Bytes.Count} bytes");
             }
         }
     }

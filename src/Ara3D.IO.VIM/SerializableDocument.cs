@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ara3D.Memory;
+using Ara3D.IO.BFAST;
 
 namespace Ara3D.IO.VIM
 {
@@ -21,17 +21,17 @@ namespace Ara3D.IO.VIM
         /// <summary>
         /// Relation to another entity table. For example surface to element. 
         /// </summary>
-        public List<NamedBuffer<int>> IndexColumns = new();
+        public List<NamedBuffer<int>> IndexColumns = [];
 
         /// <summary>
         /// Data encoded as strings in the global string table
         /// </summary>
-        public List<NamedBuffer<int>> StringColumns = new();
+        public List<NamedBuffer<int>> StringColumns = [];
 
         /// <summary>
         /// Numeric data encoded as byte, int, float, or doubles 
         /// </summary>
-        public List<ITypedNamedBuffer> DataColumns = new();
+        public List<TypedNamedBuffer> DataColumns = [];
 
         public IEnumerable<string> ColumnNames
             => IndexColumns.Select(c => c.Name)
@@ -66,17 +66,17 @@ namespace Ara3D.IO.VIM
         /// <summary>
         /// A an array of tables, one for each entity 
         /// </summary>
-        public List<SerializableEntityTable> EntityTables = new();
+        public List<SerializableEntityTable> EntityTables = [];
 
         /// <summary>
         /// Used for looking up property strings and entity string fields by Id
         /// </summary>
-        public string[] StringTable = Array.Empty<string>();
+        public string[] StringTable = [];
 
         /// <summary>
         /// A list of named buffers each representing a different asset in the file 
         /// </summary>
-        public INamedBuffer[] Assets = Array.Empty<INamedBuffer>();
+        public NamedBuffer[] Assets = [];
 
         /// <summary>
         /// The uninstanced / untransformed geometry

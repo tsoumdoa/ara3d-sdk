@@ -19,6 +19,8 @@ public class Model3D
         Instances = instances;
     }
 
+    public static Model3D Empty = new([], []);
+
     public IReadOnlyList<TriangleMesh3D> Meshes { get; }
     public IReadOnlyList<InstanceStruct> Instances { get; }
 

@@ -14,6 +14,7 @@ public sealed unsafe class FixedArray<T> : IMemoryOwner<T>
     public GCHandle Handle { get; private set; }
     public ByteSlice Bytes { get; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public FixedArray(T[] array)
     {
         Array = array;
@@ -24,11 +25,17 @@ public sealed unsafe class FixedArray<T> : IMemoryOwner<T>
     public static FixedArray<T> Empty 
         = new([]);
 
-    public Type Type => typeof(T);
+    public Type Type
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => typeof(T); 
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerator<T> GetEnumerator()
         => (IEnumerator<T>)Array.GetEnumerator();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator()
         => Array.GetEnumerator();
 
@@ -47,6 +54,7 @@ public sealed unsafe class FixedArray<T> : IMemoryOwner<T>
         get => this[index];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
         if (_disposed)
@@ -60,8 +68,11 @@ public sealed unsafe class FixedArray<T> : IMemoryOwner<T>
         GC.SuppressFinalize(this);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     ~FixedArray()
-    {
-        Dispose();
-    }
+        => Dispose();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IMemoryOwner<T1> Cast<T1>() where T1 : unmanaged
+        => new MemoryOwner<T1>(this);
 }

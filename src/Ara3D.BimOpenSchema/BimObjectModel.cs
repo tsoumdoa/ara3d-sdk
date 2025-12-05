@@ -105,7 +105,7 @@ namespace Ara3D.BimOpenSchema
         public string Name => Data.Get(Entity.Name);
 
         // Commonly present data stored in parameters
-        public string CategoryType => GetParameterAsEntity(CommonRevitParameters.ElementCategory)?
+        public string CategoryType => GetParameterAsEntity(CommonRevitParameters.ObjectCategory)?
             .GetParameterAsString(CommonRevitParameters.CategoryBuiltInType);
         public string ClassName => GetParameterAsString(CommonRevitParameters.ObjectTypeName);
         public string LevelName => GetParameterAsEntity(CommonRevitParameters.ElementLevel)?.Name;

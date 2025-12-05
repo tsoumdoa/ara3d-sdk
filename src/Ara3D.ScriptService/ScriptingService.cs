@@ -26,7 +26,11 @@ public class ScriptingService :
         Logger = logger ?? new Logger(LogWriter.DebugWriter, "Scripting Service");
         Options = options;
         CreateInitialFolders();
-        WatchingCompiler = new DirectoryWatchingCompiler(Logger, Options.ScriptsFolder, Options.LibrariesFolder);
+        
+        // TODO: decide how we want to handle caching. 
+        var compilerOptions = CompilerOptions.CreateDefault().WithCaching();
+
+        WatchingCompiler = new DirectoryWatchingCompiler(Logger, Options.ScriptsFolder, Options.LibrariesFolder, false, compilerOptions);
         WatchingCompiler.RecompileEvent += WatchingCompilerRecompileEvent;
         UpdateDataModel();
     }

@@ -34,7 +34,7 @@ public sealed record Geometry
 /// </summary>
 public class MeshGatherer
 {
-    public RevitBimDataBuilder RevitBimDataBuilder;
+    public BimOpenSchemaRevitBuilder BimOpenSchemaRevitBuilder;
     public Document CurrentDocument { get; private set; }
     public DocumentKey CurrentDocumentKey { get; private set; }
     public HashSet<DocumentKey> ProcessedDocuments { get; } = [];
@@ -42,13 +42,13 @@ public class MeshGatherer
     public List<Geometry> Geometries { get; private set; } = [];
     private readonly Dictionary<string, IReadOnlyList<GeometryPart>> _symbolCache = new();
 
-    public MeshGatherer(RevitBimDataBuilder builder)
+    public MeshGatherer(BimOpenSchemaRevitBuilder revitBuilder)
     {
-        RevitBimDataBuilder = builder;
+        BimOpenSchemaRevitBuilder = revitBuilder;
     }
 
     public static DocumentKey GetDocumentKey(Document d)
-        => RevitBimDataBuilder.GetDocumentKey(d);
+        => BimOpenSchemaRevitBuilder.GetDocumentKey(d);
 
     public void CollectMeshes(Document doc, Options options, bool recurseLinks, Transform parent)
     {

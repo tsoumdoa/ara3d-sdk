@@ -188,4 +188,12 @@ public static class Model3DExtensions
 
     public static IModel3D ToModel3D(this TriangleMesh3D self, Material mat)
         => Model3D.Create(self, mat);
+
+    public static IModel3D ToModel3D(this IEnumerable<IModel3D> models)
+    {
+        var builder = new Model3DBuilder();
+        foreach (var model in models)
+            builder.AddModel(model);
+        return builder.Build();
+    }
 }
