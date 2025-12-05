@@ -16,11 +16,12 @@ DisableDirPage         =yes
 DisableReadyMemo       =yes
 DisableReadyPage       =yes
 DisableProgramGroupPage=yes
-OutputBaseFilename     =ParquetExporter_Revit{#RevitYear}
+OutputBaseFilename     =BIM_Open_Schema_Revit_{#RevitYear}
 Compression            =lzma2
 SolidCompression       =yes
 SetupIconFile          =ara3d.ico
 
+
 [Files]
-Source: "{#SrcRoot}\\*.addin"; DestDir: "{#AddinsPath}"; Flags: ignoreversion
+Source: "{#SrcRoot}\\BIMOpenSchema.addin"; DestDir: "{#AddinsPath}"; Flags: ignoreversion
 Source: "{#SrcRoot}\\Ara3D.BIMOpenSchema\\*"; DestDir: "{#AddinsPath}\\Ara3D.BIMOpenSchema"; Flags: ignoreversion recursesubdirs createallsubdirs

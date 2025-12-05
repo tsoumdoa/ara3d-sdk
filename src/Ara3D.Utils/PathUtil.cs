@@ -553,7 +553,7 @@ namespace Ara3D.Utils
                 recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Select(f => (FilePath)f);
 
         public static bool Exists(this FilePath filePath)
-            => !filePath.Value.IsNullOrEmpty() && filePath.GetInfo().Exists;
+            => filePath != null && !filePath.Value.IsNullOrEmpty() && filePath.GetInfo().Exists;
 
         public static FileInfo GetInfo(this FilePath filePath)
             => new FileInfo(filePath);
