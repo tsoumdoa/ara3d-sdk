@@ -46,12 +46,13 @@ public class BimGeometryBuilder
 
     public BimGeometry BuildModel()
     {
-        var r = new BimGeometry();
-
-        r.ElementEntityIndex = new int[Elements.Count];
-        r.ElementMaterialIndex = new int[Elements.Count];
-        r.ElementMeshIndex = new int[Elements.Count];
-        r.ElementTransformIndex = new int[Elements.Count];
+        var r = new BimGeometry
+        {
+            ElementEntityIndex = new int[Elements.Count],
+            ElementMaterialIndex = new int[Elements.Count],
+            ElementMeshIndex = new int[Elements.Count],
+            ElementTransformIndex = new int[Elements.Count]
+        };
 
         for (var i = 0; i < Elements.Count; i++)
         {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ara3D.Collections;
+using Ara3D.Models;
 
 namespace Ara3D.BimOpenSchema
 {
@@ -55,10 +57,23 @@ namespace Ara3D.BimOpenSchema
                 source.OutgoingRelations.Add(new RelationModel(r.RelationType, target));
                 target.IncomingRelations.Add(new RelationModel(r.RelationType, source));
             }
+
+            // For each element, add the corresponding instance struct to the entity.
+            var numElements = data.Geometry.GetNumElements();
+            for (var i = 0; i < numElements; i++)
+            {
+                var inst = data.Geometry.GetInstanceStruct(i);
+                var entityIndex = inst.EntityIndex;
+                if (entityIndex >= 0)
+                {
+                    var em = Entities[entityIndex];
+                    em.Instances.Add(inst);
+                }
+            }
         }
 
         public EntityModel Create(EntityIndex ei)
-            => new EntityModel(this, ei);
+            => new(this, ei);
 
         public DescriptorModel Create(DescriptorIndex index, ParameterDescriptor desc) => new DescriptorModel
         {
@@ -93,7 +108,8 @@ namespace Ara3D.BimOpenSchema
         // Stored data
         public BimObjectModel Model { get;  }
         public EntityIndex Index { get; }
-        
+        public List<InstanceStruct> Instances { get; } = new();
+
         // Always accessible data 
         public BimData Data => Model.Data;
         public Entity Entity => Model.Data.Get(Index);
@@ -103,7 +119,8 @@ namespace Ara3D.BimOpenSchema
         public string GlobalId => Entity.GlobalId;
         public string Category => Data.Get(Entity.Category);
         public string Name => Data.Get(Entity.Name);
-
+        public bool HasGeometry => Instances.Count > 0;
+        
         // Commonly present data stored in parameters
         public string CategoryType => GetParameterAsEntity(CommonRevitParameters.ObjectCategory)?
             .GetParameterAsString(CommonRevitParameters.CategoryBuiltInType);

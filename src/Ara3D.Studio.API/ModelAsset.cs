@@ -9,7 +9,7 @@ public class ModelAsset : IModelAsset
     public string Name { get; set; }
     public FilePath FilePath { get; }
     public IModelLoader Loader { get; }
-    public Model3D? Model { get; private set; }
+    public IModel3D? Model { get; private set; }
     public string FileType => FilePath.GetExtension();
 
     public ModelAsset(FilePath filePath, IModelLoader loader)
@@ -19,7 +19,7 @@ public class ModelAsset : IModelAsset
         Loader = loader;
     }
 
-    public async Task<Model3D> Import(ILogger logger)
+    public async Task<IModel3D> Import(ILogger logger)
     {
         logger.Log($"STARTED loading model from {FilePath} using the {Loader.GetType().Name} loader");
         Model = await Loader.Import(FilePath, logger);
@@ -28,7 +28,7 @@ public class ModelAsset : IModelAsset
         return Model;
     }
 
-    public static void CheckModel(Model3D model, ILogger logger)
+    public static void CheckModel(IModel3D model, ILogger logger)
     {
         logger.Log("Checking model");
         logger.Log($"# instances = {model.Instances.Count}");
@@ -39,7 +39,7 @@ public class ModelAsset : IModelAsset
         logger.Log($"# instances where transparent = {nTransparent}");
     }
 
-    public Model3D Eval(EvalContext context)
+    public IModel3D Eval(EvalContext context)
     {
         if (Model != null)
             return Model;

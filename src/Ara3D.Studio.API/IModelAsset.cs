@@ -8,6 +8,6 @@ public interface IModelAsset : IAsset
 {
     string Name { get; }
     FilePath FilePath { get; }
-    Task<Model3D> Import(ILogger logger);
-    Model3D Eval(EvalContext context);
+    Task<IModel3D> Import(ILogger logger);
+    IModel3D Eval(EvalContext context);
 }

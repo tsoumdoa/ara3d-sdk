@@ -8,8 +8,6 @@ public class PropDescriptorStringList : TypedPropDescriptor<int>
         : base(name, displayName, description, units, isReadOnly)
     {
         Options = options;
-        if (Options.Count == 0)
-            throw new Exception("Options list cannot be empty.");
     }
 
     public override int Update(int value, PropUpdateType propUpdate) => Validate(propUpdate switch

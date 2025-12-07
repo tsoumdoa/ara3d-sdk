@@ -235,4 +235,11 @@ public static class BimGeometryExtensions
 
     public static BimModel3D ToModel3D(this BimData self)
         => BimModel3D.Create(self);
+
+    public static ElementStruct GetElement(this BimGeometry self, int i)
+        => new(
+            self.ElementEntityIndex[i], 
+            self.ElementMaterialIndex[i], 
+            self.ElementMeshIndex[i],
+            self.ElementTransformIndex[i]); 
 }
