@@ -4,12 +4,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,9 +56,6 @@
     <Compile Update="BIMOpenSchemaExporterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Output\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

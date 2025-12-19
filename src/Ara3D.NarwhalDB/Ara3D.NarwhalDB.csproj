@@ -2,19 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
-  <Import Project="..\Plato.Generated\Plato.Generated.projitems" Label="Shared" />
-
-  <Import Project="..\Plato.Intrinsics\Plato.Intrinsics.projitems" Label="Shared" />
-
   <ItemGroup>
     <ProjectReference Include="..\Ara3D.Collections\Ara3D.Collections.csproj" />
+    <ProjectReference Include="..\Ara3D.DataTable\Ara3D.DataTable.csproj" />
+    <ProjectReference Include="..\Ara3D.IO.BFAST\Ara3D.IO.BFAST.csproj" />
+    <ProjectReference Include="..\Ara3D.PropKit\Ara3D.PropKit.csproj" />
     <ProjectReference Include="..\Ara3D.Memory\Ara3D.Memory.csproj" />
+    <ProjectReference Include="..\Ara3D.Logging\Ara3D.Logging.csproj" />
+    <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" />
   </ItemGroup>
 
 </Project>

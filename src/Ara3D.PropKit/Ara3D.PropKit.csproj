@@ -6,4 +6,8 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

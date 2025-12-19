@@ -4,4 +4,9 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ara3D.Memory\Ara3D.Memory.csproj" />
+    <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" />
+    <ProjectReference Include="..\Ara3D.MemoryMappedFiles\Ara3D.MemoryMappedFiles.csproj" />
+  </ItemGroup>
 </Project>

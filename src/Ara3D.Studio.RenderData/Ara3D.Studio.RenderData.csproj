@@ -2,13 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Platforms>AnyCPU;x64</Platforms>    
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ara3D.Memory\Ara3D.Memory.csproj" />
-    <ProjectReference Include="..\Ara3D.IO.BFAST\Ara3D.IO.BFAST.csproj" />
-    <ProjectReference Include="..\Ara3D.IO.G3D\Ara3D.IO.G3D.csproj" />
+    <PackageReference Include="System.Memory" Version="4.6.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ara3D.Memory\Ara3D.Memory.csproj" />
+    <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" />
+  </ItemGroup>
+
+
 </Project>

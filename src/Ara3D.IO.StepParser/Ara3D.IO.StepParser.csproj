@@ -6,4 +6,11 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ara3D.Memory\Ara3D.Memory.csproj" />
+    <ProjectReference Include="..\Ara3D.Logging\Ara3D.Logging.csproj" />
+    <ProjectReference Include="..\Ara3D.Utils\Ara3D.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

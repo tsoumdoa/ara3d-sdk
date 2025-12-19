@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Ara3D.DataTable\Ara3D.DataTable.csproj" />
+    <ProjectReference Include="..\..\src\Ara3D.IO.StepParser\Ara3D.IO.StepParser.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 

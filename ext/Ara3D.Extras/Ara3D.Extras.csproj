@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ara3D.BimOpenSchema\Ara3D.BimOpenSchema.csproj" />
+    <ProjectReference Include="..\..\src\Ara3D.DataTable\Ara3D.DataTable.csproj" />
+    <ProjectReference Include="..\..\src\Ara3D.Models\Ara3D.Models.csproj" />
   </ItemGroup>
 
 </Project>
