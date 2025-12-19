@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Ara3D.BimOpenSchema.Browser": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\cdigg\\OneDrive\\Documents\\BIM Open Schema\\Snowdon Towers Sample Architectural.bos\""
+    }
+  }
+}

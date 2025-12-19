@@ -9,6 +9,7 @@ public class BimOpenSchemaExportSettings
     public bool IncludeLinks = true;
     public bool IncludeGeometry = true;
     public string FileExtension = DefaultFileExtension;
+    public bool UseCurrentView = false;
 
     public static string DefaultFileExtension = "bos";
 

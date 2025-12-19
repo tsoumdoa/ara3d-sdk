@@ -13,7 +13,8 @@ public class CommandForegroundExportBos : NamedCommand
         {
             Folder = BimOpenSchemaExportSettings.DefaultFolder,
             IncludeLinks = true,
-            IncludeGeometry = true
+            IncludeGeometry = true,
+            UseCurrentView = false,
         };
 
     public override void Execute(object arg)

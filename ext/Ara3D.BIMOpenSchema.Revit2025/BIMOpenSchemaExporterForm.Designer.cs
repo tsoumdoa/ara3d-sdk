@@ -46,29 +46,26 @@
             // exportDirTextBox
             // 
             exportDirTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            exportDirTextBox.Location = new System.Drawing.Point(8, 26);
-            exportDirTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            exportDirTextBox.Location = new System.Drawing.Point(11, 43);
             exportDirTextBox.Name = "exportDirTextBox";
-            exportDirTextBox.Size = new System.Drawing.Size(534, 23);
+            exportDirTextBox.Size = new System.Drawing.Size(761, 31);
             exportDirTextBox.TabIndex = 1;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(8, 9);
-            label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label1.Location = new System.Drawing.Point(11, 15);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(91, 15);
+            label1.Size = new System.Drawing.Size(140, 25);
             label1.TabIndex = 2;
             label1.Text = "Export Directory";
             // 
             // chooseFolderButton
             // 
             chooseFolderButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-            chooseFolderButton.Location = new System.Drawing.Point(391, 59);
-            chooseFolderButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            chooseFolderButton.Location = new System.Drawing.Point(559, 98);
             chooseFolderButton.Name = "chooseFolderButton";
-            chooseFolderButton.Size = new System.Drawing.Size(150, 27);
+            chooseFolderButton.Size = new System.Drawing.Size(214, 45);
             chooseFolderButton.TabIndex = 3;
             chooseFolderButton.Text = "Choose folder ...";
             chooseFolderButton.UseVisualStyleBackColor = true;
@@ -77,10 +74,9 @@
             // linkLabel1
             // 
             linkLabel1.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            linkLabel1.Location = new System.Drawing.Point(80, 359);
-            linkLabel1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            linkLabel1.Location = new System.Drawing.Point(114, 598);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new System.Drawing.Size(385, 15);
+            linkLabel1.Size = new System.Drawing.Size(550, 25);
             linkLabel1.TabIndex = 6;
             linkLabel1.TabStop = true;
             linkLabel1.Text = "https://github.com/ara3d/bim-open-schema";
@@ -91,9 +87,10 @@
             // 
             buttonExport.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             buttonExport.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            buttonExport.Location = new System.Drawing.Point(8, 104);
+            buttonExport.Location = new System.Drawing.Point(11, 173);
+            buttonExport.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             buttonExport.Name = "buttonExport";
-            buttonExport.Size = new System.Drawing.Size(531, 33);
+            buttonExport.Size = new System.Drawing.Size(759, 55);
             buttonExport.TabIndex = 8;
             buttonExport.Text = "Run Export";
             buttonExport.UseVisualStyleBackColor = true;
@@ -104,10 +101,9 @@
             checkBoxIncludeLinks.AutoSize = true;
             checkBoxIncludeLinks.Checked = true;
             checkBoxIncludeLinks.CheckState = System.Windows.Forms.CheckState.Checked;
-            checkBoxIncludeLinks.Location = new System.Drawing.Point(11, 59);
-            checkBoxIncludeLinks.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            checkBoxIncludeLinks.Location = new System.Drawing.Point(16, 98);
             checkBoxIncludeLinks.Name = "checkBoxIncludeLinks";
-            checkBoxIncludeLinks.Size = new System.Drawing.Size(163, 19);
+            checkBoxIncludeLinks.Size = new System.Drawing.Size(241, 29);
             checkBoxIncludeLinks.TabIndex = 9;
             checkBoxIncludeLinks.Text = "Include linked documents";
             checkBoxIncludeLinks.UseVisualStyleBackColor = true;
@@ -117,10 +113,9 @@
             checkBoxMeshGeometry.AutoSize = true;
             checkBoxMeshGeometry.Checked = true;
             checkBoxMeshGeometry.CheckState = System.Windows.Forms.CheckState.Checked;
-            checkBoxMeshGeometry.Location = new System.Drawing.Point(11, 80);
-            checkBoxMeshGeometry.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            checkBoxMeshGeometry.Location = new System.Drawing.Point(16, 133);
             checkBoxMeshGeometry.Name = "checkBoxMeshGeometry";
-            checkBoxMeshGeometry.Size = new System.Drawing.Size(119, 19);
+            checkBoxMeshGeometry.Size = new System.Drawing.Size(177, 29);
             checkBoxMeshGeometry.TabIndex = 11;
             checkBoxMeshGeometry.Text = "Include geometry";
             checkBoxMeshGeometry.UseVisualStyleBackColor = true;
@@ -129,9 +124,10 @@
             // 
             buttonLuanchBOSExplorer.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             buttonLuanchBOSExplorer.Font = new System.Drawing.Font("Segoe UI", 9F);
-            buttonLuanchBOSExplorer.Location = new System.Drawing.Point(43, 320);
+            buttonLuanchBOSExplorer.Location = new System.Drawing.Point(61, 533);
+            buttonLuanchBOSExplorer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             buttonLuanchBOSExplorer.Name = "buttonLuanchBOSExplorer";
-            buttonLuanchBOSExplorer.Size = new System.Drawing.Size(468, 26);
+            buttonLuanchBOSExplorer.Size = new System.Drawing.Size(669, 43);
             buttonLuanchBOSExplorer.TabIndex = 12;
             buttonLuanchBOSExplorer.Text = "Launch BIM Open Schema Explorer";
             buttonLuanchBOSExplorer.UseVisualStyleBackColor = true;
@@ -140,10 +136,9 @@
             // richTextBox1
             // 
             richTextBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            richTextBox1.Location = new System.Drawing.Point(8, 169);
-            richTextBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            richTextBox1.Location = new System.Drawing.Point(11, 282);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new System.Drawing.Size(532, 115);
+            richTextBox1.Size = new System.Drawing.Size(758, 189);
             richTextBox1.TabIndex = 13;
             richTextBox1.Text = "";
             richTextBox1.TextChanged += richTextBox1_TextChanged;
@@ -151,10 +146,9 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(8, 147);
-            label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            label2.Location = new System.Drawing.Point(11, 245);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(30, 15);
+            label2.Size = new System.Drawing.Size(46, 25);
             label2.TabIndex = 14;
             label2.Text = "Log:";
             // 
@@ -162,9 +156,10 @@
             // 
             buttonLaunchWindowsExplorer.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             buttonLaunchWindowsExplorer.Font = new System.Drawing.Font("Segoe UI", 9F);
-            buttonLaunchWindowsExplorer.Location = new System.Drawing.Point(43, 289);
+            buttonLaunchWindowsExplorer.Location = new System.Drawing.Point(61, 482);
+            buttonLaunchWindowsExplorer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             buttonLaunchWindowsExplorer.Name = "buttonLaunchWindowsExplorer";
-            buttonLaunchWindowsExplorer.Size = new System.Drawing.Size(468, 27);
+            buttonLaunchWindowsExplorer.Size = new System.Drawing.Size(669, 45);
             buttonLaunchWindowsExplorer.TabIndex = 15;
             buttonLaunchWindowsExplorer.Text = "Launch Windows Explorer";
             buttonLaunchWindowsExplorer.UseVisualStyleBackColor = true;
@@ -172,9 +167,9 @@
             // 
             // BIMOpenSchemaExporterForm
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(552, 383);
+            ClientSize = new System.Drawing.Size(789, 638);
             Controls.Add(buttonLaunchWindowsExplorer);
             Controls.Add(label2);
             Controls.Add(richTextBox1);
@@ -187,8 +182,7 @@
             Controls.Add(label1);
             Controls.Add(exportDirTextBox);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
-            Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            MinimumSize = new System.Drawing.Size(348, 211);
+            MinimumSize = new System.Drawing.Size(488, 314);
             Name = "BIMOpenSchemaExporterForm";
             Text = "BIM Open Schema - Parquet Exporter";
             ResumeLayout(false);

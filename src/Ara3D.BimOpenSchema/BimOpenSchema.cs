@@ -24,19 +24,35 @@ namespace Ara3D.BimOpenSchema;
 /// This data structure can also be used directly in C# code as am efficient
 /// in-memory data structure for code-based workflows.
 /// </summary>
-public class BimData
+public interface IBimData
 {
-    public List<ParameterDescriptor> Descriptors { get; set; } = [];
-    public List<ParameterInt> IntegerParameters { get; set; } = [];
-    public List<ParameterDouble> DoubleParameters { get; set; } = [];
-    public List<ParameterString> StringParameters { get; set; } = [];
-    public List<ParameterEntity> EntityParameters { get; set; } = [];
-    public List<ParameterPoint> PointParameters { get; set; } = [];
-    public List<Document> Documents { get; set; } = [];
-    public List<Entity> Entities { get; set; } = [];
-    public List<string> Strings { get; set; } = [];
-    public List<Point> Points { get; set; } = [];
-    public List<EntityRelation> Relations { get; set; } = [];
+    IReadOnlyList<ParameterDescriptor> Descriptors { get; } 
+    IReadOnlyList<ParameterInt> IntegerParameters { get; } 
+    IReadOnlyList<ParameterSingle> SingleParameters { get; } 
+    IReadOnlyList<ParameterString> StringParameters { get; } 
+    IReadOnlyList<ParameterEntity> EntityParameters { get; } 
+    IReadOnlyList<ParameterPoint> PointParameters { get; } 
+    IReadOnlyList<Document> Documents { get; } 
+    IReadOnlyList<Entity> Entities { get; } 
+    IReadOnlyList<string> Strings { get; } 
+    IReadOnlyList<Point> Points { get; } 
+    IReadOnlyList<EntityRelation> Relations { get; }
+    BimGeometry Geometry { get; }
+}
+
+public class BimData : IBimData
+{
+    public IReadOnlyList<ParameterDescriptor> Descriptors { get; set; } = [];
+    public IReadOnlyList<ParameterInt> IntegerParameters { get; set; } = [];
+    public IReadOnlyList<ParameterSingle> SingleParameters { get; set; } = [];
+    public IReadOnlyList<ParameterString> StringParameters { get; set; } = [];
+    public IReadOnlyList<ParameterEntity> EntityParameters { get; set; } = [];
+    public IReadOnlyList<ParameterPoint> PointParameters { get; set; } = [];
+    public IReadOnlyList<Document> Documents { get; set; } = [];
+    public IReadOnlyList<Entity> Entities { get; set; } = [];
+    public IReadOnlyList<string> Strings { get; set; } = [];
+    public IReadOnlyList<Point> Points { get; set; } = [];
+    public IReadOnlyList<EntityRelation> Relations { get; set; } = [];
     public BimGeometry Geometry { get; set; }
 }
 
@@ -59,7 +75,7 @@ public enum RelationIndex : long { }
 /// Corresponds roughly to an element in the Revit file.
 /// Some items are associated with entities that are not expressly derived from Element (e.g., Document, 
 /// </summary>
-public record Entity
+public record struct Entity
 (
     // ElementID in Revit, and Step Line # in IFC
     // Will be unique when combined with a DocumentIndex (e.g., "${LocalId}-{Document}" would be a unique string identifier within the database). 
@@ -67,7 +83,7 @@ public record Entity
     long LocalId,
 
     // UniqueID in Revit, and GlobalID in IFC (not stored in string table, because it is never duplicated)
-    string GlobalId, 
+    StringIndex GlobalId, 
 
     // The index of the document this entity is part of 
     DocumentIndex Document,
@@ -82,7 +98,7 @@ public record Entity
 /// <summary>
 /// Corresponds with a specific Revit or IFC file 
 /// </summary>
-public record Document
+public record struct Document
 (
     StringIndex Title,
     StringIndex Path
@@ -91,11 +107,11 @@ public record Document
 /// <summary>
 /// Represents 3D location data.
 /// </summary>
-public record Point
+public record struct Point
 (
-    double X,
-    double Y,
-    double Z
+    float X,
+    float Y,
+    float Z
 );
 
 /// <summary>
@@ -106,7 +122,7 @@ public enum ParameterType
 {
     Int, 
     Bool = Int,
-    Double,
+    Number,
     Entity,
     String,
     Point,
@@ -115,7 +131,7 @@ public enum ParameterType
 /// <summary>
 /// Meta-information for understanding a parameter 
 /// </summary>
-public record ParameterDescriptor
+public record struct ParameterDescriptor
 (
     StringIndex Name,
     StringIndex Units,
@@ -132,7 +148,7 @@ public record ParameterDescriptor
 /// <summary>
 /// A 32-bit integer parameter value
 /// </summary>
-public record ParameterInt
+public record struct ParameterInt
 (
     EntityIndex Entity,
     DescriptorIndex Descriptor,
@@ -142,7 +158,7 @@ public record ParameterInt
 /// <summary>
 /// A parameter value representing text
 /// </summary>
-public record ParameterString
+public record struct ParameterString
 (
     EntityIndex Entity,
     DescriptorIndex Descriptor,
@@ -150,19 +166,19 @@ public record ParameterString
 );
 
 /// <summary>
-/// A 64-bit precision floating point (decimal) numeric parameter value
+/// A 32-bit single precision floating point numeric parameter value
 /// </summary>
-public record ParameterDouble
+public record struct ParameterSingle
 (
     EntityIndex Entity,
     DescriptorIndex Descriptor,
-    double Value
+    float Value
 );
 
 /// <summary>
 /// A parameter value which references another entity 
 /// </summary>
-public record ParameterEntity
+public record struct ParameterEntity
 (
     EntityIndex Entity,
     DescriptorIndex Descriptor,
@@ -172,7 +188,7 @@ public record ParameterEntity
 /// <summary>
 /// A 32-bit integer parameter value
 /// </summary>
-public record ParameterPoint
+public record struct ParameterPoint
 (
     EntityIndex Entity,
     DescriptorIndex Descriptor,
@@ -185,7 +201,7 @@ public record ParameterPoint
 /// <summary>
 /// Expresses different kinds of relationships between entities 
 /// </summary>
-public record EntityRelation
+public record struct EntityRelation
 (
     EntityIndex EntityA,
     EntityIndex EntityB,

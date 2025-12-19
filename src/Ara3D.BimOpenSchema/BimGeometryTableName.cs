@@ -2,7 +2,7 @@
 
 public enum BimGeometryTableName
 {
-    Elements,
+    Instances,
     VertexBuffer,
     IndexBuffer,
     Materials,

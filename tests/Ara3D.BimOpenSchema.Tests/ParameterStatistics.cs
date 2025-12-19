@@ -30,7 +30,7 @@ public class ParameterStringStats : ParameterStatistics
 
 public static class ParameterStatisticsExtensions
 {
-    public static T CreateStats<T>(this BimData data, DescriptorIndex descIndex) where T : ParameterStatistics, new()
+    public static T CreateStats<T>(this IBimData data, DescriptorIndex descIndex) where T : ParameterStatistics, new()
     {
         var stats = new T();
         var desc = data.Get(descIndex);
@@ -41,7 +41,7 @@ public static class ParameterStatisticsExtensions
         return stats;
     }
 
-    public static T GetOrCreate<T>(this BimData self, Dictionary<DescriptorIndex, ParameterStatistics> d, DescriptorIndex i)
+    public static T GetOrCreate<T>(this IBimData self, Dictionary<DescriptorIndex, ParameterStatistics> d, DescriptorIndex i)
         where T : ParameterStatistics, new()
     {
         if (d.TryGetValue(i, out var value))
@@ -51,11 +51,11 @@ public static class ParameterStatisticsExtensions
         return r;
     }
 
-    public static Dictionary<DescriptorIndex, ParameterStatistics> GetStatistics(this BimData self)
+    public static Dictionary<DescriptorIndex, ParameterStatistics> GetStatistics(this IBimData self)
     {
         var r = new Dictionary<DescriptorIndex, ParameterStatistics>();
 
-        foreach (var p in self.DoubleParameters)
+        foreach (var p in self.SingleParameters)
         {
             var stats = self.GetOrCreate<ParameterDoubleStats>(r, p.Descriptor);
             stats.Values.Add(p.Value);

@@ -1,11 +1,14 @@
-﻿using Ara3D.DataTable;
+﻿using System.Diagnostics;
+using System.IO.Compression;
+using Ara3D.BimOpenSchema;
+using Ara3D.DataTable;
+using Ara3D.Logging;
 using Ara3D.Utils;
 using Parquet;
 using Parquet.Schema;
-using System.IO.Compression;
 using DataColumn = Parquet.Data.DataColumn;
 
-namespace Ara3D.BimOpenSchema.IO;
+namespace Ara3D.Extras;
 
 public static class ParquetUtils
 {
@@ -101,12 +104,35 @@ public static class ParquetUtils
         return new ReadOnlyDataTable(name, araColumns);
     }
 
+    public static async Task<ParquetTable<T>> ReadParquetAsync<T>(this FilePath filePath, string? name = null)
+    {
+        name ??= filePath.GetFileNameWithoutExtension();
+        var reader = await ParquetReader.CreateAsync(filePath);
+        var parquetColumns = await reader.ReadEntireRowGroupAsync();
+        return new ParquetTable<T>(name, parquetColumns);
+    }
+
     public static async Task<IDataTable> ReadParquetAsync(this Stream stream, string name)
     {
         var reader = await ParquetReader.CreateAsync(stream);
         var parquetColumns = await reader.ReadEntireRowGroupAsync();
         var araColumns = parquetColumns.Select((c, i) => new ParquetColumnAdapter(c, i)).ToList();
         return new ReadOnlyDataTable(name, araColumns);
+    }
+
+    public static async Task<ParquetColumn<T>> ReadParquetColumnAsync<T>(this Stream stream)
+    {
+        var reader = await ParquetReader.CreateAsync(stream);
+        var parquetColumns = await reader.ReadEntireRowGroupAsync();
+        if (parquetColumns.Length != 1) throw new Exception("Expected exactly one column");
+        return new ParquetColumn<T>(parquetColumns[0]);
+    }
+
+    public static async Task<ParquetTable<T>> ReadParquetAsync<T>(this Stream stream, string name)
+    {
+        var reader = await ParquetReader.CreateAsync(stream);
+        var parquetColumns = await reader.ReadEntireRowGroupAsync();
+        return new ParquetTable<T>(name, parquetColumns);
     }
 
     /// <summary>
@@ -138,25 +164,6 @@ public static class ParquetUtils
 
     public static IDataSet ReadParquetFromZip(this FilePath filePath)
         => Task.Run(filePath.ReadParquetFromZipAsync).GetAwaiter().GetResult();
-
-    public class ParquetColumnAdapter : IDataColumn
-    {
-        public DataColumn Column;
-
-        public ParquetColumnAdapter(DataColumn dc, int index)
-        {
-            Column = dc;
-            ColumnIndex = index;
-            Descriptor = new DataDescriptor(dc.Field.Name, dc.Field.ClrType, index);
-            Count = Column.NumValues;
-        }
-
-        public int ColumnIndex { get; }
-        public IDataDescriptor Descriptor { get; }
-        public int Count { get; }
-        public object this[int n] => Column.Data.GetValue(n);
-        public Array AsArray() => Column.Data;
-    }
 
     public static void WriteParquetToZip(this BimGeometry bg, FilePath file,
         CompressionMethod parquetCompressionMethod = CompressionMethod.Brotli,
@@ -227,11 +234,11 @@ public static class ParquetUtils
             r.Add(pb);
         }
         {
-            var pb = new ParquetBuilder(BimGeometry.ElementTableName);
-            pb.Add(bg.ElementEntityIndex, nameof(bg.ElementEntityIndex));
-            pb.Add(bg.ElementMaterialIndex, nameof(bg.ElementMaterialIndex));
-            pb.Add(bg.ElementMeshIndex, nameof(bg.ElementMeshIndex));
-            pb.Add(bg.ElementTransformIndex, nameof(bg.ElementTransformIndex));
+            var pb = new ParquetBuilder(BimGeometry.InstanceTableName);
+            pb.Add(bg.InstanceEntityIndex, nameof(bg.InstanceEntityIndex));
+            pb.Add(bg.InstanceMaterialIndex, nameof(bg.InstanceMaterialIndex));
+            pb.Add(bg.InstanceMeshIndex, nameof(bg.InstanceMeshIndex));
+            pb.Add(bg.InstanceTransformIndex, nameof(bg.InstanceTransformIndex));
             r.Add(pb);
         }
         {
@@ -267,48 +274,114 @@ public static class ParquetUtils
     /// Reads every "*.parquet" entry from <paramref name="zipPath"/>
     /// and returns them as a list of tables.
     /// </summary>
-    public static async Task<BimData> ReadBimDataFromParquetZipAsync(this FilePath zipPath)
+    public static async Task<BimData> ReadBimDataFromParquetZipAsync(this FilePath zipPath, ILogger logger = null)
     {
         var geometryTables = new List<IDataTable>();
-        var otherTables = new List<IDataTable>();
 
         await using var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var zip = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false);
 
-        foreach (var entry in zip.Entries
-                     .Where(e => e.Name.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(e => e.FullName))
+        var entries = zip.Entries
+            .Where(e => e.Name.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(e => e.FullName)
+            .ToList();
+
+        logger?.Log("Creating memory streams");
+        var streams = new List<MemoryStream>();
+        var names = new List<string>();
+        foreach (var entry in entries)
         {
             await using var entryStream = entry.Open();
-            await using var ms = new MemoryStream();
+            var ms = new MemoryStream();
             await entryStream.CopyToAsync(ms);
-
+            streams.Add(ms);
+            names.Add(entry.Name);
             ms.Position = 0;
-            var table = await ReadParquetAsync(ms, Path.GetFileNameWithoutExtension(entry.Name));
-            
+        }
+
+        logger?.Log("Creating data table reading tasks");
+        var tables = new IDataTable[streams.Count];
+        var dop = Math.Max(1, Environment.ProcessorCount - 1);
+        using var sem = new SemaphoreSlim(dop);
+        var bimData = new BimData();
+        var tasks = Enumerable.Range(0, streams.Count).Select(async i =>
+        {
+            await sem.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var stream = streams[i];
+                var name = Path.GetFileNameWithoutExtension(names[i]);
+
+                stream.Position = 0;
+                var ctor = GetTableCtor(name);
+
+                if (ctor == null)
+                {
+                    tables[i] = await ReadParquetAsync(stream, name).ConfigureAwait(false);
+                }
+                else
+                {
+                    await ctor(stream, bimData);
+                }
+            }
+            finally
+            {
+                try { await streams[i].DisposeAsync().ConfigureAwait(false); }
+                finally { sem.Release(); }
+            }
+        });
+
+        logger?.Log("Executing tasks");
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        logger?.Log("Create BIM geometry from geometry data tables");
+        foreach (var table in tables)
+        {
+            if (table == null)
+                continue;
+
             if (BimGeometry.TableNames.Contains(table.Name))
                 geometryTables.Add(table);
             else
-                otherTables.Add(table);
+                Debug.WriteLine($"Unexpected table {table.Name}");
         }
-
         var geometryDataSet = geometryTables.ToDataSet();
         var bimGeometry = geometryDataSet.ToBimGeometry();
-
-        var otherDataSet = otherTables.ToDataSet();
-        var bimData = otherDataSet.ToBimData();
-
         bimData.Geometry = bimGeometry;
         return bimData;
     }
 
-    public static BimData ReadBimDataFromParquetZip(this FilePath fp)
-        => Task.Run(fp.ReadBimDataFromParquetZipAsync).GetAwaiter().GetResult();
+    public static Func<Stream, BimData, Task> GetTableCtor(string name)
+    {
+        switch (name)
+        {
+            // Tables with single columns
+            case nameof(BimData.Strings): return async (stream, data) => data.Strings = await ReadParquetColumnAsync<string>(stream);
 
-    public static async Task WriteToParquetZipAsync(this BimData data, FilePath fp)
+            // Compound tables
+            case nameof(BimData.Documents): return async (stream, data) => data.Documents = await ReadParquetAsync<Document>(stream, name);
+            case nameof(BimData.Points): return async (stream, data) => data.Points = await ReadParquetAsync<Point>(stream, name);
+            case nameof(BimData.SingleParameters): return async (stream, data) => data.SingleParameters = await ReadParquetAsync<ParameterSingle>(stream, name);
+            case nameof(BimData.EntityParameters): return async (stream, data) => data.EntityParameters = await ReadParquetAsync<ParameterEntity>(stream, name);
+            case nameof(BimData.IntegerParameters): return async (stream, data) => data.IntegerParameters = await ReadParquetAsync<ParameterInt>(stream, name);
+            case nameof(BimData.PointParameters): return async (stream, data) => data.PointParameters = await ReadParquetAsync<ParameterPoint>(stream, name);
+            case nameof(BimData.StringParameters): return async (stream, data) => data.StringParameters = await ReadParquetAsync<ParameterString>(stream, name);
+            case nameof(BimData.Relations): return async (stream, data) => data.Relations = await ReadParquetAsync<EntityRelation>(stream, name);
+            case nameof(BimData.Descriptors): return async (stream, data) => data.Descriptors = await ReadParquetAsync<ParameterDescriptor>(stream, name);
+            case nameof(BimData.Entities): return async (stream, data) => data.Entities = await ReadParquetAsync<Entity>(stream, name);
+
+            // Everything else 
+            default: return null;
+        }
+    }
+
+    public static IBimData ReadBimDataFromParquetZip(this FilePath fp)
+        => Task.Run(() => fp.ReadBimDataFromParquetZipAsync()).GetAwaiter().GetResult();
+
+    public static async Task WriteToParquetZipAsync(this IBimData data, FilePath fp)
         => await data.ToDataSet().WriteParquetToZipAsync(fp);
 
-    public static void WriteToParquetZip(this BimData data, FilePath fp)
+    public static void WriteToParquetZip(this IBimData data, FilePath fp)
         => Task.Run(() => data.WriteToParquetZipAsync(fp)).GetAwaiter().GetResult();
 
 }

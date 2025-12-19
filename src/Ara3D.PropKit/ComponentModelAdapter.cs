@@ -8,10 +8,10 @@ namespace Ara3D.PropKit;
 /// </summary>
 public class ComponentModelAdapter : PropertyDescriptor
 {
-    private readonly object _wrapped;
+    private object _wrapped;
     private readonly PropDescriptor _desc;
     private readonly PropProviderWrapper _provider;
-    private readonly PropAccessor _accessor;
+    private readonly IPropAccessor _accessor;
 
     public ComponentModelAdapter(PropProviderWrapper provider, PropDescriptor desc)
         : base(desc.Name, null)
@@ -42,7 +42,7 @@ public class ComponentModelAdapter : PropertyDescriptor
 
     public override void SetValue(object obj, object value)
     {
-        _accessor.SetValue(_wrapped, value);
+        _accessor.SetValue(ref _wrapped, value);
         _provider.NotifyPropertyChanged(Name);
     }
 

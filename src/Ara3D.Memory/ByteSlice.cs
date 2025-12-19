@@ -11,6 +11,7 @@ namespace Ara3D.Memory
     /// <summary>
     /// A ByteSlice is an unsafe pointer to a section of allocated and fixed memory. 
     /// This is similar to a Span, except you can store it on the heap, and it can be greater than 2GB.
+    /// However, if you use the "Count" property and it is greater than 2GB, it will throw an exception.
     /// This makes it very convenient for efficient low-level operations.
     /// However, you need to be very careful when using it to assure that the memory is fixed
     /// during the lifespan of the ByteSlice and if you use it as an IReadOnlyList, it must not be larger than 2GB.

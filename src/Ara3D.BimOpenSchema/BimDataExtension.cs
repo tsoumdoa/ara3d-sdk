@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Ara3D.DataTable;
 
@@ -7,29 +8,29 @@ namespace Ara3D.BimOpenSchema;
 
 public static class BimDataExtension
 {
-    public static string Get(this BimData self, StringIndex index) => self.Strings[(int)index];
-    public static Entity Get(this BimData self, EntityIndex index) => self.Entities[(int)index];
-    public static Document Get(this BimData self, DocumentIndex index) => self.Documents[(int)index];
-    public static Point Get(this BimData self, PointIndex index) => self.Points[(int)index];
-    public static EntityRelation Get(this BimData self, RelationIndex index) => self.Relations[(int)index];
-    public static ParameterDescriptor Get(this BimData self, DescriptorIndex index) => self.Descriptors[(int)index];
+    public static string Get(this IBimData self, StringIndex index) => self.Strings[(int)index];
+    public static Entity Get(this IBimData self, EntityIndex index) => self.Entities[(int)index];
+    public static Document Get(this IBimData self, DocumentIndex index) => self.Documents[(int)index];
+    public static Point Get(this IBimData self, PointIndex index) => self.Points[(int)index];
+    public static EntityRelation Get(this IBimData self, RelationIndex index) => self.Relations[(int)index];
+    public static ParameterDescriptor Get(this IBimData self, DescriptorIndex index) => self.Descriptors[(int)index];
 
-    public static IEnumerable<EntityIndex> EntityIndices(this BimData self) 
+    public static IEnumerable<EntityIndex> EntityIndices(this IBimData self) 
         => Enumerable.Range(0, self.Entities.Count).Select(i => (EntityIndex)i);
 
-    public static IEnumerable<DocumentIndex> DocumentIndices(this BimData self)
+    public static IEnumerable<DocumentIndex> DocumentIndices(this IBimData self)
         => Enumerable.Range(0, self.Documents.Count).Select(i => (DocumentIndex)i);
 
-    public static IEnumerable<DescriptorIndex> DescriptorIndices(this BimData self)
+    public static IEnumerable<DescriptorIndex> DescriptorIndices(this IBimData self)
         => Enumerable.Range(0, self.Descriptors.Count).Select(i => (DescriptorIndex)i);
 
-    public static IEnumerable<StringIndex> StringIndices(this BimData self)
+    public static IEnumerable<StringIndex> StringIndices(this IBimData self)
         => Enumerable.Range(0, self.Strings.Count).Select(i => (StringIndex)i);
 
-    public static IEnumerable<PointIndex> PointIndices(this BimData self)
+    public static IEnumerable<PointIndex> PointIndices(this IBimData self)
         => Enumerable.Range(0, self.Points.Count).Select(i => (PointIndex)i);
 
-    public static IDataSet ToDataSet(this BimData self)
+    public static IDataSet ToDataSet(this IBimData self)
         => new ReadOnlyDataSet([
             self.Points.ToDataTable(nameof(self.Points)),
             self.Strings.ToDataTable(nameof(self.Strings)),
@@ -37,37 +38,75 @@ public static class BimDataExtension
             self.Documents.ToDataTable(nameof(self.Documents)),
             self.Entities.ToDataTable(nameof(self.Entities)),
             self.Relations.ToDataTable(nameof(self.Relations)),
-            self.DoubleParameters.ToDataTable(nameof(self.DoubleParameters)),
+            self.SingleParameters.ToDataTable(nameof(self.SingleParameters)),
             self.IntegerParameters.ToDataTable(nameof(self.IntegerParameters)),
             self.StringParameters.ToDataTable(nameof(self.StringParameters)),
             self.EntityParameters.ToDataTable(nameof(self.EntityParameters)),
             self.PointParameters.ToDataTable(nameof(self.PointParameters)),
         ]);
 
-
-    public static void ReadTable<T>(this IDataSet set, List<T> list, string name)
+    public static List<T> ReadTable<T>(this IDataSet set, Func<IDataRow, T> f, string name)
     {
         var table = set.GetTable(name);
         if (table == null)
-            throw new Exception($"Could not find table {name}");
-        var vals = table.ToArray<T>();
-        list.AddRange(vals);
+        {
+            Debug.WriteLine($"Could not find table {name}");
+            return null;
+        }
+
+        var list = new List<T>();
+        foreach (var row in table.Rows)
+            list.Add(f(row));
+        return list;
     }
+
+    public static Point ToPoint(IDataRow row)
+        => new((float)row[0], (float)row[1], (float)row[2]);
+
+    public static string ToString(IDataRow row)
+        => new((string)row[0]);
+
+    public static ParameterSingle ToParameterSingle(IDataRow row)
+        => new((EntityIndex)row[0], (DescriptorIndex)row[1], (float)row[2]);
+
+    public static ParameterEntity ToParameterEntity(IDataRow row)
+        => new((EntityIndex)row[0], (DescriptorIndex)row[1], (EntityIndex)row[2]);
+
+    public static ParameterPoint ToParameterPoint(IDataRow row)
+        => new((EntityIndex)row[0], (DescriptorIndex)row[1], (PointIndex)row[2]);
+
+    public static ParameterInt ToParameterInt(IDataRow row)
+        => new((EntityIndex)row[0], (DescriptorIndex)row[1], (int)row[2]);
+
+    public static ParameterString ToParameterString(IDataRow row)
+        => new((EntityIndex)row[0], (DescriptorIndex)row[1], (StringIndex)row[2]);
+
+    public static EntityRelation ToRelation(IDataRow row)
+        => new((EntityIndex)row[0], (EntityIndex)row[1], (RelationType)row[2]);
+
+    public static ParameterDescriptor ToDescriptor(IDataRow row)
+        => new((StringIndex)row[0], (StringIndex)row[1], (StringIndex)row[2], (ParameterType)row[3]);
+
+    public static Document ToDocument(IDataRow row)
+        => new((StringIndex)row[0], (StringIndex)row[1]);
+
+    public static Entity ToEntity(IDataRow row)
+        => new((long)row[0], (StringIndex)row[1], (DocumentIndex)row[2], (StringIndex)row[3], (StringIndex)row[4]);
 
     public static BimData ToBimData(this IDataSet set)
     {
         var r = new BimData();
-        ReadTable(set, r.Points, nameof(r.Points));
-        ReadTable(set, r.DoubleParameters, nameof(r.DoubleParameters));
-        ReadTable(set, r.EntityParameters, nameof(r.EntityParameters));
-        ReadTable(set, r.IntegerParameters, nameof(r.IntegerParameters));
-        ReadTable(set, r.PointParameters, nameof(r.PointParameters));
-        ReadTable(set, r.Relations, nameof(r.Relations));
-        ReadTable(set, r.StringParameters, nameof(r.StringParameters));
-        ReadTable(set, r.Strings, nameof(r.Strings));
-        ReadTable(set, r.Descriptors, nameof(r.Descriptors));
-        ReadTable(set, r.Documents, nameof(r.Documents));
-        ReadTable(set, r.Entities, nameof(r.Entities));
+        r.Points = ReadTable(set, ToPoint, nameof(r.Points));
+        r.SingleParameters = ReadTable(set, ToParameterSingle, nameof(r.SingleParameters));
+        r.EntityParameters = ReadTable(set, ToParameterEntity, nameof(r.EntityParameters));
+        r.IntegerParameters = ReadTable(set, ToParameterInt, nameof(r.IntegerParameters));
+        r.PointParameters = ReadTable(set, ToParameterPoint, nameof(r.PointParameters));
+        r.StringParameters = ReadTable(set, ToParameterString, nameof(r.StringParameters));
+        r.Relations = ReadTable(set, ToRelation, nameof(r.Relations));
+        r.Strings = ReadTable(set, ToString, nameof(r.Strings));
+        r.Descriptors = ReadTable(set, ToDescriptor, nameof(r.Descriptors));
+        r.Documents = ReadTable(set, ToDocument, nameof(r.Documents));
+        r.Entities = ReadTable(set, ToEntity, nameof(r.Entities));
         return r;
     }
 

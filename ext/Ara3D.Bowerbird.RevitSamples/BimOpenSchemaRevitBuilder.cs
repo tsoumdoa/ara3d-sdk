@@ -17,14 +17,8 @@ using RevitParameter = Autodesk.Revit.DB.Parameter;
 
 namespace Ara3D.Bowerbird.RevitSamples;
 
-public readonly record struct DocumentKey
-(
-    string Title,
-    string FileName
-);
-
 public readonly record struct ElementKey(
-    DocumentKey DocKey, 
+    int DocKey, 
     long ElementId
 );
 
@@ -51,18 +45,18 @@ public class BimOpenSchemaRevitBuilder
     public bool IncludeLinks;
     public Document CurrentDocument;
     public DocumentIndex CurrentDocumentIndex;
-    public DocumentKey CurrentDocumentKey;
+    public int CurrentDocumentKey;
     public Dictionary<string, DescriptorIndex> DescriptorLookup = new();
     public Dictionary<ElementKey, EntityIndex> ProcessedEntities = new();
-    public Dictionary<DocumentKey, DocumentIndex> ProcessedDocuments = new();
-    public Dictionary<DocumentKey, Dictionary<int, EntityIndex>> ProcessedConnectors = new();
+    public Dictionary<int, DocumentIndex> ProcessedDocuments = new();
+    public Dictionary<int, Dictionary<int, EntityIndex>> ProcessedConnectors = new();
     public Dictionary<long, EntityIndex> ProcessedCategories = new();
     public int BoundaryCount;
 
     public EntityIndex GetEntityIndex(Document doc, long entityId)
         => GetEntityIndex(GetDocumentKey(doc), entityId);
 
-    public EntityIndex GetEntityIndex(DocumentKey key, long entityId)
+    public EntityIndex GetEntityIndex(int key, long entityId)
         => ProcessedEntities[GetElementKey(key, entityId)];
 
     public EntityIndex GetEntityIndex(ElementKey key)
@@ -79,7 +73,7 @@ public class BimOpenSchemaRevitBuilder
         => AddPoint(Builder, xyz);
 
     public static PointIndex AddPoint(BimDataBuilder bdb, XYZ xyz)
-        => bdb.AddPoint(new(xyz.X, xyz.Y, xyz.Z));
+        => bdb.AddPoint(new((float)xyz.X, (float)xyz.Y, (float)xyz.Z));
 
     public void CreateCommonDescriptors()
     {
@@ -124,7 +118,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, string val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.String) throw new Exception($"Expected string not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
@@ -137,7 +131,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, DateTime val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.String) throw new Exception($"Expected string not {d.Type}");
         var str = val.ToString("o", CultureInfo.InvariantCulture);
         Builder.AddParameter(ei, str, di);
@@ -180,7 +174,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, EntityIndex val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.Entity) throw new Exception($"Expected entity not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
@@ -190,7 +184,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, PointIndex val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.Point) throw new Exception($"Expected point not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
@@ -203,7 +197,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, int val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
@@ -216,7 +210,7 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, bool val)
     {
-        var d = Builder.Data.Get(di);
+        var d = Builder.Get(di);
         if (d.Type != ParameterType.Int) throw new Exception($"Expected int not {d.Type}");
         Builder.AddParameter(ei, val ? 1 : 0, di);
     }
@@ -229,8 +223,8 @@ public class BimOpenSchemaRevitBuilder
 
     public void AddParameter(EntityIndex ei, DescriptorIndex di, double val)
     {
-        var d = Builder.Data.Get(di);
-        if (d.Type != ParameterType.Double) throw new Exception($"Expected double not {d.Type}");
+        var d = Builder.Get(di);
+        if (d.Type != ParameterType.Number) throw new Exception($"Expected double not {d.Type}");
         Builder.AddParameter(ei, val, di);
     }
 
@@ -419,7 +413,7 @@ public class BimOpenSchemaRevitBuilder
                         AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Int), p.AsInteger());
                         break;
                     case StorageType.Double:
-                        AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Double), p.AsDouble());
+                        AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.Number), p.AsDouble());
                         break;
                     case StorageType.String:
                         AddParameter(entityIndex, Builder.AddDescriptor(def.Name, unitLabel, groupLabel, ParameterType.String), p.AsString());
@@ -699,9 +693,10 @@ public class BimOpenSchemaRevitBuilder
         AddParameter(ei, SpaceUnboundedHeight, space.UnboundedHeight);
 
         // Calculated loads / flows
-        AddParameter(ei, SpaceCalculatedCoolingLoad, space.CalculatedCoolingLoad);
-        AddParameter(ei, SpaceCalculatedHeatingLoad, space.CalculatedHeatingLoad);
-        AddParameter(ei, SpaceCalculatedSupplyAirflow, space.CalculatedSupplyAirflow);
+        // NOTE: may or may not be computed. 
+        AddParameter(ei, SpaceCalculatedCoolingLoad, () => space.CalculatedCoolingLoad);
+        AddParameter(ei, SpaceCalculatedHeatingLoad, () => space.CalculatedHeatingLoad);
+        AddParameter(ei, SpaceCalculatedSupplyAirflow, () => space.CalculatedSupplyAirflow);
 
         // Reflectances
         AddParameter(ei, SpaceCeilingReflectance, space.CeilingReflectance);
@@ -862,24 +857,17 @@ public class BimOpenSchemaRevitBuilder
         }
     }
 
-    public static ElementKey GetElementKey(DocumentKey docKey, long id)
+    public static ElementKey GetElementKey(int docKey, long id)
         => new(docKey, id);
 
-    public static ElementKey GetElementKey(DocumentKey docKey, ElementId id)
+    public static ElementKey GetElementKey(int docKey, ElementId id)
         => GetElementKey(docKey, id.Value);
 
     public static ElementKey GetElementKey(Document d, ElementId id)
         => GetElementKey(GetDocumentKey(d), id);
 
-    public static DocumentKey GetDocumentKey(Document d)
-    {
-        if (d == null)
-            throw new Exception("Unexpected null document");
-        if (d.IsDetached)
-            // NOTE: the title and path will be empty if detached. Not sure what we can do as a backup plan.  
-            throw new Exception("Cannot process detached documents");
-        return new(d.Title, System.IO.Path.GetFileNameWithoutExtension(d.PathName)?.ToLowerInvariant() ?? "");
-    }
+    public static int GetDocumentKey(Document d)
+        => d.GetHashCode();
 
     public void ProcessDocument(Document d)
     {
@@ -899,7 +887,7 @@ public class BimOpenSchemaRevitBuilder
         AddTypeAsParameter(ei, d);
 
         var siteLocation = CurrentDocument.SiteLocation;
-
+            
         var fi = new FileInfo(d.PathName);
         if (fi.Exists)
         {

@@ -8,4 +8,5 @@ public interface IHostApplication
     IEnumerable<IModel3D> GetModels();
     ILogger Logger { get; }
     void Invalidate(object obj);
+    void RefreshUI(object obj);
 }

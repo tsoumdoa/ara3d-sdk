@@ -7,9 +7,4 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ara3D.Logging\Ara3D.Logging.csproj" />
-    <ProjectReference Include="..\Ara3D.Models\Ara3D.Models.csproj" />
-  </ItemGroup>
-
 </Project>

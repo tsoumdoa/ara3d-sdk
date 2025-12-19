@@ -4,6 +4,6 @@ namespace Ara3D.BimOpenSchema.IO;
 
 public static class BimDataSerializer
 {
-    public static void WriteToExcel(this BimData data, FilePath fp)
+    public static void WriteToExcel(this IBimData data, FilePath fp)
         => data.ToDataSet().WriteToExcel(fp);
 }

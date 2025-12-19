@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
+using Ara3D.Extras;
 using Parquet;
 using Document = Autodesk.Revit.DB.Document;
 using FilePath = Ara3D.Utils.FilePath;
@@ -98,7 +99,7 @@ public class CommandBackgroundExportEverything : NamedCommand
             var elapsed = DateTimeOffset.Now - LastSave;
             if (elapsed.TotalSeconds < UpdateFrequency) return;
 
-            var bimData = RevitBuilder.Builder.Data;
+            var bimData = RevitBuilder.Builder;
             var dataSet = bimData.ToDataSet();
 
             var fp = new FilePath($@"C:\dev\aec-tech-linter\tmp\changes-{PathUtil.GetTimeStamp()}.parquet.zip");

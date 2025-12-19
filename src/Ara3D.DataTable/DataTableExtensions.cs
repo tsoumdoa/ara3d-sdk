@@ -246,16 +246,18 @@ public static class DataTableExtensions
 
         foreach (var acc in propSet.Accessors)
         {
-            var setter = acc.Setter;
-            if (setter == null) 
+            if (!acc.HasSetter) 
                 throw new Exception($"Could not find setter for {acc.Descriptor.Name}");
 
             var name = acc.Descriptor.Name;
             if (!columns.TryGetValue(name, out var column))
                 throw new Exception($"Could not find column {name}");
 
+            var typedAcc = acc as IPropAccessor<T>;
+            if (typedAcc == null)
+                throw new Exception($"Expected accessor to be a {typeof(IProgress<T>)} but was a {typedAcc.GetType()}");
             for (var i = 0; i < r.Length; i++)
-                setter.Invoke(r[i], column[i]);
+                typedAcc.SetValue(ref r[i], column[i]);
         }
 
         return r;

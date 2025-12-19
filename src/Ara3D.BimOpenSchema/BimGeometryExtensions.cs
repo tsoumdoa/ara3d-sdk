@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Ara3D.DataTable;
 using Ara3D.Geometry;
@@ -10,12 +11,12 @@ namespace Ara3D.BimOpenSchema;
 public static class BimGeometryExtensions
 {
     public static int GetNumMaterials(this BimGeometry self) => self.MaterialRed.Length;
-    public static int GetNumVertices(this BimGeometry self) => self.VertexX.Length;
+    public static int GetNumVertices(this BimGeometry self) => self.VertexX.Length / 3;
     public static int GetNumFaces(this BimGeometry self) => self.GetNumIndices() / 3;
     public static int GetNumIndices(this BimGeometry self) => self.IndexBuffer.Length;
     public static int GetNumTransforms(this BimGeometry self) => self.TransformTX.Length;
     public static int GetNumMeshes(this BimGeometry self) => self.MeshIndexOffset.Length;
-    public static int GetNumElements(this BimGeometry self) => self.ElementMeshIndex.Length;
+    public static int GetNumElements(this BimGeometry self) => self.InstanceMeshIndex.Length;
 
     public static IReadOnlyList<Point3D> GetMeshPoints(this BimGeometry self, int meshIndex)
     {
@@ -23,15 +24,16 @@ public static class BimGeometryExtensions
 
         var vertexOffset = self.MeshVertexOffset[meshIndex];
         var nextVertexOffset = meshIndex < self.GetNumMeshes() - 1
-            ? self.MeshVertexOffset[meshIndex + 1]
-            : self.VertexX.Length;
+            ? self.MeshVertexOffset[meshIndex + 1] 
+            : self.GetNumVertices();
         var vertexCount = nextVertexOffset - vertexOffset;
 
         for (var i = 0; i < vertexCount; i++)
         {
-            var x = self.VertexX[i + vertexOffset];
-            var y = self.VertexY[i + vertexOffset];
-            var z = self.VertexZ[i + vertexOffset];
+            var vertexBufferOffset = i + vertexOffset;
+            var x = self.VertexX[vertexBufferOffset] / BimGeometry.VertexMultiplier;
+            var y = self.VertexY[vertexBufferOffset] / BimGeometry.VertexMultiplier;
+            var z = self.VertexZ[vertexBufferOffset] / BimGeometry.VertexMultiplier;
             r.Add((x, y, z));
         }
 
@@ -79,9 +81,9 @@ public static class BimGeometryExtensions
 
     public static InstanceStruct GetInstanceStruct(this BimGeometry self, int elementIndex)
         => new(
-            self.ElementEntityIndex[elementIndex],
+            self.InstanceEntityIndex[elementIndex],
             self.GetElementMatrix(elementIndex), 
-            self.ElementMeshIndex[elementIndex], 
+            self.InstanceMeshIndex[elementIndex], 
             self.GetElementMaterial(elementIndex));
 
     public static Material GetMaterial(this BimGeometry self, int materialIndex)
@@ -91,10 +93,10 @@ public static class BimGeometryExtensions
             self.MaterialRoughness[materialIndex].ToNormalizedFloat());
 
     public static Material GetElementMaterial(this BimGeometry self, int elementIndex)
-        => self.GetMaterial(self.ElementMaterialIndex[elementIndex]);
+        => self.GetMaterial(self.InstanceMaterialIndex[elementIndex]);
 
     public static Matrix4x4 GetElementMatrix(this BimGeometry self, int elementIndex)
-        => new(self.GetTransformMatrix(self.ElementTransformIndex[elementIndex]));
+        => new(self.GetTransformMatrix(self.InstanceTransformIndex[elementIndex]));
 
     public static Matrix4x4 GetTranslationMatrix(this BimGeometry self, int i)
         => Matrix4x4.CreateTranslation(self.GetTranslation(i));
@@ -161,11 +163,11 @@ public static class BimGeometryExtensions
         r.AddTable(BimGeometry.IndexTableName)
             .AddColumn(self, self.IndexBuffer, nameof(self.IndexBuffer));
 
-        r.AddTable(BimGeometry.ElementTableName)
-            .AddColumn(self, self.ElementEntityIndex, nameof(self.ElementEntityIndex))
-            .AddColumn(self, self.ElementMaterialIndex, nameof(self.ElementMaterialIndex))
-            .AddColumn(self, self.ElementMeshIndex, nameof(self.ElementMeshIndex))
-            .AddColumn(self, self.ElementTransformIndex, nameof(self.ElementTransformIndex));
+        r.AddTable(BimGeometry.InstanceTableName)
+            .AddColumn(self, self.InstanceEntityIndex, nameof(self.InstanceEntityIndex))
+            .AddColumn(self, self.InstanceMaterialIndex, nameof(self.InstanceMaterialIndex))
+            .AddColumn(self, self.InstanceMeshIndex, nameof(self.InstanceMeshIndex))
+            .AddColumn(self, self.InstanceTransformIndex, nameof(self.InstanceTransformIndex));
 
         r.AddTable(BimGeometry.MeshTableName)
             .AddColumn(self, self.MeshIndexOffset, nameof(self.MeshIndexOffset))
@@ -183,7 +185,7 @@ public static class BimGeometryExtensions
         {
             var materialIndex = bgb.AddMaterial(inst.Material);
             var transformIndex = bgb.AddTransform(inst.Matrix4x4);
-            bgb.AddElement(inst.EntityIndex, materialIndex, inst.MeshIndex, transformIndex);
+            bgb.AddInstance(inst.EntityIndex, materialIndex, inst.MeshIndex, transformIndex);
         }
 
         return bgb.BuildModel();
@@ -197,6 +199,9 @@ public static class BimGeometryExtensions
 
     public static BimGeometry ToBimGeometry(this IDataSet self)
     {
+        // TODO: this needs to be replaced by directly talking to the Parquet data columns.
+        //Debugger.Break();
+
         var r = new BimGeometry();
         r.MaterialRed = ReadColumn<byte>(self, BimGeometryTableName.Materials, nameof(r.MaterialRed));
         r.MaterialGreen = ReadColumn<byte>(self, BimGeometryTableName.Materials, nameof(r.MaterialGreen));
@@ -216,16 +221,15 @@ public static class BimGeometryExtensions
         r.TransformSY = ReadColumn<float>(self, BimGeometryTableName.Transforms, nameof(r.TransformSY));
         r.TransformSZ = ReadColumn<float>(self, BimGeometryTableName.Transforms, nameof(r.TransformSZ));
 
-        r.VertexX = ReadColumn<float>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexX));
-        r.VertexY = ReadColumn<float>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexY));
-        r.VertexZ = ReadColumn<float>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexZ));
-
+        r.VertexX = ReadColumn<int>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexX));
+        r.VertexY = ReadColumn<int>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexY));
+        r.VertexZ = ReadColumn<int>(self, BimGeometryTableName.VertexBuffer, nameof(r.VertexZ));
         r.IndexBuffer = ReadColumn<int>(self, BimGeometryTableName.IndexBuffer, nameof(r.IndexBuffer));
 
-        r.ElementEntityIndex = ReadColumn<int>(self, BimGeometryTableName.Elements, nameof(r.ElementEntityIndex));
-        r.ElementMaterialIndex = ReadColumn<int>(self, BimGeometryTableName.Elements, nameof(r.ElementMaterialIndex));
-        r.ElementMeshIndex = ReadColumn<int>(self, BimGeometryTableName.Elements, nameof(r.ElementMeshIndex));
-        r.ElementTransformIndex = ReadColumn<int>(self, BimGeometryTableName.Elements, nameof(r.ElementTransformIndex));
+        r.InstanceEntityIndex = ReadColumn<int>(self, BimGeometryTableName.Instances, nameof(r.InstanceEntityIndex));
+        r.InstanceMaterialIndex = ReadColumn<int>(self, BimGeometryTableName.Instances, nameof(r.InstanceMaterialIndex));
+        r.InstanceMeshIndex = ReadColumn<int>(self, BimGeometryTableName.Instances, nameof(r.InstanceMeshIndex));
+        r.InstanceTransformIndex = ReadColumn<int>(self, BimGeometryTableName.Instances, nameof(r.InstanceTransformIndex));
 
         r.MeshIndexOffset = ReadColumn<int>(self, BimGeometryTableName.Meshes, nameof(r.MeshIndexOffset));
         r.MeshVertexOffset = ReadColumn<int>(self, BimGeometryTableName.Meshes, nameof(r.MeshVertexOffset));
@@ -233,13 +237,13 @@ public static class BimGeometryExtensions
         return r;
     }
 
-    public static BimModel3D ToModel3D(this BimData self)
+    public static BimModel3D ToModel3D(this IBimData self)
         => BimModel3D.Create(self);
 
-    public static ElementStruct GetElement(this BimGeometry self, int i)
+    public static Instance GetElement(this BimGeometry self, int i)
         => new(
-            self.ElementEntityIndex[i], 
-            self.ElementMaterialIndex[i], 
-            self.ElementMeshIndex[i],
-            self.ElementTransformIndex[i]); 
+            self.InstanceEntityIndex[i], 
+            self.InstanceMaterialIndex[i], 
+            self.InstanceMeshIndex[i],
+            self.InstanceTransformIndex[i]); 
 }

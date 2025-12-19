@@ -14,9 +14,4 @@
       <Link>web-ifc-dll.dll</Link>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Ara3D.IO.StepParser\Ara3D.IO.StepParser.csproj" />
-    <ProjectReference Include="..\..\src\Ara3D.Models\Ara3D.Models.csproj" />
-  </ItemGroup>
 </Project>

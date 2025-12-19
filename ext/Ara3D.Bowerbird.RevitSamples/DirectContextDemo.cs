@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using Ara3D.IO.PLY;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.ExternalService;
@@ -86,8 +85,9 @@ namespace Ara3D.Bowerbird.RevitSamples
             if (PlyOpenFileDialog.ShowDialog() != DialogResult.OK)
                 return;
             var plyFile = PlyOpenFileDialog.FileName;
-            var mesh = PlyImporter.LoadMesh(plyFile);
-            Mesh = mesh.ToRenderMesh(new Color32());
+            //var mesh = PlyImporter.LoadMesh(plyFile);
+            //Mesh = mesh.ToRenderMesh(new Color32());
+            // TODO: I need to remove this demo, or add back the missing PLY code. 
         }
     }
 }

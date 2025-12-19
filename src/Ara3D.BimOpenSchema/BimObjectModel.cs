@@ -1,24 +1,25 @@
-﻿using System;
+﻿using Ara3D.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ara3D.Collections;
-using Ara3D.Models;
 
 namespace Ara3D.BimOpenSchema
 {
     /// <summary>
     /// The object model is a convenient and denormalized representation of the data as objects.
-    /// It is not canonical and is designed for common programming tasks. 
+    /// It is not canonical and is designed for common programming tasks.
+    /// TODO: optimize, it takes a lot of memory. 
     /// </summary>
     public class BimObjectModel
     {
-        public BimData Data;
+        public IBimData Data;
+        public BimGeometry Geometry => Data.Geometry;
 
         public List<DocumentModel> Documents { get; } = new();
         public List<EntityModel> Entities { get; } = new();
         public List<DescriptorModel> Descriptors { get; } = new();
 
-        public BimObjectModel(BimData data)
+        public BimObjectModel(IBimData data)
         {
             Data = data;
 
@@ -32,43 +33,48 @@ namespace Ara3D.BimOpenSchema
             Entities = data.
                 EntityIndices().Select(Create).ToList();
             
-            Descriptors = data.
-                DescriptorIndices().Select(di => Create(di, data.Get(di))).ToList();
+            if (Entities.Count > 0)
+            {
+                var numElements = Geometry.GetNumElements();
+                for (var i = 0; i < numElements; i++)
+                {
+                    var inst = Geometry.GetInstanceStruct(i);
+                    var entityIndex = inst.EntityIndex;
+                    if (entityIndex >= 0)
+                    {
+                        Entities[entityIndex]?.Instances.Add(inst);
+                    }
+                }
+            }
+        }
 
-            foreach (var p in data.DoubleParameters)
+        public void ComputeParametersAndRelations()
+        {
+            Descriptors.AddRange(Data.DescriptorIndices().Select(di => Create(di,Data.Get(di))));
+
+            foreach (var p in Data.SingleParameters)
                 AddParameter(p.Entity, Create(p));
 
-            foreach (var p in data.IntegerParameters)
+            foreach (var p in Data.IntegerParameters)
                 AddParameter(p.Entity, Create(p));
 
-            foreach (var p in data.StringParameters)
+            foreach (var p in Data.StringParameters)
                 AddParameter(p.Entity, Create(p));
 
-            foreach (var p in data.PointParameters)
+            foreach (var p in Data.PointParameters)
                 AddParameter(p.Entity, Create(p));
 
-            foreach (var p in data.EntityParameters)
+            foreach (var p in Data.EntityParameters)
                 AddParameter(p.Entity, Create(p));
 
-            foreach (var r in data.Relations)
+            foreach (var r in Data.Relations)
             {
                 var source = Get(r.EntityA);
                 var target = Get(r.EntityB);
+                if (source == null || target == null)
+                    continue;
                 source.OutgoingRelations.Add(new RelationModel(r.RelationType, target));
                 target.IncomingRelations.Add(new RelationModel(r.RelationType, source));
-            }
-
-            // For each element, add the corresponding instance struct to the entity.
-            var numElements = data.Geometry.GetNumElements();
-            for (var i = 0; i < numElements; i++)
-            {
-                var inst = data.Geometry.GetInstanceStruct(i);
-                var entityIndex = inst.EntityIndex;
-                if (entityIndex >= 0)
-                {
-                    var em = Entities[entityIndex];
-                    em.Instances.Add(inst);
-                }
             }
         }
 
@@ -84,10 +90,10 @@ namespace Ara3D.BimOpenSchema
             ParameterType = desc.Type
         };
 
-        public EntityModel Get(EntityIndex ei) => Entities[(int)ei];
-        public DescriptorModel Get(DescriptorIndex di) => Descriptors[(int)di];
-        public Point Get(PointIndex pi) => Data.Get(pi);
-        public string Get(StringIndex si) => Data.Get(si);
+        public EntityModel Get(EntityIndex ei) => ei < 0 ? null : Entities[(int)ei];
+        public DescriptorModel Get(DescriptorIndex di) => di < 0 ? null : Descriptors[(int)di];
+        public Point Get(PointIndex pi) => pi < 0 ? new Point(0,0,0) : Data.Get(pi);
+        public string Get(StringIndex si) => si < 0 ? "" : Data.Get(si);
 
         public void AddParameter(EntityIndex ei, ParameterModel pm)
         {
@@ -96,7 +102,7 @@ namespace Ara3D.BimOpenSchema
             e.Parameters.Add(pm);
         }
 
-        public ParameterModel Create(ParameterDouble p) => new(p.Value, Get(p.Descriptor));
+        public ParameterModel Create(ParameterSingle p) => new(p.Value, Get(p.Descriptor));
         public ParameterModel Create(ParameterInt p) => new(p.Value, Get(p.Descriptor));
         public ParameterModel Create(ParameterString p) => new(Get(p.Value), Get(p.Descriptor));
         public ParameterModel Create(ParameterEntity p) => new(Get(p.Value), Get(p.Descriptor));
@@ -111,25 +117,25 @@ namespace Ara3D.BimOpenSchema
         public List<InstanceStruct> Instances { get; } = new();
 
         // Always accessible data 
-        public BimData Data => Model.Data;
+        public IBimData Data => Model.Data;
         public Entity Entity => Model.Data.Get(Index);
         public DocumentModel Document => Model.Documents[(int)Entity.Document];
         public string DocumentTitle => Document.Title;
         public long LocalId => Entity.LocalId;
-        public string GlobalId => Entity.GlobalId;
+        public StringIndex GlobalId => Entity.GlobalId;
         public string Category => Data.Get(Entity.Category);
         public string Name => Data.Get(Entity.Name);
         public bool HasGeometry => Instances.Count > 0;
         
         // Commonly present data stored in parameters
-        public string CategoryType => GetParameterAsEntity(CommonRevitParameters.ObjectCategory)?
-            .GetParameterAsString(CommonRevitParameters.CategoryBuiltInType);
+        public string CategoryType => GetParameterAsEntity(CommonRevitParameters.ObjectCategory)?.GetParameterAsString(CommonRevitParameters.CategoryBuiltInType);
         public string ClassName => GetParameterAsString(CommonRevitParameters.ObjectTypeName);
         public string LevelName => GetParameterAsEntity(CommonRevitParameters.ElementLevel)?.Name;
         public string GroupName => GetParameterAsEntity(CommonRevitParameters.ElementGroup)?.Name;
         public string AssemblyName => GetParameterAsEntity(CommonRevitParameters.ElementAssemblyInstance)?.Index.ToString();
         public int WorksetId => GetParameterAsInt(CommonRevitParameters.ElementWorksetId);
-        
+        public float Elevation => GetParameterAsEntity(CommonRevitParameters.ElementLevel)?.GetParameterAsNumber(CommonRevitParameters.LevelElevation) ?? 0;
+ 
         // Family instance parameters
         public string FamilyType => GetParameterAsEntity(CommonRevitParameters.FIFamilyType)?.Name;
         public string RoomName => GetParameterAsEntity(CommonRevitParameters.FISpace)?.Name;
@@ -153,6 +159,9 @@ namespace Ara3D.BimOpenSchema
 
         public string GetParameterAsString(string name)
             => ParameterValues.GetValueOrDefault(name) as string;
+
+        public float GetParameterAsNumber(string name)
+            => (float)ParameterValues.GetValueOrDefault(name);
 
         public EntityModel GetParameterAsEntity(string name)
             => ParameterValues.GetValueOrDefault(name) as EntityModel;
@@ -207,7 +216,7 @@ namespace Ara3D.BimOpenSchema
                 {
                     case ParameterType.Int:
                         return typeof(int);
-                    case ParameterType.Double:
+                    case ParameterType.Number:
                         return typeof(double);
                     case ParameterType.Entity:
                         return typeof(int);

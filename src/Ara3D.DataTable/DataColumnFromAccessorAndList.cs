@@ -10,10 +10,10 @@ public class DataColumnFromAccessorAndList<T>
     public int ColumnIndex { get; }
     public IDataDescriptor Descriptor { get; }
     public int Count => _values.Count;
-    public object this[int n] => Accessor.Getter(_values[n]);
-    public PropAccessor Accessor { get; }
+    public object this[int n] => Accessor.GetValue(_values[n]);
+    public IPropAccessor Accessor { get; }
 
-    public DataColumnFromAccessorAndList(int index, PropAccessor acc, IReadOnlyList<T> values)
+    public DataColumnFromAccessorAndList(int index, IPropAccessor acc, IReadOnlyList<T> values)
     {
         ColumnIndex = index;
         Descriptor = new DataDescriptor(acc.Descriptor.Name, acc.Descriptor.Type, index);

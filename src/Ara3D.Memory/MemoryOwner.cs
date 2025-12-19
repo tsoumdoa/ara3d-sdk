@@ -19,7 +19,7 @@ public unsafe class MemoryOwner<T> : IMemoryOwner<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public MemoryOwner(IMemoryOwner memory)
     {
-        if (memory.Bytes.Count % sizeof(T) != 0)
+        if (memory.Bytes.Length % sizeof(T) != 0)
             throw new Exception($"Cannot cast memory to type {typeof(T)}");
 
         Memory = memory;

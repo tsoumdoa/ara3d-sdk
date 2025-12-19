@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Windows;
 using System.Windows.Controls;
+using Ara3D.Extras;
 using MessageBox = System.Windows.Forms.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
@@ -85,6 +86,7 @@ namespace Ara3D.BimOpenSchema.Browser
             CurrentFile = fp;
             Data = await fp.ReadBimDataFromParquetZipAsync().ConfigureAwait(false);
             Model3D = BimModel3D.Create(Data);
+            Model3D.ObjectModel.ComputeParametersAndRelations();
             await UpdateTables();
         }
 

@@ -13,7 +13,16 @@ namespace Ara3D.PropKit;
 public class PropProviderWrapper : 
     DynamicObject, IBoundPropContainer
 {
-    public object Wrapped { get; private set; }
+    private object _wrapped;
+    public object Wrapped
+    {
+        get => _wrapped;
+        private set
+        {
+            _wrapped = value;
+        }
+    }
+
     public PropProvider Props { get; }
 
     public PropProviderWrapper(object wrapped, PropProvider props)
@@ -69,7 +78,7 @@ public class PropProviderWrapper :
 
     public bool TrySetValue(string name, object value)
     {
-        if (!Props.TrySetValue(Wrapped, name, value))
+        if (!Props.TrySetValue(ref _wrapped, name, value))
             return false;
         NotifyPropertyChanged(name);
         return true;
@@ -124,6 +133,6 @@ public class PropProviderWrapper :
     public IReadOnlyList<PropValue> GetPropValues(object host)
         => Props.GetPropValues(host);
     
-    public void SetPropValues(object host, IEnumerable<PropValue> values)
-        => Props.SetPropValues(host, values);
+    public void SetPropValues(ref object host, IEnumerable<PropValue> values)
+        => Props.SetPropValues(ref host, values);
 }

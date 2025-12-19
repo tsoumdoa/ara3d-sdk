@@ -4,15 +4,39 @@ using System.Diagnostics;
 namespace Ara3D.BimOpenSchema;
 
 // This is a helper class for incrementally constructing a BIMData object without repeating objects. 
-public class BimDataBuilder
+public class BimDataBuilder : IBimData
 {
-    private readonly Dictionary<Entity, int> _entities = new();
-    private readonly Dictionary<Document, int> _documents = new();
-    private readonly Dictionary<Point, int> _points = new();
-    private readonly Dictionary<ParameterDescriptor, int> _descriptors = new();
-    private readonly Dictionary<string, int> _strings = new();
+    private readonly Dictionary<Entity, int> _entityLookup = new();
+    private readonly Dictionary<Document, int> _documentLookup = new();
+    private readonly Dictionary<Point, int> _pointLookup = new();
+    private readonly Dictionary<ParameterDescriptor, int> _descriptorLookup = new();
+    private readonly Dictionary<string, int> _stringLookup = new();
 
-    public readonly BimData Data = new BimData();
+    private readonly List<ParameterDescriptor> _descriptors = [];
+    private readonly List<ParameterInt> _integerParameters = [];
+    private readonly List<ParameterSingle> _singleParameters = [];
+    private readonly List<ParameterString> _stringParameters = [];
+    private readonly List<ParameterEntity> _entityParameters = [];
+    private readonly List<ParameterPoint> _pointParameters = [];
+    private readonly List<Document> _documents = [];
+    private readonly List<Entity> _entities = [];
+    private readonly List<string> _strings = [];
+    private readonly List<Point> _points = [];
+    private readonly List<EntityRelation> _relations = [];
+
+    public IReadOnlyList<ParameterDescriptor> Descriptors => _descriptors;
+    public IReadOnlyList<ParameterInt> IntegerParameters => _integerParameters;
+    public IReadOnlyList<ParameterSingle> SingleParameters => _singleParameters;
+    public IReadOnlyList<ParameterString> StringParameters => _stringParameters;
+    public IReadOnlyList<ParameterEntity> EntityParameters => _entityParameters;
+    public IReadOnlyList<ParameterPoint> PointParameters => _pointParameters;
+    public IReadOnlyList<Document> Documents => _documents;
+    public IReadOnlyList<Entity> Entities => _entities;
+    public IReadOnlyList<string> Strings => _strings;
+    public IReadOnlyList<Point> Points => _points;
+    public IReadOnlyList<EntityRelation> Relations => _relations;
+
+    public BimGeometry Geometry { get; set; }
 
     private int Add<T>(Dictionary<T, int> d, List<T> list, T val)
     {
@@ -29,43 +53,43 @@ public class BimDataBuilder
     }
     
     public void AddRelation(EntityIndex a, EntityIndex b, RelationType rt)
-        => Data.Relations.Add(new(a, b, rt));
+        => _relations.Add(new(a, b, rt));
 
     public EntityIndex AddEntity(long localId, string globalId, DocumentIndex d, string name, string category)
-        => (EntityIndex)Add(_entities, Data.Entities, new(localId, globalId, d, AddString(name), AddString(category)));
+        => (EntityIndex)Add(_entityLookup, _entities, new(localId, AddString(globalId), d, AddString(name), AddString(category)));
 
     public DocumentIndex AddDocument(string title, string pathName)
-        => (DocumentIndex)Add(_documents, Data.Documents, new(AddString(title), AddString(pathName)));
+        => (DocumentIndex)Add(_documentLookup, _documents, new(AddString(title), AddString(pathName)));
 
     public PointIndex AddPoint(Point p)
-        => (PointIndex)Add(_points, Data.Points, p);
+        => (PointIndex)Add(_pointLookup, _points, p);
 
     public DescriptorIndex AddDescriptor(string name, string units, string group, ParameterType pt)
-        => (DescriptorIndex)Add(_descriptors, Data.Descriptors, new(AddString(name), AddString(units), AddString(group), pt));
+        => (DescriptorIndex)Add(_descriptorLookup, _descriptors, new(AddString(name), AddString(units), AddString(group), pt));
 
     public StringIndex AddString(string name)
-        => (StringIndex)Add(_strings, Data.Strings, name ?? "");
+        => (StringIndex)Add(_stringLookup, _strings, name ?? "");
 
     public void AddParameter(EntityIndex e, double val, DescriptorIndex d)
-        => Data.DoubleParameters.Add(new(e, d, val));
+        => _singleParameters.Add(new(e, d, (float)val));
 
     public void AddParameter(EntityIndex e, int val, DescriptorIndex d)
-        => Data.IntegerParameters.Add(new(e, d, val));
+        => _integerParameters.Add(new(e, d, val));
 
     public void AddParameter(EntityIndex e, EntityIndex val, DescriptorIndex d)
-        => Data.EntityParameters.Add(new(e, d, val));
+        => _entityParameters.Add(new(e, d, val));
 
     public void AddParameter(EntityIndex e, string val, DescriptorIndex d)
-        => Data.StringParameters.Add(new(e, d, AddString(val)));
+        => _stringParameters.Add(new(e, d, AddString(val)));
 
     public void AddParameter(EntityIndex e, PointIndex pi, DescriptorIndex d)
-        => Data.PointParameters.Add(new(e, d, pi));
+        => _pointParameters.Add(new(e, d, pi));
 
     public void AddParameter(EntityIndex e, Point p, DescriptorIndex d)
-        => Data.PointParameters.Add(new(e, d, AddPoint(p)));
+        => _pointParameters.Add(new(e, d, AddPoint(p)));
 
     public void AddParameter(EntityIndex e, double val, string name, string units, string group)
-        => AddParameter(e, val, AddDescriptor(name, units, group, ParameterType.Double));
+        => AddParameter(e, val, AddDescriptor(name, units, group, ParameterType.Number));
 
     public void AddParameter(EntityIndex e, int val, string name, string units, string group)
         => AddParameter(e, val, AddDescriptor(name, units, group, ParameterType.Int));

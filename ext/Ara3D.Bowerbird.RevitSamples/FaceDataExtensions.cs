@@ -291,7 +291,7 @@ public static class FaceDataExtensions
             var ed = new ElementData(e.Id.Value, tmp, transform);
             data.Elements.Add(ed);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Debug.WriteLine($"Error occured while processing element {e.Id.Value}");
             Debugger.Break();

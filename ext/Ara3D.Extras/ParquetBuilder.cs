@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO.Compression;
 using Ara3D.Utils;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;
 
-namespace Ara3D.BimOpenSchema.IO;
+namespace Ara3D.Extras;
 
 public class ParquetBuilder
 {
@@ -45,7 +40,7 @@ public class ParquetBuilder
         await using var writer = await ParquetWriter.CreateAsync(schema, stream);
         writer.CompressionLevel = level;
         writer.CompressionMethod = method;
-        var rg = writer.CreateRowGroup();
+        using var rg = writer.CreateRowGroup();
         var columns = GetColumns().ToList();
         foreach (var c in columns)
             await rg.WriteColumnAsync(c);

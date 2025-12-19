@@ -4,9 +4,4 @@
     <TargetFramework>net8.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Ara3D.Collections\Ara3D.Collections.csproj" />
-    <ProjectReference Include="..\Ara3D.IO.BFAST\Ara3D.IO.BFAST.csproj" />
-  </ItemGroup>
 </Project>

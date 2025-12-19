@@ -1,10 +1,7 @@
 ﻿# Ara3D.DataTable
 
-This is a high-performance alternative to using `System.DataTable`. 
+This is a high-performance alternative to using `System.Data`. 
 It is a set of interfaces for use with in-memory columnar databases or ECS (Entity Component System) architecture. 
-
-Normally, you don't have to implement these interfaces yourself instead you work directly with an implementation 
-like [Ara3D.NarwhalDB](https://github.com/ara3d/ara3d-sdk/tree/main/src/Ara3D.NarwhalDB).
 
 ## What is a Columnar Database
 
@@ -58,7 +55,7 @@ This library has many parallels to `System.Data`, but there are several issues w
 | -------------------------------- | ---------------------------- |
 | **Memory overhead**              | Each `DataRow` is a full object with boxing for value types, versioning arrays, and two hash tables |
 | **GC pressure**                  | Per‑row allocations plus frequent `ColumnChanged` events drive Gen‑0/1 churn; stalls become visible at frame‑times < 16 ms. |
-| **Weak typing**                  | *stringly‑typed* columns (`object` cells) kill inlining, require casts, and move many errors to runtime. |
+| **Weak typing**                  | *weakly‑typed* columns (`object` cells) kill inlining, require casts, and move many errors to runtime. |
 | **No columnar access**           | Many analytics scan rows sequentially; CPUs love structure‑of‑arrays, not array‑of‑structures. |
 | **Thread‑safety locks**          | `DataTable` internally synchronises; fine for editor‑thread, harmful if your physics or analysis jobs touch the same table. |
 | **Limited relational modelling** | Cross‑table constraints exist, but traversing n‑level object graphs is verbose and slow compared with a proper ORM or ECS. |

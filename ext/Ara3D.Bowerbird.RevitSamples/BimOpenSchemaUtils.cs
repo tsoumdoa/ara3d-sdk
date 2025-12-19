@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Ara3D.Utils;
 using System.IO;
 using System.IO.Compression;
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
 using Ara3D.Collections;
+using Ara3D.Extras;
 using Ara3D.Logging;
 using Autodesk.Revit.DB;
 using Parquet;
@@ -31,15 +33,9 @@ namespace Ara3D.Bowerbird.RevitSamples
             return true;
         }
 
-        public static BimGeometry ToBimGeometry(this Document doc, BimOpenSchemaRevitBuilder rbdb, bool recurseLinks)
+        public static BimGeometry ToBimGeometry(this Document doc, BimOpenSchemaRevitBuilder rbdb, bool recurseLinks, Options options)
         {
             var meshGatherer = new MeshGatherer(rbdb);
-            var options = new Options()
-            {
-                ComputeReferences = true,
-                DetailLevel = ViewDetailLevel.Fine,
-            };
-
             meshGatherer.CollectMeshes(doc, options, recurseLinks, Transform.Identity);
 
             var builder = new BimGeometryBuilder();
@@ -61,7 +57,7 @@ namespace Ara3D.Bowerbird.RevitSamples
                     var transformIndex = builder.AddTransform(part.Transform.ToAra3D());
                     var entityIndex = rbdb.GetEntityIndex(g.ElementKey);
 
-                    builder.AddElement((int)entityIndex, matIndex, part.MeshIndex, transformIndex);
+                    builder.AddInstance((int)entityIndex, matIndex, part.MeshIndex, transformIndex);
                 }
             }
 
@@ -71,8 +67,35 @@ namespace Ara3D.Bowerbird.RevitSamples
         public static FilePath ExportBimOpenSchema(this Document currentDoc, BimOpenSchemaExportSettings settings, ILogger logger)
         {
             logger.Log($"Exporting BIM Open Schema Parquet Files");
+
+            var useView = settings.UseCurrentView && settings.IncludeGeometry;
+            
+            var view = useView 
+                ? currentDoc.ActiveView
+                : null;
+
+            if (useView)
+            {
+                if (view == null) 
+                    throw new Exception("No default view present, can't export");
+                logger.Log($"Exporting view {view.Name}");
+            }
+
+            var options = useView ?
+                new Options()
+                {
+                    ComputeReferences = true,
+                    View = view,
+                }
+                : new Options()
+                {
+                    ComputeReferences = true,
+                    DetailLevel = ViewDetailLevel.Fine,
+                };
+
+
             var bimDataBuilder = new BimOpenSchemaRevitBuilder(currentDoc, settings.IncludeLinks);
-            var bimData = bimDataBuilder.Builder.Data;
+            var bimData = bimDataBuilder.Builder;
             var dataSet = bimData.ToDataSet();
 
             var inputFile = new FilePath(currentDoc.PathName);
@@ -97,7 +120,7 @@ namespace Ara3D.Bowerbird.RevitSamples
             if (settings.IncludeGeometry)
             {
                 logger.Log($"Creating BIM Geometry");
-                var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks);
+                var bimGeometry = ToBimGeometry(currentDoc, bimDataBuilder, settings.IncludeLinks, options);
                 
                 logger.Log($"Writing BIM geometry");
                 bimGeometry.WriteParquetToZip(zip, parquetCompressionMethod, parquetCompressionLevel, zipCompressionLevel);

@@ -16,12 +16,15 @@ public static class DataGridUtils
             Header = "Index",
             Binding = new Binding(nameof(IDataRow.RowIndex)) { Mode = BindingMode.OneTime }
         });
-        for (int c = 0; c < t.Columns.Count; c++)
+        for (var c = 0; c < t.Columns.Count; c++)
         {
+            var descriptor = t.Columns[c].Descriptor;
+            var binding = descriptor.Type == typeof(float) || descriptor.Type == typeof(double)
+                ? new Binding($"[{c}]") { Mode = BindingMode.OneTime, StringFormat = "F3" }
+                : new Binding($"[{c}]") { Mode = BindingMode.OneTime };
             grid.Columns.Add(new DataGridTextColumn
             {
-                Header = t.Columns[c].Descriptor.Name,
-                Binding = new Binding($"[{c}]") { Mode = BindingMode.OneTime, StringFormat = "F3" }
+                Header = descriptor.Name, Binding = binding
             });
         }
         grid.ItemsSource = t.Rows;

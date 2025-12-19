@@ -1,6 +1,7 @@
     
-set AddinsDir=%AppData%\Autodesk\Revit\Addins\
+set AddinsDir=%AppData%\Autodesk\Revit\Addins
 set BowerbirdDir=%AddinsDir%\2025\Ara3D.Bowerbird\
+set AddinName=Ara3D.Bowerbird.Revit2025.addin
 
 :: -------- 1) No argument?  Leave quietly --------------------
 if "%~1"=="" (
@@ -12,7 +13,7 @@ if "%~1"=="" (
 if /I "%~1"=="-clean" goto :clean
 
 :: -------- 3)  Normal install --------------------------------
-xcopy /Y *2025.addin %AddinsDir%\2025
+xcopy /Y %AddinName% "%AddinsDir%\2025"
 if not exist "%BowerbirdDir%" mkdir "%BowerbirdDir%"
 
 xcopy %1 "%BowerbirdDir%" /h /i /c /k /e /r /y
@@ -24,8 +25,8 @@ goto :eof
 echo Removing Bowerbird for Revit 2025 …
 
 REM Delete manifest(s) we previously copied
-if exist "%AddinsDir%2025" (
-    del /Q "%AddinsDir%2025\*2025.addin" >nul 2>&1
+if exist "%AddinsDir\%2025" (
+    del /Q "%AddinsDir\%2025\%AddinName%" >nul 2>&1
 )
 
 REM Remove add-in folder and scripts folder (with contents)

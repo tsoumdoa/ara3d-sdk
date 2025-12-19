@@ -6,7 +6,7 @@ using Ara3D.Utils;
 
 namespace Ara3D.BimOpenSchema;
 
-public record ElementStruct(
+public record Instance(
     int EntityIndex, 
     int MaterialIndex,
     int MeshIndex,
@@ -17,7 +17,7 @@ public record ElementStruct(
 /// </summary>
 public class BimGeometryBuilder
 {
-    public List<ElementStruct> Elements { get; private set; } = new();
+    public List<Instance> Instances { get; private set; } = new();
     public List<TriangleMesh3D> Meshes { get; private set; } = new();
     public IndexedSet<Material> Materials { get; private set; } = new();
     public IndexedSet<Matrix4x4> Matrices { get; private set; } = new();
@@ -34,11 +34,11 @@ public class BimGeometryBuilder
     public int AddMaterial(Material material)
         => Materials.Add(material);
 
-    public int AddElement(int entityIndex, int materialIndex, int meshIndex, int transformIndex)
+    public int AddInstance(int entityIndex, int materialIndex, int meshIndex, int transformIndex)
     {
-        var es = new ElementStruct(entityIndex, materialIndex, meshIndex, transformIndex);
-        Elements.Add(es);
-        return Elements.Count - 1;
+        var es = new Instance(entityIndex, materialIndex, meshIndex, transformIndex);
+        Instances.Add(es);
+        return Instances.Count - 1;
     }
 
     public int AddTransform(Matrix4x4 matrix)
@@ -48,24 +48,24 @@ public class BimGeometryBuilder
     {
         var r = new BimGeometry
         {
-            ElementEntityIndex = new int[Elements.Count],
-            ElementMaterialIndex = new int[Elements.Count],
-            ElementMeshIndex = new int[Elements.Count],
-            ElementTransformIndex = new int[Elements.Count]
+            InstanceEntityIndex = new int[Instances.Count],
+            InstanceMaterialIndex = new int[Instances.Count],
+            InstanceMeshIndex = new int[Instances.Count],
+            InstanceTransformIndex = new int[Instances.Count]
         };
 
-        for (var i = 0; i < Elements.Count; i++)
+        for (var i = 0; i < Instances.Count; i++)
         {
-            var e = Elements[i];
-            r.ElementEntityIndex[i] = e.EntityIndex;
-            r.ElementMaterialIndex[i] = e.MaterialIndex;
-            r.ElementMeshIndex[i] = e.MeshIndex;
-            r.ElementTransformIndex[i] = e.TransformIndex;
+            var e = Instances[i];
+            r.InstanceEntityIndex[i] = e.EntityIndex;
+            r.InstanceMaterialIndex[i] = e.MaterialIndex;
+            r.InstanceMeshIndex[i] = e.MeshIndex;
+            r.InstanceTransformIndex[i] = e.TransformIndex;
         }
-        
-        var vertX = new List<float>();
-        var vertY = new List<float>();
-        var vertZ = new List<float>();
+
+        var verticesX = new List<int>();
+        var verticesY = new List<int>();
+        var verticesZ = new List<int>();
         var indices = new List<int>();
 
         r.MeshVertexOffset = new int[Meshes.Count];
@@ -74,13 +74,13 @@ public class BimGeometryBuilder
         for (var i=0; i < Meshes.Count; i++)
         {
             var m = Meshes[i];
-            r.MeshVertexOffset[i] = vertX.Count;
+            r.MeshVertexOffset[i] = verticesX.Count;
             r.MeshIndexOffset[i] = indices.Count;
             foreach (var vert in m.Points)
             {
-                vertX.Add(vert.X);
-                vertY.Add(vert.Y);
-                vertZ.Add(vert.Z);
+                verticesX.Add((int)(vert.X * BimGeometry.VertexMultiplier));
+                verticesY.Add((int)(vert.Y * BimGeometry.VertexMultiplier));
+                verticesZ.Add((int)(vert.Z * BimGeometry.VertexMultiplier));
             }
 
             foreach (var face in m.FaceIndices)
@@ -91,9 +91,9 @@ public class BimGeometryBuilder
             }
         }
         
-        r.VertexX = vertX.ToArray();
-        r.VertexY = vertY.ToArray();
-        r.VertexZ = vertZ.ToArray();
+        r.VertexX = verticesX.ToArray();
+        r.VertexY = verticesY.ToArray();
+        r.VertexZ = verticesZ.ToArray();
         r.IndexBuffer = indices.ToArray();
 
         var materials = Materials.OrderedMembers().ToList();

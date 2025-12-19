@@ -1,5 +1,6 @@
 using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
+using Ara3D.Extras;
 using Ara3D.Logging;
 using Ara3D.Utils;
 
@@ -22,7 +23,7 @@ public static class NewBimTests
         OutputBimData(logger, bd);
     }
 
-    public static void OutputBimData(ILogger logger, BimData bd)
+    public static void OutputBimData(ILogger logger, IBimData bd)
     {
         logger.Log($"# documents = {bd.Documents.Count}");
         logger.Log($"# entities = {bd.Entities.Count}");
@@ -32,7 +33,7 @@ public static class NewBimTests
         logger.Log($"# string parameters = {bd.StringParameters.Count}");
         logger.Log($"# point parameters  = {bd.PointParameters.Count}");
         logger.Log($"# integer parameters = {bd.IntegerParameters.Count}");
-        logger.Log($"# double parameters = {bd.DoubleParameters.Count}");
+        logger.Log($"# single parameters = {bd.SingleParameters.Count}");
         logger.Log($"# entity parameters = {bd.EntityParameters.Count}");
         logger.Log($"# relations = {bd.Relations.Count}");
     }

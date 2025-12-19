@@ -233,7 +233,7 @@ namespace Ara3D.Bowerbird.RevitSamples
             {
                 ExceptionEvent?.Invoke(this, ex);
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 Disable();
             }

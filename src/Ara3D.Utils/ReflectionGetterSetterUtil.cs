@@ -4,190 +4,80 @@ using System.Reflection;
 
 namespace Ara3D.Utils;
 
+// A generic typed function for getting values.
+public delegate TValue Getter<TTarget, TValue>(TTarget target);
+
+// A generic typed function for setting values. Notice that it requires a "ref". 
+public delegate void Setter<TTarget, TValue>(ref TTarget target, TValue value);
+
 /// <summary>
 /// This class generates delegates to quickly get or set values.
 /// In theory this should be faster than using Reflection methods. 
 /// </summary>
 public static class ReflectionGetterSetterUtil
 {
-    public delegate void SetterRef<TTarget, TValue>(ref TTarget target, TValue value);
+    public static Setter<TTarget, TValue> GetFastSetter<TTarget, TValue>(this MemberInfo member)
+        => (Setter<TTarget, TValue>)member.GetFastSetter();
 
-    public static Func<TTarget, TValue> GetFastTypedGetter<TTarget, TValue>(this MemberInfo member, bool nonPublic = false)
-        => (Func<TTarget, TValue>)BuildTypedGetter(typeof(TTarget), typeof(TValue), member, nonPublic);
+    public static Getter<TTarget, TValue> GetFastGetter<TTarget, TValue>(this MemberInfo member)
+        => (Getter<TTarget, TValue>)member.GetFastGetter();
 
-    public static Action<TTarget, TValue> GetFastTypedSetter<TTarget, TValue>(this MemberInfo member, bool nonPublic = false)
-        => (Action<TTarget, TValue>)BuildTypedSetter(typeof(TTarget), typeof(TValue), member, nonPublic);
-
-    // For struct instance fields/properties: allows true in-place mutation
-    public static SetterRef<TTarget, TValue> GetFastTypedSetterRef<TTarget, TValue>(this MemberInfo member, bool nonPublic = false)
-        => (SetterRef<TTarget, TValue>)BuildRefSetter(typeof(TTarget), typeof(TValue), member, nonPublic);
-
-    public static Func<object, object> GetFastGetter(this MemberInfo member, bool nonPublic = false)
+    public static Delegate GetFastGetter(this MemberInfo member)
     {
+        var tTarget = member.DeclaringType;
+        var tValue = member.GetMemberType();
+
         ValidateMember(member);
 
-        var declaring = GetDeclaringType(member);
-        var isStatic = IsStatic(member);
+        var target = Expression.Parameter(tTarget, "target");
+        var instance = IsStatic(member) ? null! : (Expression)target;
 
-        var objParam = Expression.Parameter(typeof(object), "obj");
-
-        Expression instanceExpr;
-        if (isStatic)
+        Expression body = member switch
         {
-            instanceExpr = null!;
-        }
-        else
-        {
-            // obj == null ? throw : (DeclaringType)obj
-            var cast = declaring.IsValueType
-                ? (Expression)Expression.Unbox(objParam, declaring)
-                : Expression.Convert(objParam, declaring);
-
-            // Guard null
-            var guard = Expression.IfThen(
-                Expression.Equal(objParam, Expression.Constant(null, typeof(object))),
-                Expression.Throw(Expression.New(typeof(ArgumentNullException).GetConstructor(new[] { typeof(string) })!,
-                                                Expression.Constant("obj")))
-            );
-
-            instanceExpr = Expression.Block(guard, cast);
-        }
-
-        Expression readExpr = member switch
-        {
-            PropertyInfo pi => BuildPropertyGet(pi, instanceExpr, nonPublic),
-            FieldInfo fi => BuildFieldGet(fi, instanceExpr),
+            PropertyInfo pi => Expression.Call(IsStatic(pi) ? null : instance, GetGetter(pi, false)),
+            FieldInfo fi => fi.IsStatic ? Expression.Field(null, fi) : Expression.Field(instance, fi),
             _ => throw new NotSupportedException()
         };
 
-        // box to object if needed
-        var boxed = readExpr.Type.IsValueType ? Expression.Convert(readExpr, typeof(object)) : (Expression)readExpr;
-
-        var lambda = Expression.Lambda<Func<object, object>>(boxed, objParam);
-        return lambda.Compile();
+        var delType = typeof(Getter<,>).MakeGenericType(tTarget, tValue);
+        return Expression.Lambda(delType, body, target).Compile();
     }
 
-    public static Action<object, object> GetFastSetter(this MemberInfo member, bool nonPublic = false)
+    public static Delegate GetFastSetter(this MemberInfo member)
     {
+        var tTarget = member.DeclaringType;
+        var tValue = member.GetMemberType();
+
         ValidateMember(member);
 
-        var declaring = GetDeclaringType(member);
-        var memberType = GetMemberType(member);
-        var isStatic = IsStatic(member);
+        var targetByRef = Expression.Parameter(tTarget.MakeByRefType(), "target");
+        var value = Expression.Parameter(tValue, "value");
 
-        var objParam = Expression.Parameter(typeof(object), "obj");
-        var valueParam = Expression.Parameter(typeof(object), "value");
+        var instance = IsStatic(member) ? null! :
+            (tTarget.IsValueType ? (Expression)targetByRef : Expression.Convert(targetByRef, tTarget));
 
-        // You cannot mutate a boxed struct via object.
-        if (!isStatic && declaring.IsValueType)
+        Expression body = member switch
         {
-            throw new NotSupportedException("Setting instance members on value types via object is not supported. Use CreateSetterRef<TTarget, TValue> and pass target by ref.");
-        }
-
-        Expression instanceExpr = isStatic ? null! :
-            (declaring.IsValueType
-                ? Expression.Unbox(objParam, declaring) // (but we disallowed this path above)
-                : Expression.Convert(objParam, declaring));
-
-        var valueCast = CastObjectTo(valueParam, memberType);
-
-        Expression assignExpr = member switch
-        {
-            PropertyInfo pi => BuildPropertySet(pi, instanceExpr, valueCast, nonPublic),
-            FieldInfo fi => BuildFieldSet(fi, instanceExpr, valueCast),
+            PropertyInfo pi => Expression.Call(IsStatic(pi) ? null : instance, GetSetter(pi, false),
+                EnsureType(value, pi.PropertyType)),
+            FieldInfo fi => Expression.Assign(
+                fi.IsStatic ? Expression.Field(null, fi) : Expression.Field(instance, fi),
+                EnsureType(value, fi.FieldType)),
             _ => throw new NotSupportedException()
         };
 
-        var lambda = Expression.Lambda<Action<object, object>>(assignExpr, objParam, valueParam);
-        return lambda.Compile();
+        var delType = typeof(Setter<,>).MakeGenericType(tTarget, tValue);
+        return Expression.Lambda(delType, body, targetByRef, value).Compile();
     }
 
-    // -------------------- Builders (typed) --------------------
+    public static MethodInfo GetGetter(PropertyInfo pi, bool nonPublic)
+        => pi.GetGetMethod(nonPublic) ?? throw new InvalidOperationException($"No getter for {pi.Name}");
 
-    static Delegate BuildTypedGetter(Type tTarget, Type tValue, MemberInfo member, bool nonPublic)
-    {
-        ValidateMember(member);
+    public static MethodInfo GetSetter(PropertyInfo pi, bool nonPublic)
+        => pi.GetSetMethod(nonPublic) ?? throw new InvalidOperationException($"No setter for {pi.Name}");
 
-        if (GetDeclaringType(member) != tTarget)
-            throw new ArgumentException("Member declaring type does not match TTarget.");
-
-        if (GetMemberType(member) != tValue)
-            throw new ArgumentException("Member type does not match TValue.");
-
-        var targetParam = Expression.Parameter(tTarget, "target");
-
-        Expression instanceExpr = IsStatic(member) ? null! : (Expression)targetParam;
-
-        Expression readExpr = member switch
-        {
-            PropertyInfo pi => BuildPropertyGet(pi, instanceExpr, nonPublic),
-            FieldInfo fi => BuildFieldGet(fi, instanceExpr),
-            _ => throw new NotSupportedException()
-        };
-
-        var lambdaType = typeof(Func<,>).MakeGenericType(tTarget, tValue);
-        return Expression.Lambda(lambdaType, readExpr, targetParam).Compile();
-    }
-
-    static Delegate BuildTypedSetter(Type tTarget, Type tValue, MemberInfo member, bool nonPublic)
-    {
-        ValidateMember(member);
-
-        if (GetDeclaringType(member) != tTarget)
-            throw new ArgumentException("Member declaring type does not match TTarget.");
-
-        if (GetMemberType(member) != tValue)
-            throw new ArgumentException("Member type does not match TValue.");
-
-        var targetParam = Expression.Parameter(tTarget, "target");
-        var valueParam = Expression.Parameter(tValue, "value");
-
-        if (!IsStatic(member) && tTarget.IsValueType)
-        {
-            throw new NotSupportedException("Use CreateSetterRef<TTarget,TValue> for value-type instance setters.");
-        }
-
-        Expression instanceExpr = IsStatic(member) ? null! : (Expression)targetParam;
-
-        Expression assignExpr = member switch
-        {
-            PropertyInfo pi => BuildPropertySet(pi, instanceExpr, valueParam, nonPublic),
-            FieldInfo fi => BuildFieldSet(fi, instanceExpr, valueParam),
-            _ => throw new NotSupportedException()
-        };
-
-        var lambdaType = typeof(Action<,>).MakeGenericType(tTarget, tValue);
-        return Expression.Lambda(lambdaType, assignExpr, targetParam, valueParam).Compile();
-    }
-
-    // True ref setter for structs
-    static Delegate BuildRefSetter(Type tTarget, Type tValue, MemberInfo member, bool nonPublic)
-    {
-        ValidateMember(member);
-
-        if (GetDeclaringType(member) != tTarget)
-            throw new ArgumentException("Member declaring type does not match TTarget.");
-
-        if (GetMemberType(member) != tValue)
-            throw new ArgumentException("Member type does not match TValue.");
-
-        var byRefTarget = Expression.Parameter(tTarget.MakeByRefType(), "target");
-        var valueParam = Expression.Parameter(tValue, "value");
-
-        Expression instanceExpr = IsStatic(member) ? null! : (Expression)byRefTarget;
-
-        Expression assignExpr = member switch
-        {
-            PropertyInfo pi => BuildPropertySet(pi, instanceExpr, valueParam, nonPublic),
-            FieldInfo fi => BuildFieldSet(fi, instanceExpr, valueParam),
-            _ => throw new NotSupportedException()
-        };
-
-        var delType = typeof(SetterRef<,>).MakeGenericType(tTarget, tValue);
-        return Expression.Lambda(delType, assignExpr, byRefTarget, valueParam).Compile();
-    }
-
-    // -------------------- Helpers --------------------
+    static bool IsStatic(PropertyInfo pi)
+        => (pi.GetMethod ?? pi.SetMethod ?? throw new InvalidOperationException("No accessor")).IsStatic;
 
     static void ValidateMember(MemberInfo member)
     {
@@ -206,9 +96,6 @@ public static class ReflectionGetterSetterUtil
         }
     }
 
-    static Type GetDeclaringType(MemberInfo m) 
-        => m.DeclaringType ?? throw new ArgumentException("No declaring type.");
-    
     static bool IsStatic(MemberInfo m) => m switch
     {
         PropertyInfo pi => ((pi.GetMethod ?? pi.SetMethod) ?? throw new InvalidOperationException("Property has no accessor.")).IsStatic,
@@ -216,12 +103,19 @@ public static class ReflectionGetterSetterUtil
         _ => false
     };
 
-    static Type GetMemberType(MemberInfo m) => m switch
+    static Type GetMemberType(this MemberInfo m) => m switch
     {
         PropertyInfo pi => pi.PropertyType,
         FieldInfo fi => fi.FieldType,
         _ => throw new NotSupportedException()
     };
+
+
+    static Expression EnsureType(Expression value, Type targetType)
+        => value.Type == targetType ? value : Expression.Convert(value, targetType);
+
+    //=
+    // TODO: Delete the following functions
 
     static Expression BuildPropertyGet(PropertyInfo pi, Expression? instance, bool nonPublic)
     {
@@ -243,29 +137,31 @@ public static class ReflectionGetterSetterUtil
             ? Expression.Assign(Expression.Field(null, fi), EnsureType(value, fi.FieldType))
             : Expression.Assign(Expression.Field(instance!, fi), EnsureType(value, fi.FieldType));
 
-    static Expression EnsureType(Expression value, Type targetType)
-        => value.Type == targetType ? value : Expression.Convert(value, targetType);
-
-    static Expression CastObjectTo(ParameterExpression valueObj, Type targetType)
+    static Expression CastObjectTo(Expression valueObj, Type targetType)
     {
-        // null → default(T) for value types, or null ref
-        if (targetType.IsValueType)
-        {
-            _ = Expression.Convert(
-                Expression.Condition(
-                    Expression.Equal(valueObj, Expression.Constant(null)),
-                    Expression.Default(typeof(object)),
-                    valueObj),
-                typeof(object));
+        if (valueObj.Type != typeof(object))
+            throw new ArgumentException("valueObj must be of type object", nameof(valueObj));
 
-            // Use Convert with nullable handling
-            return Expression.Condition(
-                Expression.Equal(valueObj, Expression.Constant(null)),
-                Expression.Default(targetType),
-                Expression.Convert(valueObj, targetType)
-            );
+        // Reference type: just cast (null stays null)
+        if (!targetType.IsValueType)
+            return Expression.Convert(valueObj, targetType);
+
+        // Value type (including Nullable<T>): null -> default(T)
+        var isNull = Expression.Equal(valueObj, Expression.Constant(null, typeof(object)));
+        var whenNull = Expression.Default(targetType);
+
+        // Nullable<T>: allow boxed T or boxed Nullable<T>
+        var underlying = Nullable.GetUnderlyingType(targetType);
+        if (underlying is not null)
+        {
+            // If the incoming object is boxed underlying (e.g., int), unbox to underlying then lift to Nullable<T>
+            var unboxUnderlying = Expression.Unbox(valueObj, underlying);          // (int)valueObj
+            var liftToNullable = Expression.Convert(unboxUnderlying, targetType);  // (int?)((int)valueObj)
+            return Expression.Condition(isNull, whenNull, liftToNullable);
         }
 
-        return Expression.Convert(valueObj, targetType);
+        // Non-nullable value type: require boxed exact type (or something directly unboxable)
+        var unbox = Expression.Unbox(valueObj, targetType);
+        return Expression.Condition(isNull, whenNull, unbox);
     }
 }

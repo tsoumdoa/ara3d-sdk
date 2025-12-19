@@ -35,93 +35,101 @@ public static class PropFactory
     public static PropProviderWrapper GetBoundPropProvider(this object obj)
         => new(obj, new PropProvider(obj.GetPropAccessors()));
 
-    public static IEnumerable<PropAccessor> GetPropAccessors(this object obj)
+    public static IEnumerable<IPropAccessor> GetPropAccessors(this object obj)
         => obj.GetType().GetPropAccessors(obj);
 
     public static PropProvider GetPropProvider(this Type type)
         => new(GetPropAccessors(type));
 
-    public static PropAccessor CreatePropAccessor(Type type, object hostObj, RangeAttribute rangeAttr,
+    public static IPropAccessor CreatePropAccessor(
+        this PropDescriptor descriptor,
+        Type targetType, Type valueType,
+        Delegate getterRef, Delegate? setterRef)
+    {
+        var open = typeof(PropAccessor<,>);
+        var closed = open.MakeGenericType(targetType, valueType);
+        return (IPropAccessor)Activator.CreateInstance(closed, descriptor, getterRef, setterRef)!;
+    }
+    
+    public static IPropAccessor CreatePropAccessor(this Type type, object hostObj, Type targetType, RangeAttribute rangeAttr,
         OptionsAttribute optionsAttr, string name, string displayName, string description, string units,
-        Func<object, object> getter, Action<object, object> setter)
+        Delegate getter, Delegate setter)
     {
         var isReadOnly = setter == null;
-
+        var underlyingType = type;
         if (type.IsEnum)
         {
             var names = Enum.GetNames(type);
             if (names.Length == 0)
             {
-                type = Enum.GetUnderlyingType(type);
+                underlyingType = Enum.GetUnderlyingType(type);
             }
             else
             {
-                return new PropAccessor(
+                return CreatePropAccessor(
                     new PropDescriptorStringList(names, name, displayName, description, units, isReadOnly),
-                    getter, setter);
+                    targetType, type, getter, setter);
             }
         }
 
-        if (type == typeof(int))
+        if (type == typeof(int) || underlyingType == typeof(int))
         {
             if (optionsAttr != null)
             {
-                var options = optionsAttr.GetOptions(hostObj);
-                return new PropAccessor(
-                    new PropDescriptorStringList(options, name, displayName, description, units, isReadOnly),
-                    getter, setter);
+                return CreatePropAccessor(
+                    new PropDescriptorDynamicStringList(() => optionsAttr.GetOptions(hostObj), name, displayName, description, units, isReadOnly),
+                    targetType, type, getter, setter);
             }
             else
             {
                 GetRangeAsInt(rangeAttr, out var def, out var min, out var max);
-                return new PropAccessor(
+                return CreatePropAccessor(
                     new PropDescriptorInt(name, displayName, description, units, isReadOnly, def, min, max),
-                    getter, setter);
+                    targetType, type, getter, setter);
             }
         }
-        else if (type == typeof(long))
+        else if (type == typeof(long) || underlyingType == typeof(long))
         {
             GetRangeAsInt(rangeAttr, out var def, out var min, out var max);
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new PropDescriptorLong(name, displayName, description, units, isReadOnly, def, min, max),
-                getter, setter);
+                targetType, type, getter, setter);
         }
         else if (type == typeof(float))
         {
             GetRangeAsFloat(rangeAttr, out var def, out var min, out var max);
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new PropDescriptorFloat(name, displayName, description, units, isReadOnly, def, min, max),
-                getter, setter);
+                targetType, type, getter, setter);
         }
         else if (type == typeof(double))
         {
             GetRangeAsDouble(rangeAttr, out var def, out var min, out var max);
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new PropDescriptorDouble(name, displayName, description, units, isReadOnly, def, min, max),
-                getter, setter);
+                targetType, type, getter, setter);
         }
         else if (type == typeof(bool))
         {
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new PropDescriptorBool(name, displayName, description, units, isReadOnly),
-                getter, setter);
+                targetType, type, getter, setter);
         }
         else if (type == typeof(string))
         {
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new PropDescriptorString(name, displayName, description, units, isReadOnly),
-                getter, setter);
+                targetType, type, getter, setter);
         }
         else
         {
-            return new PropAccessor(
+            return CreatePropAccessor(
                 new GenericPropDescriptor(null, type, name, displayName, description, units, isReadOnly),
-                getter, setter);
+                targetType, type, getter, setter);
         }
     }
 
-    public static PropAccessor CreatePropAccessor(Type type, object hostObj, MemberInfo mi, Func<object, object> getter,
-        Action<object, object> setter)
+    public static IPropAccessor CreatePropAccessor(Type type, object hostObj, Type targetType, MemberInfo mi, Delegate getter, Delegate setter)
     {
         var name = mi.Name;
         var displayName = mi.Name.SplitCamelCase();
@@ -135,11 +143,11 @@ public static class PropFactory
         var rangeAttr = mi.GetCustomAttribute<RangeAttribute>();
         var optionsAttr = mi.GetCustomAttribute<OptionsAttribute>();
 
-        return CreatePropAccessor(type, hostObj, rangeAttr, optionsAttr, name, displayName,
+        return CreatePropAccessor(type, hostObj, targetType, rangeAttr, optionsAttr, name, displayName,
             description, units, getter, setter);
     }
 
-    public static IEnumerable<PropAccessor> GetPropAccessors(this Type type, object hostObj = null)
+    public static IEnumerable<IPropAccessor> GetPropAccessors(this Type type, object hostObj = null)
     {
         var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         foreach (var prop in props)
@@ -155,7 +163,7 @@ public static class PropFactory
             var getter = prop.GetFastGetter();
             var setter = !isReadOnly ? prop.GetFastSetter() : null;
 
-            yield return CreatePropAccessor(prop.PropertyType, hostObj, prop, getter, setter);
+            yield return CreatePropAccessor(prop.PropertyType, hostObj, type, prop, getter, setter);
         }
 
         var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
@@ -166,7 +174,7 @@ public static class PropFactory
             var getter = field.GetFastGetter();
             var setter = !isReadOnly ? field.GetFastSetter() : null;
 
-            yield return CreatePropAccessor(field.FieldType, hostObj, field, getter, setter);
+            yield return CreatePropAccessor(field.FieldType, hostObj, type, field, getter, setter);
 
         }
     }

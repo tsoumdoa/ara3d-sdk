@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ara3D.Collections;
 using Ara3D.Geometry;
 using Ara3D.Models;
 
@@ -9,7 +10,7 @@ public class BimModel3D : IModel3D
     public BimModel3D(BimObjectModel model)
     {
         ObjectModel = model;
-        Model3D = ObjectModel.Data.Geometry.ToModel3D();
+        Model3D = ObjectModel.Geometry.ToModel3D();
     }
 
     public Model3D Model3D { get; private set; }
@@ -21,9 +22,12 @@ public class BimModel3D : IModel3D
     public static BimModel3D Create(BimObjectModel model)
         => new(model);
 
-    public static BimModel3D Create(BimData data)
+    public static BimModel3D Create(IBimData data)
         => new(new BimObjectModel(data));
 
     public IModel3D Transform(Transform3D t)
         => Model3DExtensions.Transform(this, t);
+
+    public EntityModel GetEntityModel(InstanceStruct inst)
+        => ObjectModel.Entities.ElementAtOrDefault(inst.EntityIndex);
 }

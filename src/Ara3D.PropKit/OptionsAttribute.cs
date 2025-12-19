@@ -14,6 +14,8 @@ public class OptionsAttribute : Attribute
     public List<string> GetOptions(object obj)
     {
         var result = obj.GetFieldOrPropOrInvokeMethod(OptionsFactoryFunction);
+        if (result == null)
+            return [];
         if (result is not IEnumerable<string> options)
             throw new Exception($"Method {OptionsFactoryFunction} must return an IEnumerable<string>.");
         return options.ToList();

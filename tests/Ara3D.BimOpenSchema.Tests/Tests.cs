@@ -5,6 +5,7 @@ using Ara3D.BimOpenSchema;
 using Ara3D.BimOpenSchema.IO;
 using Ara3D.BimOpenSchema.Tests;
 using Ara3D.DataTable;
+using Ara3D.Extras;
 
 namespace Ara3D.BIMOpenSchema.Tests
 {
@@ -54,7 +55,7 @@ namespace Ara3D.BIMOpenSchema.Tests
             OutputFileDetails(InputFile);
         }
 
-        public static BimData GetTestInputData()
+        public static IBimData GetTestInputData()
             => InputFile.ReadBimDataFromParquetZip();
 
         public static void OutputFileDetails(FilePath fp)
@@ -70,7 +71,7 @@ namespace Ara3D.BIMOpenSchema.Tests
             OutputBimData(bd);
         }
 
-        public static void TestWriteData(BimData data, string ext, Action<BimData, FilePath> writer)
+        public static void TestWriteData(IBimData data, string ext, Action<IBimData, FilePath> writer)
         {
             var outputFile = InputFile.ChangeDirectoryAndExt(OutputFolder, ext);
             var sw = Stopwatch.StartNew();
@@ -90,7 +91,7 @@ namespace Ara3D.BIMOpenSchema.Tests
             TestWriteData(bimData, "parquet.zip", (bd, f) => bd.WriteToParquetZip(f));
         }
 
-        public static void OutputBimData(BimData bd)
+        public static void OutputBimData(IBimData bd)
         {
             Console.WriteLine($"# documents = {bd.Documents.Count}");
             Console.WriteLine($"# entities = {bd.Entities.Count}");
@@ -100,7 +101,7 @@ namespace Ara3D.BIMOpenSchema.Tests
             Console.WriteLine($"# string parameters = {bd.StringParameters.Count}");
             Console.WriteLine($"# point parameters  = {bd.PointParameters.Count}");
             Console.WriteLine($"# integer parameters = {bd.IntegerParameters.Count}");
-            Console.WriteLine($"# double parameters = {bd.DoubleParameters.Count}");
+            Console.WriteLine($"# single parameters = {bd.SingleParameters.Count}");
             Console.WriteLine($"# entity parameters = {bd.EntityParameters.Count}");
             Console.WriteLine($"# relations = {bd.Relations.Count}");
         }

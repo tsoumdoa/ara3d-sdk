@@ -403,6 +403,9 @@ namespace Ara3D.Utils
         public static FilePath ChangeExtension(this FilePath filePath, string ext)
             => Path.ChangeExtension(filePath, ext);
 
+        public static FilePath ChangeBaseName(this FilePath filePath, string name)
+            => filePath.GetDirectory().RelativeFile(name) + filePath.GetExtension();
+
         public static FilePath StripExtension(this FilePath filePath)
             => Path.ChangeExtension(filePath, null);
 

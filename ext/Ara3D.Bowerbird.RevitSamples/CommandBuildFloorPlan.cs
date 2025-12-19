@@ -110,7 +110,7 @@ namespace Ara3D.Bowerbird.RevitSamples
             {
                 HospitalPlanBuilder.BuildFromSpec(ui, spec);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // message = ex.ToString();
             }

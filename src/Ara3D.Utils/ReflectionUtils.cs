@@ -322,5 +322,32 @@ namespace Ara3D.Utils
                     : Nullable.GetUnderlyingType(t) != null 
                         ? null 
                         : Activator.CreateInstance(t);
+
+        public static Func<T> CreateCtor<T>()
+        {
+            // If T is a struct, this just returns default.
+            if (typeof(T).IsValueType)
+                return static () => default;
+
+            // Fast path: public parameterless ctor
+            var ctor = typeof(T).GetConstructor(Type.EmptyTypes);
+            if (ctor == null)
+                throw new InvalidOperationException($"Type {typeof(T)} must have a parameterless constructor (or use a different materialization strategy).");
+
+            var newExpr = Expression.New(ctor);
+            return Expression.Lambda<Func<T>>(newExpr).Compile();
+        }
+
+        public static Action<T, object> CreateFieldSetter<T>(FieldInfo f)
+        {
+            var target = Expression.Parameter(typeof(T), "target");
+            var valueObj = Expression.Parameter(typeof(object), "value");
+
+            var field = Expression.Field(target, f);
+            var converted = Expression.Convert(valueObj, f.FieldType);
+            var assign = Expression.Assign(field, converted);
+
+            return Expression.Lambda<Action<T, object>>(assign, target, valueObj).Compile();
+        }
     }
 }

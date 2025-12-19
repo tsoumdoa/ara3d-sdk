@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
 using Material = Ara3D.Models.Material;
 
 namespace Ara3D.Bowerbird.RevitSamples;
@@ -36,8 +35,8 @@ public class MeshGatherer
 {
     public BimOpenSchemaRevitBuilder BimOpenSchemaRevitBuilder;
     public Document CurrentDocument { get; private set; }
-    public DocumentKey CurrentDocumentKey { get; private set; }
-    public HashSet<DocumentKey> ProcessedDocuments { get; } = [];
+    public int CurrentDocumentKey { get; private set; }
+    public HashSet<int> ProcessedDocuments { get; } = [];
     public List<Mesh> MeshList { get; } = [];
     public List<Geometry> Geometries { get; private set; } = [];
     private readonly Dictionary<string, IReadOnlyList<GeometryPart>> _symbolCache = new();
@@ -47,11 +46,17 @@ public class MeshGatherer
         BimOpenSchemaRevitBuilder = revitBuilder;
     }
 
-    public static DocumentKey GetDocumentKey(Document d)
+    public static int GetDocumentKey(Document d)
         => BimOpenSchemaRevitBuilder.GetDocumentKey(d);
 
     public void CollectMeshes(Document doc, Options options, bool recurseLinks, Transform parent)
     {
+        if (options.View != null)
+        {
+            CollectMeshesByView(doc, options, recurseLinks, parent);
+            return;
+        }
+
         var newDocumentKey = GetDocumentKey(doc);
         if (ProcessedDocuments.Contains(newDocumentKey))
             return;
@@ -96,6 +101,64 @@ public class MeshGatherer
         {
             CurrentDocument = previousDocument;
             CurrentDocumentKey = previousDocumentKey;
+        }
+    }
+
+    // NOTE: not a recursive call, like the CollectMeshes call. 
+    public void CollectMeshesByView(Document doc, Options options, bool recurseLinks, Transform parent)
+    {
+        var documentKey = GetDocumentKey(doc);
+        if (ProcessedDocuments.Contains(documentKey))
+            return;
+        CurrentDocument = doc;
+        CurrentDocumentKey = documentKey;
+        ProcessedDocuments.Add(CurrentDocumentKey);
+
+        var view = options.View;
+
+        // host elements visible in the view
+        var elems = new FilteredElementCollector(doc, view.Id)
+            .WhereElementIsNotElementType()
+            .Where(e => e is not RevitLinkInstance);
+
+        foreach (var e in elems)
+        {
+            var g = ComputeGeometry(e, parent, options);
+            if (g != null) Geometries.Add(g);
+        }
+
+        if (!recurseLinks) return;
+
+        // link instances visible in the host view
+        var linkInstances = new FilteredElementCollector(doc, view.Id)
+            .OfClass(typeof(RevitLinkInstance))
+            .Cast<RevitLinkInstance>();
+
+        foreach (var rli in linkInstances)
+        {
+            var linkDoc = rli.GetLinkDocument();
+            if (linkDoc is null) continue;
+
+            var newDocumentKey = GetDocumentKey(linkDoc);
+            if (ProcessedDocuments.Contains(newDocumentKey))
+                continue;
+
+            CurrentDocument = linkDoc;
+            CurrentDocumentKey = newDocumentKey;
+            ProcessedDocuments.Add(CurrentDocumentKey);
+
+            var linkXf = parent.Multiply(rli.GetTransform());
+
+            // linked elements visible *through this link instance* in the host view (Revit 2024+)
+            var linkedElems = new FilteredElementCollector(doc, view.Id, rli.Id)
+                .WhereElementIsNotElementType();
+
+            foreach (var le in linkedElems)
+            {
+                // le.Document should be the linkDoc (i.e., element comes from the linked model)
+                var g = ComputeGeometry(le, linkXf, options);
+                if (g != null) Geometries.Add(g);
+            }
         }
     }
 
@@ -171,7 +234,7 @@ public class MeshGatherer
         var symbolElementId = symbolId.SymbolId;
         var symbol = CurrentDocument.GetElement(symbolElementId);
         if (symbol == null) return null;
-        return $"{CurrentDocumentKey.FileName}_{CurrentDocumentKey.Title}_{symbolElementId.Value}";
+        return $"{CurrentDocumentKey}_{symbolElementId.Value}";
     }
 
     private IReadOnlyList<GeometryPart> GetOrBuildSymbolTemplates(GeometryInstance gi, Transform worldFromParent)

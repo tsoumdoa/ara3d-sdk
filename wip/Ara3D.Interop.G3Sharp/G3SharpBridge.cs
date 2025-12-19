@@ -28,10 +28,10 @@ namespace Ara3D
             return cutter.Mesh.Compact(compact);
         }
 
-        public static DMesh3 ReduceWithProjection(this DMesh3 mesh, float percent, bool compactResult = true)
-            => mesh.Reduce(percent, compactResult, mesh.AABBTree());
+        public static DMesh3 ReduceWithProjection(this DMesh3 mesh, float amount, bool compactResult = true, bool fixBoundaries = true)
+            => mesh.Reduce(amount, compactResult, fixBoundaries, mesh.AABBTree());
 
-        public static DMesh3 Reduce(this DMesh3 mesh, float percent, bool compactResult = true, ISpatial target = null)
+        public static DMesh3 Reduce(this DMesh3 mesh, float amount, bool compactResult = true, bool fixBoundaries = true, ISpatial target = null)
         {
             // TODO: not sure what triggers this
             //if (!mesh.CheckValidity(eFailMode: FailMode.ReturnOnly)) return mesh;
@@ -46,7 +46,13 @@ namespace Ara3D
                 // r.ProjectionMode = Reducer.TargetProjectionMode.Inline;
             }
 
-            return r.Reduce((int)(mesh.VertexCount * percent / 100.0), compactResult);
+            if (fixBoundaries)
+            {
+                r.SetExternalConstraints(new MeshConstraints());
+                MeshConstraintUtil.FixAllBoundaryEdges(r.Constraints, mesh);
+            }
+
+            return r.Reduce((int)(mesh.VertexCount * amount), compactResult);
         }
 
 
@@ -170,17 +176,19 @@ namespace Ara3D
                 if (result < 0)
                 {
                     if (result == DMesh3.NonManifoldID)
-                        throw new Exception("Can't create non-manifold mesh");
+                        return null;
                     if (result == DMesh3.InvalidID)
                         throw new Exception("Invalid vertex ID");
                     throw new Exception("Unknown error creating mesh");
                 }
             }
-            Debug.Assert(r.CheckValidity(false, FailMode.DebugAssert));
+
+            if (!r.CheckValidity(false, FailMode.ReturnOnly))
+                return null;
             return r;
         }
 
-        public static TriangleMesh3D Reduce(this TriangleMesh3D self, float percent)
-            => self.ToG3Sharp().Reduce(percent).ToAra3D();        
+        public static TriangleMesh3D Reduce(this TriangleMesh3D self, float amount)
+            => self.ToG3Sharp().Reduce(amount).ToAra3D();        
     }
 }
